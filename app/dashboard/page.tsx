@@ -50,7 +50,14 @@ export default function DashboardPage() {
           recentActivity,
         })
       } catch (error) {
-        console.error("Error loading dashboard data:", error)
+        // Set empty stats on error
+        setStats({
+          totalQuizzes: 0,
+          averageScore: 0,
+          bestScore: 0,
+          totalTimeSpent: 0,
+          recentActivity: [],
+        })
       } finally {
         setLoading(false)
       }

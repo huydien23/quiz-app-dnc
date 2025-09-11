@@ -28,7 +28,7 @@ export default function HistoryPage() {
         setResults(quizResults)
         setFilteredResults(quizResults)
       } catch (error) {
-        console.error("Error loading history:", error)
+        // Handle error silently
       } finally {
         setLoading(false)
       }

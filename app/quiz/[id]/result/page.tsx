@@ -31,7 +31,7 @@ export default function QuizResultPage() {
         const quizData = await QuizService.getQuizById(quizId)
         setQuiz(quizData)
       } catch (error) {
-        console.error("Error loading quiz:", error)
+        // Handle error silently
       } finally {
         setLoading(false)
       }

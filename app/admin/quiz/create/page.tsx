@@ -141,7 +141,6 @@ export default function CreateQuizPage() {
       await QuizService.createQuiz(newQuiz)
       router.push("/admin/quizzes")
     } catch (error) {
-      console.error("Error creating quiz:", error)
       setError("Có lỗi xảy ra khi tạo bài thi")
     } finally {
       setLoading(false)

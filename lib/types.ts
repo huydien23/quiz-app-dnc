@@ -2,7 +2,7 @@ export interface User {
   id: string
   email: string
   name: string
-  role: "student" | "admin"
+  role: 0 | 1 // 0 = admin, 1 = user/student
   createdAt: string
 }
 

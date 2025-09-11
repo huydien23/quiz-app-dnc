@@ -20,7 +20,7 @@ export default function QuizzesPage() {
         const activeQuizzes = await QuizService.getActiveQuizzes()
         setQuizzes(activeQuizzes)
       } catch (error) {
-        console.error("Error loading quizzes:", error)
+        // Handle error silently
       } finally {
         setLoading(false)
       }

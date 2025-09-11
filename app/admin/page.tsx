@@ -33,7 +33,7 @@ export default function AdminDashboard() {
         const systemStats = await AdminService.getSystemStats()
         setStats(systemStats)
       } catch (error) {
-        console.error("Error loading admin stats:", error)
+        // Handle error silently or show user-friendly message
       } finally {
         setLoading(false)
       }
@@ -128,6 +128,12 @@ export default function AdminDashboard() {
                     Tạo bài thi mới
                   </Button>
                 </Link>
+                <Link href="/admin/users/create">
+                  <Button className="w-full justify-start">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Tạo tài khoản mới
+                  </Button>
+                </Link>
                 <Link href="/admin/quizzes">
                   <Button variant="outline" className="w-full justify-start bg-transparent">
                     <BookOpen className="h-4 w-4 mr-2" />
@@ -169,8 +175,8 @@ export default function AdminDashboard() {
                           <p className="font-medium text-sm">{user.name}</p>
                           <p className="text-xs text-muted-foreground">{user.email}</p>
                         </div>
-                        <Badge variant={user.role === "admin" ? "default" : "secondary"}>
-                          {user.role === "admin" ? "Admin" : "Học sinh"}
+                        <Badge variant={user.role === 0 ? "default" : "secondary"}>
+                          {user.role === 0 ? "Admin" : "Học sinh"}
                         </Badge>
                       </div>
                     ))}

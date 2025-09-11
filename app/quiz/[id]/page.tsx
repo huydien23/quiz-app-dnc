@@ -40,7 +40,6 @@ export default function QuizPage() {
           router.push("/quizzes")
         }
       } catch (error) {
-        console.error("Error loading quiz:", error)
         router.push("/quizzes")
       } finally {
         setLoading(false)
@@ -89,7 +88,7 @@ export default function QuizPage() {
       await QuizService.submitQuizAttempt(attempt)
       router.push(`/quiz/${quizId}/result?score=${score}&total=${quiz.questions.length}`)
     } catch (error) {
-      console.error("Error submitting quiz:", error)
+      // Handle error silently or show user-friendly message
     } finally {
       setSubmitting(false)
     }

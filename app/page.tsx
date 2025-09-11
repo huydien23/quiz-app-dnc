@@ -1,9 +1,51 @@
+"use client"
+
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { BookOpen, Users, Trophy, Clock } from "lucide-react"
+import { useAuth } from "@/hooks/use-auth"
 
 export default function HomePage() {
+  const { user, loading } = useAuth()
+  const router = useRouter()
+
+  // Auto redirect based on user role
+  useEffect(() => {
+    if (!loading && user) {
+      if (user.role === 0) {
+        router.push("/admin")
+      } else {
+        router.push("/dashboard")
+      }
+    }
+  }, [user, loading, router])
+
+  // Show loading or login options for non-authenticated users
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <BookOpen className="h-16 w-16 text-primary mx-auto mb-4 animate-pulse" />
+          <p className="text-muted-foreground">Đang tải...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // If user is logged in, they will be redirected
+  if (user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <BookOpen className="h-16 w-16 text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Đang chuyển hướng...</p>
+        </div>
+      </div>
+    )
+  }
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}

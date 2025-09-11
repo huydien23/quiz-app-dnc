@@ -62,8 +62,7 @@ export class QuizService {
   // Get user's quiz attempts
   static async getUserAttempts(userId: string): Promise<QuizAttempt[]> {
     const attemptsRef = ref(database, "attempts")
-    const userAttemptsQuery = query(attemptsRef, orderByChild("userId"))
-    const snapshot = await get(userAttemptsQuery)
+    const snapshot = await get(attemptsRef)
 
     if (!snapshot.exists()) return []
 

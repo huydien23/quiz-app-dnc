@@ -11,7 +11,6 @@ import "./globals.css"
 export const metadata: Metadata = {
   title: "QuizMaster - Luyện thi trắc nghiệm",
   description: "Hệ thống luyện thi trắc nghiệm trực tuyến",
-  generator: "v0.app",
 }
 
 export default function RootLayout({
@@ -20,8 +19,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="vi">
-      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
+    <html lang="vi" suppressHydrationWarning>
+      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`} suppressHydrationWarning>
         <Suspense fallback={<div>Loading...</div>}>
           <AuthProvider>
             <Navbar />

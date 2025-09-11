@@ -40,7 +40,6 @@ export default function AdminQuizzesPage() {
       setQuizzes(allQuizzes)
       setFilteredQuizzes(allQuizzes)
     } catch (error) {
-      console.error("Error loading quizzes:", error)
       setError("Có lỗi xảy ra khi tải danh sách bài thi")
     } finally {
       setLoading(false)
@@ -55,7 +54,6 @@ export default function AdminQuizzesPage() {
         await loadQuizzes()
       }
     } catch (error) {
-      console.error("Error updating quiz status:", error)
       setError("Có lỗi xảy ra khi cập nhật trạng thái bài thi")
     }
   }
@@ -66,7 +64,6 @@ export default function AdminQuizzesPage() {
         await QuizService.deleteQuiz(quizId)
         await loadQuizzes()
       } catch (error) {
-        console.error("Error deleting quiz:", error)
         setError("Có lỗi xảy ra khi xóa bài thi")
       }
     }
