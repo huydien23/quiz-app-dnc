@@ -3,6 +3,22 @@ import { database } from "@/lib/firebase"
 import type { Quiz, QuizAttempt, QuizResult } from "@/lib/types"
 
 export class QuizService {
+  // Get all quizzes (including inactive ones for admin)
+  static async getAllQuizzes(): Promise<Quiz[]> {
+    const quizzesRef = ref(database, "quizzes")
+    const snapshot = await get(quizzesRef)
+
+    if (!snapshot.exists()) return []
+
+    const quizzes: Quiz[] = []
+    snapshot.forEach((child) => {
+      const quiz = { id: child.key, ...child.val() } as Quiz
+      quizzes.push(quiz)
+    })
+
+    return quizzes.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+  }
+
   // Get all active quizzes
   static async getActiveQuizzes(): Promise<Quiz[]> {
     const quizzesRef = ref(database, "quizzes")

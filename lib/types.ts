@@ -31,6 +31,8 @@ export interface QuizAttempt {
   quizId: string
   answers: number[]
   score: number
+  correctAnswers?: number
+  totalQuestions?: number
   completedAt: string
   timeSpent: number // in seconds
 }

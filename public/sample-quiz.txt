@@ -1,0 +1,39 @@
+Question: What is 2+2?
+A) 3
+B) 4
+C) 5
+D) 6
+Answer: B
+Explanation: 2+2 equals 4
+
+Question: What is the capital of Vietnam?
+A) Hanoi
+B) Ho Chi Minh City
+C) Da Nang
+D) Hue
+Answer: A
+Explanation: Hanoi is the capital of Vietnam
+
+Question: What is 10-7?
+A) 2
+B) 3
+C) 4
+D) 5
+Answer: B
+Explanation: 10-7 equals 3
+
+Question: What is 5×3?
+A) 12
+B) 15
+C) 18
+D) 20
+Answer: B
+Explanation: 5×3 equals 15
+
+Question: What is the square root of 16?
+A) 2
+B) 3
+C) 4
+D) 5
+Answer: C
+Explanation: √16 = 4

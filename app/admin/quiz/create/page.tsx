@@ -11,11 +11,15 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ProtectedRoute } from "@/components/protected-route"
+import { QuizFileUploader } from "@/components/quiz-file-uploader"
+import { QuizTemplateDownloader } from "@/components/quiz-template-downloader"
+import { QuizPreview } from "@/components/quiz-preview"
 import { QuizService } from "@/lib/quiz-service"
 import { useAuth } from "@/hooks/use-auth"
 import type { Quiz, Question } from "@/lib/types"
-import { Plus, Trash2, ArrowLeft, Save } from "lucide-react"
+import { Plus, Trash2, ArrowLeft, Save, Upload, Edit } from "lucide-react"
 import Link from "next/link"
 
 export default function CreateQuizPage() {
@@ -51,6 +55,23 @@ export default function CreateQuizPage() {
     setQuiz((prev) => ({
       ...prev,
       questions: [...prev.questions, newQuestion],
+    }))
+  }
+
+  const handleQuestionsImported = (importedQuestions: Question[]) => {
+    setQuiz((prev) => ({
+      ...prev,
+      questions: [
+        ...prev.questions.filter(q => q.question.trim() !== ""), // Keep existing non-empty questions
+        ...importedQuestions
+      ],
+    }))
+  }
+
+  const removeQuestionFromPreview = (index: number) => {
+    setQuiz((prev) => ({
+      ...prev,
+      questions: prev.questions.filter((_, i) => i !== index),
     }))
   }
 
@@ -149,7 +170,7 @@ export default function CreateQuizPage() {
 
   return (
     <ProtectedRoute requireAdmin>
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* Header */}
         <div className="mb-8">
           <Link href="/admin">
@@ -162,30 +183,75 @@ export default function CreateQuizPage() {
           <p className="text-muted-foreground">Tạo bài thi trắc nghiệm cho học sinh</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
+        <Tabs defaultValue="manual" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="manual" className="flex items-center gap-2">
+              <Edit className="h-4 w-4" />
+              Tạo thủ công
+            </TabsTrigger>
+            <TabsTrigger value="upload" className="flex items-center gap-2">
+              <Upload className="h-4 w-4" />
+              Import từ file
+            </TabsTrigger>
+          </TabsList>
 
-          {/* Basic Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Thông tin cơ bản</CardTitle>
-              <CardDescription>Nhập thông tin chung về bài thi</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="title">Tiêu đề bài thi</Label>
-                <Input
-                  id="title"
-                  value={quiz.title}
-                  onChange={(e) => setQuiz((prev) => ({ ...prev, title: e.target.value }))}
-                  placeholder="Ví dụ: Kiểm tra Toán học lớp 10"
-                  required
-                />
+          <TabsContent value="upload" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <QuizTemplateDownloader />
+              <Card>
+                <CardHeader>
+                  <CardTitle>Hướng dẫn nhanh</CardTitle>
+                  <CardDescription>Tips để import thành công</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="text-sm">
+                    <h4 className="font-medium mb-2">📝 Format JSON:</h4>
+                    <p className="text-muted-foreground">Hỗ trợ cả array trực tiếp và object có property 'questions'</p>
+                  </div>
+                  <div className="text-sm">
+                    <h4 className="font-medium mb-2">🔄 Auto convert:</h4>
+                    <p className="text-muted-foreground">Tự động chuyển 'correct' thành 'correctAnswer'</p>
+                  </div>
+                  <div className="text-sm">
+                    <h4 className="font-medium mb-2">👀 Preview & Edit:</h4>
+                    <p className="text-muted-foreground">Xem trước và chỉnh sửa trước khi xuất bản</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+            
+            {/* Enhanced File Uploader - replaces old QuizFileUploader */}
+            <div className="mt-6">
+              <div className="space-y-6">
+                <QuizFileUploader onQuestionsImported={handleQuestionsImported} />
               </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="manual" className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">{error && (
+                <Alert variant="destructive">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
+              {/* Basic Info */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Thông tin cơ bản</CardTitle>
+                  <CardDescription>Nhập thông tin chung về bài thi</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label htmlFor="title">Tiêu đề bài thi</Label>
+                    <Input
+                      id="title"
+                      value={quiz.title}
+                      onChange={(e) => setQuiz((prev) => ({ ...prev, title: e.target.value }))}
+                      placeholder="Ví dụ: Kiểm tra Toán học lớp 10"
+                      required
+                    />
+                  </div>
 
               <div>
                 <Label htmlFor="description">Mô tả</Label>
@@ -308,6 +374,16 @@ export default function CreateQuizPage() {
             </Button>
           </div>
         </form>
+          </TabsContent>
+        </Tabs>
+
+        {/* Summary of imported questions */}
+        {quiz.questions.filter(q => q.question.trim() !== "").length > 0 && (
+          <QuizPreview 
+            questions={quiz.questions} 
+            onRemoveQuestion={removeQuestionFromPreview}
+          />
+        )}
       </div>
     </ProtectedRoute>
   )

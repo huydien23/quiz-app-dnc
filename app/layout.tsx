@@ -4,6 +4,7 @@ import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import { Analytics } from "@vercel/analytics/next"
 import { AuthProvider } from "@/hooks/use-auth"
+import { ToastProvider } from "@/components/toast-provider"
 import { Navbar } from "@/components/navbar"
 import { Suspense } from "react"
 import "./globals.css"
@@ -23,8 +24,10 @@ export default function RootLayout({
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`} suppressHydrationWarning>
         <Suspense fallback={<div>Loading...</div>}>
           <AuthProvider>
-            <Navbar />
-            <main className="min-h-screen bg-background">{children}</main>
+            <ToastProvider>
+              <Navbar />
+              <main className="min-h-screen bg-background">{children}</main>
+            </ToastProvider>
           </AuthProvider>
         </Suspense>
         <Analytics />
