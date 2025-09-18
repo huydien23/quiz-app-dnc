@@ -5,32 +5,11 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Progress } from "@/components/ui/progress"
-import { Separator } from "@/components/ui/separator"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Switch } from "@/components/ui/switch"
-import { 
-  Upload, FileText, File, FileSpreadsheet, Loader2, CheckCircle, 
-  Eye, Save, AlertTriangle, X, Download, Copy, Edit3,
-  BarChart3, Clock, Users, Star, FileCheck
-} from "lucide-react"
-import type { Question, Quiz } from "@/lib/types"
-import { QuizService } from "@/lib/quiz-service"
-import { useAuth } from "@/hooks/use-auth"
-import { useToast } from "@/components/toast-provider"
-import { useRouter } from "next/navigation"
+import { Upload, FileText, File, FileSpreadsheet, Loader2, CheckCircle, AlertTriangle } from "lucide-react"
+import type { Question } from "@/lib/types"
 
-// Import the libraries dynamically to avoid SSR issues
-let mammoth: any = null
-let pdfjs: any = null
-let XLSX: any = null
-
-interface EnhancedQuizFileUploaderProps {
-  onQuizCreated?: (quiz: Quiz) => void
+interface QuizFileUploaderProps {
+  onQuestionsImported: (questions: Question[]) => void
 }
 
 interface ParsedQuizData {
@@ -38,103 +17,21 @@ interface ParsedQuizData {
   description?: string
   timeLimit?: number
   questions: Question[]
-  metadata?: {
-    source: string
-    importedAt: string
-    questionCount: number
-    hasExplanations: number
-    avgOptionsPerQuestion: number
-  }
 }
 
-interface QuizMetadata {
-  title: string
-  description: string
-  timeLimit: number
-  subject: string
-  grade: string
-  isActive: boolean
-}
-
-export function EnhancedQuizFileUploader({ onQuizCreated }: EnhancedQuizFileUploaderProps) {
-  const { user } = useAuth()
-  const router = useRouter()
-  const { success, error: showError, warning, info } = useToast()
-  
-  // Upload states
+export function EnhancedQuizFileUploader({ onQuestionsImported }: QuizFileUploaderProps) {
   const [loading, setLoading] = useState(false)
-  const [uploadProgress, setUploadProgress] = useState(0)
   const [error, setError] = useState("")
-  
-  // Data states
-  const [parsedData, setParsedData] = useState<ParsedQuizData | null>(null)
-  const [quizMetadata, setQuizMetadata] = useState<QuizMetadata>({
-    title: "",
-    description: "",
-    timeLimit: 30,
-    subject: "",
-    grade: "",
-    isActive: true
-  })
-  
-  // UI states
-  const [showPreviewModal, setShowPreviewModal] = useState(false)
-  const [showMetadataModal, setShowMetadataModal] = useState(false)
-  const [saving, setSaving] = useState(false)
-  
+  const [success, setSuccess] = useState("")
+  const [fileInfo, setFileInfo] = useState<{ name: string; size: number } | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const supportedFormats = [
-    { 
-      type: "JSON", 
-      extension: ".json", 
-      icon: File, 
-      description: "Định dạng JSON chuẩn",
-      color: "bg-blue-100 text-blue-800"
-    },
-    { 
-      type: "Word", 
-      extension: ".docx", 
-      icon: FileText, 
-      description: "Microsoft Word document",
-      color: "bg-blue-100 text-blue-800"
-    },
-    { 
-      type: "PDF", 
-      extension: ".pdf", 
-      icon: FileText, 
-      description: "Portable Document Format",
-      color: "bg-red-100 text-red-800"
-    },
-    { 
-      type: "Excel", 
-      extension: ".xlsx", 
-      icon: FileSpreadsheet, 
-      description: "Microsoft Excel spreadsheet",
-      color: "bg-green-100 text-green-800"
-    },
+    { type: "JSON", extension: ".json", icon: File, description: "Định dạng JSON chuẩn" },
+    { type: "Word", extension: ".docx", icon: FileText, description: "Microsoft Word document" },
+    { type: "PDF", extension: ".pdf", icon: FileText, description: "Portable Document Format" },
+    { type: "Excel", extension: ".xlsx", icon: FileSpreadsheet, description: "Microsoft Excel spreadsheet" },
   ]
-
-  const loadLibraries = async () => {
-    try {
-      if (!mammoth) {
-        mammoth = await import('mammoth')
-      }
-      if (!pdfjs) {
-        const pdfjsModule = await import('pdfjs-dist')
-        pdfjs = pdfjsModule
-        if (typeof window !== 'undefined' && pdfjs.GlobalWorkerOptions) {
-          pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`
-        }
-      }
-      if (!XLSX) {
-        XLSX = await import('xlsx')
-      }
-    } catch (error) {
-      console.warn('Error loading libraries:', error)
-      throw new Error('Không thể load thư viện cần thiết')
-    }
-  }
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -142,7 +39,8 @@ export function EnhancedQuizFileUploader({ onQuizCreated }: EnhancedQuizFileUplo
 
     setLoading(true)
     setError("")
-    setUploadProgress(0)
+    setSuccess("")
+    setFileInfo({ name: file.name, size: file.size })
 
     try {
       // Check file size (10MB limit)
@@ -150,14 +48,10 @@ export function EnhancedQuizFileUploader({ onQuizCreated }: EnhancedQuizFileUplo
         throw new Error("File quá lớn. Vui lòng chọn file nhỏ hơn 10MB")
       }
 
-      setUploadProgress(10)
-
       const fileExtension = file.name.toLowerCase().split('.').pop()
       if (!fileExtension) {
         throw new Error("File không có phần mở rộng")
       }
-
-      setUploadProgress(20)
 
       let parsedData: ParsedQuizData
 
@@ -166,26 +60,18 @@ export function EnhancedQuizFileUploader({ onQuizCreated }: EnhancedQuizFileUplo
           parsedData = await parseJsonFile(file)
           break
         case 'docx':
-          await loadLibraries()
-          setUploadProgress(40)
           parsedData = await parseWordFile(file)
           break
         case 'pdf':
-          await loadLibraries()
-          setUploadProgress(40)
           parsedData = await parsePdfFile(file)
           break
         case 'xlsx':
         case 'xls':
-          await loadLibraries()
-          setUploadProgress(40)
           parsedData = await parseExcelFile(file)
           break
         default:
           throw new Error(`Định dạng file .${fileExtension} không được hỗ trợ. Chỉ hỗ trợ: .json, .docx, .pdf, .xlsx`)
       }
-
-      setUploadProgress(80)
 
       if (!parsedData || !parsedData.questions || parsedData.questions.length === 0) {
         throw new Error("Không tìm thấy câu hỏi nào trong file")
@@ -200,33 +86,8 @@ export function EnhancedQuizFileUploader({ onQuizCreated }: EnhancedQuizFileUplo
         throw new Error("Không có câu hỏi hợp lệ nào trong file")
       }
 
-      // Add metadata
-      parsedData.metadata = {
-        source: file.name,
-        importedAt: new Date().toISOString(),
-        questionCount: validQuestions.length,
-        hasExplanations: validQuestions.filter(q => q.explanation?.trim()).length,
-        avgOptionsPerQuestion: validQuestions.reduce((sum, q) => sum + q.options.length, 0) / validQuestions.length
-      }
-
-      // Auto-fill metadata
-      setQuizMetadata(prev => ({
-        ...prev,
-        title: parsedData.title || `Quiz từ ${file.name}`,
-        description: parsedData.description || `Bài thi được import từ file ${file.name}`,
-        timeLimit: parsedData.timeLimit || Math.max(30, validQuestions.length * 1) // 1 min per question minimum
-      }))
-
-      setUploadProgress(100)
-      setParsedData(parsedData)
-      
-      // Show success toast
-      success(`Đã phân tích thành công ${validQuestions.length} câu hỏi từ file ${file.name}`)
-      
-      // Auto-open preview after successful import
-      setTimeout(() => {
-        setShowPreviewModal(true)
-      }, 500)
+      onQuestionsImported(validQuestions)
+      setSuccess(`Đã import thành công ${validQuestions.length} câu hỏi từ file ${file.name}`)
       
       // Reset file input
       if (fileInputRef.current) {
@@ -234,14 +95,12 @@ export function EnhancedQuizFileUploader({ onQuizCreated }: EnhancedQuizFileUplo
       }
     } catch (error: any) {
       console.error('File upload error:', error)
-      showError(error.message || "Có lỗi xảy ra khi xử lý file")
-      setUploadProgress(0)
+      setError(error.message || "Có lỗi xảy ra khi xử lý file")
     } finally {
       setLoading(false)
     }
   }
 
-  // File parsing functions (same as before but with progress updates)
   const parseJsonFile = async (file: File): Promise<ParsedQuizData> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader()
@@ -254,11 +113,14 @@ export function EnhancedQuizFileUploader({ onQuizCreated }: EnhancedQuizFileUplo
 
           const data = JSON.parse(content)
           
+          // Check if data is array (like your quiz-python.json) or object with questions property
           let questionsArray: any[] = []
           
           if (Array.isArray(data)) {
+            // Direct array of questions
             questionsArray = data
           } else if (data && typeof data === 'object' && Array.isArray(data.questions)) {
+            // Object with questions property
             questionsArray = data.questions
           } else {
             throw new Error("File JSON phải chứa mảng câu hỏi hoặc object với property 'questions'")
@@ -269,6 +131,7 @@ export function EnhancedQuizFileUploader({ onQuizCreated }: EnhancedQuizFileUplo
           }
 
           const questions: Question[] = questionsArray.map((q: any, index: number) => {
+            // Validate required fields
             if (!q || typeof q !== 'object') {
               throw new Error(`Câu hỏi ${index + 1} không hợp lệ`)
             }
@@ -285,6 +148,7 @@ export function EnhancedQuizFileUploader({ onQuizCreated }: EnhancedQuizFileUplo
               throw new Error(`Câu hỏi ${index + 1} cần ít nhất 2 lựa chọn`)
             }
             
+            // Handle both 'correct' and 'correctAnswer' fields
             let correctAnswer = 0
             if (typeof q.correctAnswer === 'number') {
               correctAnswer = q.correctAnswer
@@ -292,8 +156,9 @@ export function EnhancedQuizFileUploader({ onQuizCreated }: EnhancedQuizFileUplo
               correctAnswer = q.correct
             }
             
+            // Validate correct answer index
             if (correctAnswer < 0 || correctAnswer >= q.options.length) {
-              correctAnswer = 0
+              correctAnswer = 0 // Default to first option if invalid
             }
             
             return {
@@ -306,9 +171,9 @@ export function EnhancedQuizFileUploader({ onQuizCreated }: EnhancedQuizFileUplo
           })
 
           resolve({
-            title: Array.isArray(data) ? undefined : data.title,
-            description: Array.isArray(data) ? undefined : data.description,
-            timeLimit: Array.isArray(data) ? undefined : data.timeLimit,
+            title: Array.isArray(data) ? "Quiz đã import" : (data.title || "Quiz đã import"),
+            description: Array.isArray(data) ? "Đã import từ file JSON" : (data.description || "Đã import từ file JSON"),
+            timeLimit: Array.isArray(data) ? 30 : (data.timeLimit || 30),
             questions,
           })
         } catch (error: any) {
@@ -320,10 +185,17 @@ export function EnhancedQuizFileUploader({ onQuizCreated }: EnhancedQuizFileUplo
     })
   }
 
-  // Other parsing functions remain the same...
   const parseWordFile = async (file: File): Promise<ParsedQuizData> => {
     return new Promise(async (resolve, reject) => {
       try {
+        // Try to load mammoth dynamically
+        let mammoth: any
+        try {
+          mammoth = await import('mammoth')
+        } catch (e) {
+          throw new Error('Thư viện xử lý Word file chưa được cài đặt. Vui lòng liên hệ admin.')
+        }
+        
         const arrayBuffer = await file.arrayBuffer()
         const result = await mammoth.extractRawText({ arrayBuffer })
         const text = result.value
@@ -345,8 +217,16 @@ export function EnhancedQuizFileUploader({ onQuizCreated }: EnhancedQuizFileUplo
   const parsePdfFile = async (file: File): Promise<ParsedQuizData> => {
     return new Promise(async (resolve, reject) => {
       try {
+        // Try to load PDF.js dynamically
+        let pdfjsLib: any
+        try {
+          pdfjsLib = await import('pdfjs-dist')
+        } catch (e) {
+          throw new Error('Thư viện xử lý PDF chưa được cài đặt. Vui lòng liên hệ admin.')
+        }
+        
         const arrayBuffer = await file.arrayBuffer()
-        const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
         
         let fullText = ""
         for (let i = 1; i <= pdf.numPages; i++) {
@@ -373,6 +253,14 @@ export function EnhancedQuizFileUploader({ onQuizCreated }: EnhancedQuizFileUplo
   const parseExcelFile = async (file: File): Promise<ParsedQuizData> => {
     return new Promise(async (resolve, reject) => {
       try {
+        // Try to load XLSX dynamically
+        let XLSX: any
+        try {
+          XLSX = await import('xlsx')
+        } catch (e) {
+          throw new Error('Thư viện xử lý Excel chưa được cài đặt. Vui lòng liên hệ admin.')
+        }
+        
         const arrayBuffer = await file.arrayBuffer()
         const workbook = XLSX.read(arrayBuffer, { type: 'array' })
         const sheetName = workbook.SheetNames[0]
@@ -381,7 +269,7 @@ export function EnhancedQuizFileUploader({ onQuizCreated }: EnhancedQuizFileUplo
         
         const questions: Question[] = []
         
-        for (let i = 1; i < data.length; i++) {
+        for (let i = 1; i < data.length; i++) { // Skip header row
           const row = data[i] as any[]
           if (row && row[0] && row[1] && row[2] && row[3] && row[4]) {
             const question = String(row[0]).trim()
@@ -434,7 +322,7 @@ export function EnhancedQuizFileUploader({ onQuizCreated }: EnhancedQuizFileUplo
       try {
         const lines = block.split('\n').map(line => line.trim()).filter(line => line)
         
-        if (lines.length < 6) return
+        if (lines.length < 6) return // Not enough lines for a complete question
         
         const questionLine = lines.find(line => 
           line.toLowerCase().startsWith('question:') || 
@@ -496,340 +384,167 @@ export function EnhancedQuizFileUploader({ onQuizCreated }: EnhancedQuizFileUplo
     return questions
   }
 
-  const handleSaveQuiz = async (asDraft: boolean = false) => {
-    if (!parsedData || !user) return
+  const triggerFileUpload = () => {
+    fileInputRef.current?.click()
+  }
 
-    setSaving(true)
-    try {
-      const quiz: Omit<Quiz, "id"> = {
-        title: quizMetadata.title,
-        description: quizMetadata.description,
-        timeLimit: quizMetadata.timeLimit,
-        questions: parsedData.questions,
-        createdBy: user.id,
-        createdAt: new Date().toISOString(),
-        isActive: !asDraft && quizMetadata.isActive
-      }
-
-      const quizId = await QuizService.createQuiz(quiz)
-      
-      setShowPreviewModal(false)
-      setShowMetadataModal(false)
-      setParsedData(null)
-      
-      if (onQuizCreated) {
-        // Get the full quiz object
-        const fullQuiz = await QuizService.getQuizById(quizId)
-        if (fullQuiz) {
-          onQuizCreated(fullQuiz)
-        }
-      }
-      
-      // Redirect to quiz list or edit page
-      router.push(asDraft ? `/admin/quiz/edit/${quizId}` : "/admin/quizzes")
-      
-      // Show success toast
-      success(asDraft ? "Đã lưu bài thi dưới dạng nháp" : "Đã xuất bản bài thi thành công")
-      
-    } catch (error) {
-      showError("Có lỗi khi lưu bài thi")
-    } finally {
-      setSaving(false)
-    }
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes'
+    const k = 1024
+    const sizes = ['Bytes', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
   return (
-    <div className="space-y-6">
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Upload className="h-5 w-5" />
-            Import Quiz từ File
-            {parsedData && (
-              <Badge variant="secondary" className="ml-auto">
-                {parsedData.questions.length} câu hỏi
-              </Badge>
-            )}
-          </CardTitle>
-          <CardDescription>
-            Upload file để tự động tạo câu hỏi. Hỗ trợ các định dạng: JSON, Word (.docx), PDF, Excel (.xlsx)
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Supported formats */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-            {supportedFormats.map((format) => (
-              <div key={format.type} className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                <format.icon className="h-6 w-6 text-muted-foreground" />
-                <div className="flex-1">
-                  <Badge variant="outline" className={format.color}>
-                    {format.extension}
-                  </Badge>
-                  <p className="text-xs text-muted-foreground mt-1">{format.description}</p>
-                </div>
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Upload className="h-5 w-5" />
+          Import Quiz từ File
+        </CardTitle>
+        <CardDescription>
+          Upload file để tự động tạo câu hỏi. Hỗ trợ các định dạng: JSON, Word (.docx), PDF, Excel (.xlsx)
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* File info */}
+        {fileInfo && (
+          <div className="p-3 bg-slate-50 rounded-lg border">
+            <div className="flex items-center gap-2">
+              <File className="h-4 w-4 text-slate-600" />
+              <span className="text-sm font-medium">{fileInfo.name}</span>
+              <Badge variant="outline">{formatFileSize(fileInfo.size)}</Badge>
+            </div>
+          </div>
+        )}
+
+        {/* Supported formats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {supportedFormats.map((format) => (
+            <div key={format.type} className="flex items-center space-x-2 p-3 border rounded-lg">
+              <format.icon className="h-5 w-5 text-muted-foreground" />
+              <div className="flex-1">
+                <Badge variant="outline">{format.extension}</Badge>
+                <p className="text-xs text-muted-foreground mt-1">{format.description}</p>
               </div>
-            ))}
+            </div>
+          ))}
+        </div>
+
+        {/* Upload button */}
+        <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-muted-foreground/25 rounded-lg hover:border-muted-foreground/50 transition-colors">
+          <Upload className="h-12 w-12 text-muted-foreground mb-4" />
+          <Button onClick={triggerFileUpload} disabled={loading} size="lg" className="mb-2">
+            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {loading ? "Đang xử lý..." : "Chọn File để Upload"}
+          </Button>
+          <p className="text-sm text-muted-foreground">
+            Kéo thả file hoặc click để chọn • Tối đa 10MB
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Hỗ trợ: .json, .docx, .pdf, .xlsx, .xls
+          </p>
+        </div>
+
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json,.docx,.pdf,.xlsx,.xls"
+          onChange={handleFileUpload}
+          className="hidden"
+        />
+
+        {/* Status messages */}
+        {error && (
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        {success && (
+          <Alert>
+            <CheckCircle className="h-4 w-4" />
+            <AlertDescription>{success}</AlertDescription>
+          </Alert>
+        )}
+
+        {/* Format examples */}
+        <div className="mt-6 space-y-4">
+          <div>
+            <h4 className="text-sm font-medium mb-2">Ví dụ định dạng JSON:</h4>
+            <pre className="text-xs bg-muted p-3 rounded-md overflow-x-auto">
+{`// Format 1: Object với questions array
+{
+  "title": "Quiz Toán học",
+  "description": "Bài kiểm tra kiến thức toán học",
+  "timeLimit": 30,
+  "questions": [
+    {
+      "id": 1,
+      "question": "2 + 2 = ?",
+      "options": ["3", "4", "5", "6"],
+      "correctAnswer": 1,
+      "explanation": "2 + 2 = 4"
+    }
+  ]
+}
+
+// Format 2: Array trực tiếp (như file quiz-python.json)
+[
+  {
+    "id": 1,
+    "question": "Python là gì?",
+    "options": ["A. Ngôn ngữ lập trình", "B. Con rắn", "C. Framework", "D. Database"],
+    "correct": 0,
+    "explanation": "Python là ngôn ngữ lập trình bậc cao"
+  }
+]`}
+            </pre>
           </div>
 
-          {/* Upload area */}
-          <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-muted-foreground/25 rounded-lg hover:border-muted-foreground/50 transition-all duration-200 bg-gradient-to-br from-background to-muted/20">
-            {loading ? (
-              <div className="flex flex-col items-center space-y-4">
-                <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                <div className="w-64">
-                  <Progress value={uploadProgress} className="w-full" />
-                  <p className="text-sm text-center mt-2">Đang xử lý... {uploadProgress}%</p>
-                </div>
-              </div>
-            ) : (
-              <>
-                <Upload className="h-12 w-12 text-muted-foreground mb-4" />
-                <Button onClick={() => fileInputRef.current?.click()} size="lg" className="mb-2">
-                  <FileCheck className="mr-2 h-4 w-4" />
-                  Chọn File để Upload
-                </Button>
-                <p className="text-sm text-muted-foreground">
-                  Kéo thả file hoặc click để chọn • Tối đa 10MB
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Hỗ trợ: .json, .docx, .pdf, .xlsx, .xls
-                </p>
-              </>
-            )}
-          </div>
-
-          {/* Hidden file input */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".json,.docx,.pdf,.xlsx,.xls"
-            onChange={handleFileUpload}
-            className="hidden"
-          />
-
-          {/* Status messages */}
-          {error && (
-            <Alert variant="destructive">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
-          {/* Import statistics */}
-          {parsedData?.metadata && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5" />
-                  Thống kê Import
-                  <div className="ml-auto flex gap-2">
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
-                      onClick={() => setShowPreviewModal(true)}
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
-                      Xem trước
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      onClick={() => setShowMetadataModal(true)}
-                    >
-                      <Save className="h-4 w-4 mr-1" />
-                      Xuất bản
-                    </Button>
-                  </div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-primary">{parsedData.metadata.questionCount}</div>
-                    <div className="text-sm text-muted-foreground">Câu hỏi</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-green-600">{parsedData.metadata.hasExplanations}</div>
-                    <div className="text-sm text-muted-foreground">Có giải thích</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-600">{parsedData.metadata.avgOptionsPerQuestion.toFixed(1)}</div>
-                    <div className="text-sm text-muted-foreground">Lựa chọn TB</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-orange-600">{quizMetadata.timeLimit}</div>
-                    <div className="text-sm text-muted-foreground">Phút</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Preview Modal */}
-      <Dialog open={showPreviewModal} onOpenChange={setShowPreviewModal}>
-        <DialogContent className="max-w-4xl max-h-[90vh]">
-          <DialogHeader>
-            <DialogTitle>Xem trước Quiz</DialogTitle>
-            <DialogDescription>
-              Kiểm tra lại câu hỏi trước khi xuất bản
-            </DialogDescription>
-          </DialogHeader>
-          
-          <ScrollArea className="max-h-[60vh] pr-4">
-            {parsedData?.questions.map((question, index) => (
-              <Card key={question.id} className="mb-4">
-                <CardHeader className="pb-2">
-                  <div className="flex items-start justify-between">
-                    <Badge variant="outline">Câu {index + 1}</Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="font-medium mb-3">{question.question}</p>
-                  <div className="space-y-2">
-                    {question.options.map((option, optIndex) => (
-                      <div 
-                        key={optIndex} 
-                        className={`p-2 rounded border ${
-                          optIndex === question.correctAnswer 
-                            ? 'bg-green-50 border-green-200 text-green-800' 
-                            : 'bg-gray-50'
-                        }`}
-                      >
-                        <span className="font-medium mr-2">
-                          {String.fromCharCode(65 + optIndex)}.
-                        </span>
-                        {option}
-                        {optIndex === question.correctAnswer && (
-                          <CheckCircle className="h-4 w-4 inline ml-2 text-green-600" />
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  {question.explanation && (
-                    <div className="mt-3 p-3 bg-blue-50 rounded border-l-4 border-blue-400">
-                      <p className="text-sm text-blue-800">
-                        <strong>Giải thích:</strong> {question.explanation}
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </ScrollArea>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowPreviewModal(false)}>
-              Đóng
-            </Button>
-            <Button onClick={() => {
-              setShowPreviewModal(false)
-              setShowMetadataModal(true)
-            }}>
-              <Edit3 className="h-4 w-4 mr-2" />
-              Chỉnh sửa thông tin
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Metadata Modal */}
-      <Dialog open={showMetadataModal} onOpenChange={setShowMetadataModal}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Thông tin bài thi</DialogTitle>
-            <DialogDescription>
-              Điền thông tin chi tiết cho bài thi trước khi xuất bản
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="title">Tiêu đề bài thi *</Label>
-              <Input
-                id="title"
-                value={quizMetadata.title}
-                onChange={(e) => setQuizMetadata(prev => ({ ...prev, title: e.target.value }))}
-                placeholder="Nhập tiêu đề bài thi"
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="description">Mô tả</Label>
-              <Textarea
-                id="description"
-                value={quizMetadata.description}
-                onChange={(e) => setQuizMetadata(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Mô tả nội dung bài thi"
-                rows={3}
-              />
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="timeLimit">Thời gian (phút)</Label>
-                <Input
-                  id="timeLimit"
-                  type="number"
-                  min="1"
-                  value={quizMetadata.timeLimit}
-                  onChange={(e) => setQuizMetadata(prev => ({ ...prev, timeLimit: parseInt(e.target.value) || 30 }))}
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="subject">Môn học</Label>
-                <Input
-                  id="subject"
-                  value={quizMetadata.subject}
-                  onChange={(e) => setQuizMetadata(prev => ({ ...prev, subject: e.target.value }))}
-                  placeholder="VD: Toán, Lý, Hóa..."
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="grade">Lớp/Cấp độ</Label>
-                <Input
-                  id="grade"
-                  value={quizMetadata.grade}
-                  onChange={(e) => setQuizMetadata(prev => ({ ...prev, grade: e.target.value }))}
-                  placeholder="VD: Lớp 10, Beginner..."
-                />
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="isActive"
-                checked={quizMetadata.isActive}
-                onCheckedChange={(checked) => setQuizMetadata(prev => ({ ...prev, isActive: checked }))}
-              />
-              <Label htmlFor="isActive">Kích hoạt ngay sau khi tạo</Label>
+          <div>
+            <h4 className="text-sm font-medium mb-2">Định dạng Excel (.xlsx):</h4>
+            <div className="text-xs bg-muted p-3 rounded-md">
+              <p className="mb-2">Cấu trúc bảng tính:</p>
+              <ul className="space-y-1">
+                <li>Cột A: Câu hỏi</li>
+                <li>Cột B: Lựa chọn A</li>
+                <li>Cột C: Lựa chọn B</li>
+                <li>Cột D: Lựa chọn C</li>
+                <li>Cột E: Lựa chọn D</li>
+                <li>Cột F: Đáp án đúng (A, B, C, hoặc D)</li>
+                <li>Cột G: Giải thích (tùy chọn)</li>
+              </ul>
             </div>
           </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowMetadataModal(false)}>
-              Hủy
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={() => handleSaveQuiz(true)}
-              disabled={saving || !quizMetadata.title.trim()}
-            >
-              {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
-              Lưu nháp
-            </Button>
-            <Button 
-              onClick={() => handleSaveQuiz(false)}
-              disabled={saving || !quizMetadata.title.trim()}
-            >
-              {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
-              Xuất bản
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+          <div>
+            <h4 className="text-sm font-medium mb-2">Định dạng Word/PDF:</h4>
+            <div className="text-xs bg-muted p-3 rounded-md">
+              <pre>
+{`Question: What is 2+2?
+A) 3
+B) 4
+C) 5  
+D) 6
+Answer: B
+Explanation: 2+2 equals 4
+
+Question: Capital of Vietnam?
+A) Hanoi
+B) Ho Chi Minh City
+C) Da Nang
+D) Hue
+Answer: A
+Explanation: Hanoi is the capital`}
+              </pre>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   )
 }

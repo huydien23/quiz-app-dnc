@@ -18,6 +18,7 @@ import Link from "next/link"
 import { useToast } from "@/components/toast-provider"
 import { formatDistanceToNow } from "date-fns"
 import { vi } from "date-fns/locale"
+import { LogoutHandler } from "@/components/logout-handler"
 
 interface DashboardStats {
   totalQuizzes: number
@@ -337,6 +338,7 @@ export function AdminDashboard() {
 
   return (
     <div className="space-y-6">
+      <LogoutHandler />
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -348,12 +350,20 @@ export function AdminDashboard() {
             <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
             Làm mới
           </Button>
-          <Link href="/admin/quiz/create">
-            <Button className="btn-primary">
-              <Plus className="h-4 w-4 mr-2" />
-              Tạo bài thi
-            </Button>
-          </Link>
+          <div className="flex gap-2">
+            <Link href="/admin/quiz/create">
+              <Button variant="outline" className="btn-secondary">
+                <Plus className="h-4 w-4 mr-2" />
+                Tạo bài thi
+              </Button>
+            </Link>
+            <Link href="/admin/quiz/quick">
+              <Button className="btn-primary">
+                <Plus className="h-4 w-4 mr-2" />
+                Tạo nhanh
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 

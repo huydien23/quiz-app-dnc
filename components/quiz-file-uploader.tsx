@@ -8,10 +8,35 @@ import { Badge } from "@/components/ui/badge"
 import { Upload, FileText, File, FileSpreadsheet, Loader2, CheckCircle } from "lucide-react"
 import type { Question } from "@/lib/types"
 
-// Import the libraries dynamically to avoid SSR issues
-let mammoth: any = null
-let pdfjs: any = null
-let XLSX: any = null
+// Import the libraries directly
+import mammoth from 'mammoth'
+import * as XLSX from 'xlsx'
+
+// Dynamic import for PDF.js to avoid SSR issues
+const loadPdfJs = async () => {
+  if (typeof window === 'undefined') return null
+  
+  try {
+    const pdfjsLib = await import('pdfjs-dist')
+    
+    // Configure worker
+    if (pdfjsLib.GlobalWorkerOptions) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
+    }
+    
+    return pdfjsLib
+  } catch (error) {
+    console.error('Error loading PDF.js:', error)
+    return null
+  }
+}
+
+// Simple function to check if libraries are loaded
+const checkLibraries = () => {
+  if (!mammoth || !XLSX) {
+    throw new Error('Không thể load thư viện cần thiết')
+  }
+}
 
 interface QuizFileUploaderProps {
   onQuestionsImported: (questions: Question[]) => void
@@ -37,27 +62,6 @@ export function QuizFileUploader({ onQuestionsImported }: QuizFileUploaderProps)
     { type: "Excel", extension: ".xlsx", icon: FileSpreadsheet, description: "Microsoft Excel spreadsheet" },
   ]
 
-  const loadLibraries = async () => {
-    try {
-      if (!mammoth) {
-        mammoth = await import('mammoth')
-      }
-      if (!pdfjs) {
-        const pdfjsModule = await import('pdfjs-dist')
-        pdfjs = pdfjsModule
-        // Set the worker source
-        if (typeof window !== 'undefined' && pdfjs.GlobalWorkerOptions) {
-          pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`
-        }
-      }
-      if (!XLSX) {
-        XLSX = await import('xlsx')
-      }
-    } catch (error) {
-      console.warn('Error loading libraries:', error)
-      throw new Error('Không thể load thư viện cần thiết')
-    }
-  }
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -68,6 +72,9 @@ export function QuizFileUploader({ onQuestionsImported }: QuizFileUploaderProps)
     setSuccess("")
 
     try {
+      // Check libraries first
+      checkLibraries()
+      
       // Check file size (10MB limit)
       if (file.size > 10 * 1024 * 1024) {
         throw new Error("File quá lớn. Vui lòng chọn file nhỏ hơn 10MB")
@@ -85,16 +92,13 @@ export function QuizFileUploader({ onQuestionsImported }: QuizFileUploaderProps)
           parsedData = await parseJsonFile(file)
           break
         case 'docx':
-          await loadLibraries()
           parsedData = await parseWordFile(file)
           break
         case 'pdf':
-          await loadLibraries()
           parsedData = await parsePdfFile(file)
           break
         case 'xlsx':
         case 'xls':
-          await loadLibraries()
           parsedData = await parseExcelFile(file)
           break
         default:
@@ -216,6 +220,7 @@ export function QuizFileUploader({ onQuestionsImported }: QuizFileUploaderProps)
   const parseWordFile = async (file: File): Promise<ParsedQuizData> => {
     return new Promise(async (resolve, reject) => {
       try {
+        
         const arrayBuffer = await file.arrayBuffer()
         const result = await mammoth.extractRawText({ arrayBuffer })
         const text = result.value
@@ -246,8 +251,14 @@ export function QuizFileUploader({ onQuestionsImported }: QuizFileUploaderProps)
   const parsePdfFile = async (file: File): Promise<ParsedQuizData> => {
     return new Promise(async (resolve, reject) => {
       try {
+        // Load PDF.js dynamically
+        const pdfjsLib = await loadPdfJs()
+        if (!pdfjsLib) {
+          throw new Error('Không thể load thư viện PDF.js')
+        }
+        
         const arrayBuffer = await file.arrayBuffer()
-        const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
         
         let fullText = ""
         for (let i = 1; i <= pdf.numPages; i++) {
@@ -274,6 +285,7 @@ export function QuizFileUploader({ onQuestionsImported }: QuizFileUploaderProps)
   const parseExcelFile = async (file: File): Promise<ParsedQuizData> => {
     return new Promise(async (resolve, reject) => {
       try {
+        
         const arrayBuffer = await file.arrayBuffer()
         const workbook = XLSX.read(arrayBuffer, { type: 'array' })
         const sheetName = workbook.SheetNames[0]

@@ -104,6 +104,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     await signOut(auth)
+    // Clear local state immediately
+    setUser(null)
+    setFirebaseUser(null)
   }
 
   const refreshUser = async () => {

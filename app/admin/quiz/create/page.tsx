@@ -15,6 +15,7 @@ import { ProtectedRoute } from "@/components/protected-route"
 import { QuizFileUploader } from "@/components/quiz-file-uploader"
 import { QuizTemplateDownloader } from "@/components/quiz-template-downloader"
 import { QuizPreview } from "@/components/quiz-preview"
+import { QuickQuizCreator } from "@/components/quick-quiz-creator"
 import { QuizService } from "@/lib/quiz-service"
 import { useAuth } from "@/hooks/use-auth"
 import { ArrowLeft, Save, Eye, Upload, Download } from "lucide-react"
@@ -117,6 +118,7 @@ export default function CreateQuizPage() {
             <TabsList>
               <TabsTrigger value="basic">Thông tin cơ bản</TabsTrigger>
               <TabsTrigger value="questions">Câu hỏi</TabsTrigger>
+              <TabsTrigger value="quick">Tạo nhanh</TabsTrigger>
               <TabsTrigger value="upload">Tải lên file</TabsTrigger>
             </TabsList>
 
@@ -198,6 +200,10 @@ export default function CreateQuizPage() {
                   </div>
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            <TabsContent value="quick" className="space-y-6">
+              <QuickQuizCreator />
             </TabsContent>
 
             <TabsContent value="upload" className="space-y-6">

@@ -44,3 +44,16 @@ export interface QuizResult {
   totalQuestions: number
   percentage: number
 }
+
+export interface LeaderboardEntry {
+  userId: string
+  userName: string
+  userEmail: string
+  totalQuizzes: number
+  totalScore: number
+  averageScore: number
+  bestScore: number
+  totalTimeSpent: number
+  rank: number
+  lastActivity: string
+}

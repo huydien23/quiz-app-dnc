@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { AuthProvider } from "@/hooks/use-auth"
 import { ToastProvider } from "@/components/toast-provider"
 import { Navbar } from "@/components/navbar"
+import { ErrorBoundary } from "@/components/error-boundary"
 import { Suspense } from "react"
 import "./globals.css"
 
@@ -44,11 +45,13 @@ export default function RootLayout({
     <html lang="vi" suppressHydrationWarning>
       <body className={`${nunitoSans.variable} ${openSans.variable} ${poppins.variable} font-sans`} suppressHydrationWarning>
         <Suspense fallback={<div>Loading...</div>}>
-          <AuthProvider>
-            <ToastProvider>
-              <main className="min-h-screen bg-background">{children}</main>
-            </ToastProvider>
-          </AuthProvider>
+          <ErrorBoundary>
+            <AuthProvider>
+              <ToastProvider>
+                <main className="min-h-screen bg-background">{children}</main>
+              </ToastProvider>
+            </AuthProvider>
+          </ErrorBoundary>
         </Suspense>
         <Analytics />
       </body>
