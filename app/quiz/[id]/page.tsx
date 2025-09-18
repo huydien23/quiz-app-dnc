@@ -14,7 +14,7 @@ import { ProtectedRoute } from "@/components/protected-route"
 import { QuizService } from "@/lib/quiz-service"
 import { useAuth } from "@/hooks/use-auth"
 import type { Quiz, QuizAttempt, Question } from "@/lib/types"
-import { Clock, AlertCircle, CheckCircle, Circle } from "lucide-react"
+import { Clock, AlertCircle, CheckCircle, Circle, BookOpen, Target, Trophy, Users, Timer, Play, Pause, RotateCcw } from "lucide-react"
 
 // Number of questions to show in exam
 const EXAM_QUESTION_COUNT = 40
@@ -198,86 +198,228 @@ export default function QuizPage() {
   return (
     <ProtectedRoute>
       <div className="container mx-auto px-4 py-6 max-w-6xl">
-        {/* Sticky Header */}
-        <div className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10 pb-4 mb-6 border-b">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">{quiz.title}</h1>
-              <p className="text-sm text-muted-foreground">
-                Đã chọn ngẫu nhiên {examSession.selectedQuestions.length} câu từ tổng số {quiz.questions.length} câu
-              </p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className={`flex items-center text-lg font-bold ${getTimeColor(timeLeft)}`}>
-                <Clock className="h-5 w-5 mr-2" />
-                {formatTime(timeLeft)}
+        {/* Enhanced Sticky Header - Mobile Optimized */}
+        <div className="sticky top-0 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-800 text-white shadow-2xl z-10 rounded-b-2xl mb-4 md:mb-8">
+          <div className="px-4 md:px-6 py-4 md:py-6">
+            {/* Mobile Layout */}
+            <div className="md:hidden">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
+                    <BookOpen className="h-6 w-6" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h1 className="text-lg font-bold truncate">{quiz.title}</h1>
+                    <p className="text-blue-100 text-sm">
+                      {examSession.selectedQuestions.length}/{quiz.questions.length} câu
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="text-right">
+                  <div className="flex items-center space-x-1 mb-1">
+                    <Timer className="h-4 w-4" />
+                    <span className={`text-xl font-bold ${getTimeColor(timeLeft).replace('text-', 'text-')}`}>
+                      {formatTime(timeLeft)}
+                    </span>
+                  </div>
+                  <p className="text-blue-100 text-xs">Thời gian</p>
+                </div>
               </div>
-              <Badge variant="outline" className="text-sm">
-                {answeredQuestions}/{examSession.selectedQuestions.length} câu
-              </Badge>
+              
+              {/* Mobile Progress */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-blue-100 text-sm font-medium">Tiến độ</span>
+                  <span className="text-blue-100 text-sm font-medium">{Math.round(progress)}%</span>
+                </div>
+                <div className="w-full bg-white/20 rounded-full h-2">
+                  <div 
+                    className="bg-gradient-to-r from-green-400 to-green-500 h-2 rounded-full transition-all duration-500 ease-out"
+                    style={{ width: `${progress}%` }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Desktop Layout */}
+            <div className="hidden md:block">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 rounded-xl bg-white/20 backdrop-blur-sm">
+                    <BookOpen className="h-8 w-8" />
+                  </div>
+                  <div>
+                    <h1 className="text-3xl font-bold">{quiz.title}</h1>
+                    <p className="text-blue-100 text-lg">
+                      Đã chọn ngẫu nhiên {examSession.selectedQuestions.length} câu từ tổng số {quiz.questions.length} câu
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-8">
+                  {/* Timer */}
+                  <div className="text-center">
+                    <div className="flex items-center justify-center space-x-2 mb-2">
+                      <Timer className="h-6 w-6" />
+                      <span className={`text-3xl font-bold ${getTimeColor(timeLeft).replace('text-', 'text-')}`}>
+                        {formatTime(timeLeft)}
+                      </span>
+                    </div>
+                    <p className="text-blue-100 text-sm">Thời gian còn lại</p>
+                  </div>
+                  
+                  {/* Progress */}
+                  <div className="text-center">
+                    <div className="flex items-center justify-center space-x-2 mb-2">
+                      <Target className="h-6 w-6" />
+                      <span className="text-3xl font-bold">
+                        {answeredQuestions}/{examSession.selectedQuestions.length}
+                      </span>
+                    </div>
+                    <p className="text-blue-100 text-sm">Câu đã trả lời</p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Desktop Progress Bar */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-blue-100 font-medium">Tiến độ làm bài</span>
+                  <span className="text-blue-100 font-medium">{Math.round(progress)}%</span>
+                </div>
+                <div className="w-full bg-white/20 rounded-full h-4">
+                  <div 
+                    className="bg-gradient-to-r from-green-400 to-green-500 h-4 rounded-full transition-all duration-500 ease-out shadow-lg"
+                    style={{ width: `${progress}%` }}
+                  ></div>
+                </div>
+              </div>
             </div>
           </div>
-          <Progress value={progress} className="h-3" />
         </div>
 
-        {/* Question Navigation */}
-        <div className="mb-6">
-          <div className="flex flex-wrap gap-2">
-            {examSession.selectedQuestions.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => {
-                  const element = document.getElementById(`question-${index}`)
-                  element?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                }}
-                className={`w-10 h-10 rounded-lg border-2 flex items-center justify-center text-sm font-medium transition-colors ${
-                  examSession.answers[index] !== -1
-                    ? 'bg-green-100 border-green-500 text-green-700 hover:bg-green-200'
-                    : 'bg-gray-50 border-gray-300 text-gray-600 hover:bg-gray-100'
-                }`}
-              >
-                {examSession.answers[index] !== -1 ? (
-                  <CheckCircle className="h-4 w-4" />
-                ) : (
-                  <Circle className="h-4 w-4" />
-                )}
-              </button>
-            ))}
+        {/* Enhanced Question Navigation - Mobile Optimized */}
+        <div className="mb-6 md:mb-8">
+          <div className="bg-white rounded-2xl shadow-lg p-4 md:p-6 border border-slate-200">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base md:text-lg font-semibold text-slate-800">Điều hướng câu hỏi</h3>
+              <div className="hidden md:flex items-center space-x-2 text-sm text-slate-600">
+                <div className="flex items-center space-x-1">
+                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  <span>Đã trả lời</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <div className="w-3 h-3 rounded-full bg-slate-300"></div>
+                  <span>Chưa trả lời</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Mobile Legend */}
+            <div className="md:hidden flex items-center justify-center space-x-4 mb-4 text-xs text-slate-600">
+              <div className="flex items-center space-x-1">
+                <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                <span>Đã trả lời</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <div className="w-2 h-2 rounded-full bg-slate-300"></div>
+                <span>Chưa trả lời</span>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-8 md:grid-cols-10 gap-1 md:gap-2">
+              {examSession.selectedQuestions.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => {
+                    const element = document.getElementById(`question-${index}`)
+                    element?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                  }}
+                  className={`w-8 h-8 md:w-12 md:h-12 rounded-lg md:rounded-xl border-2 flex items-center justify-center text-xs md:text-sm font-bold transition-all duration-200 hover:scale-105 ${
+                    examSession.answers[index] !== -1
+                      ? 'bg-gradient-to-br from-green-400 to-green-500 border-green-500 text-white shadow-lg'
+                      : 'bg-slate-50 border-slate-300 text-slate-600 hover:bg-slate-100 hover:border-slate-400'
+                  }`}
+                >
+                  {examSession.answers[index] !== -1 ? (
+                    <CheckCircle className="h-3 w-3 md:h-5 md:w-5" />
+                  ) : (
+                    <span className="text-xs md:text-sm">{index + 1}</span>
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Questions List */}
-        <div className="space-y-6 mb-8">
+        {/* Enhanced Questions List - Mobile Optimized */}
+        <div className="space-y-6 md:space-y-8 mb-8">
           {examSession.selectedQuestions.map((question, index) => (
-            <Card key={index} id={`question-${index}`} className="scroll-mt-32">
-              <CardHeader className="pb-4">
+            <Card key={index} id={`question-${index}`} className="scroll-mt-32 border-0 shadow-xl bg-gradient-to-br from-white to-slate-50">
+              <CardHeader className="pb-4 md:pb-6">
                 <div className="flex items-start justify-between">
-                  <CardTitle className="text-lg leading-relaxed">
-                    <Badge variant="outline" className="mr-3">
-                      {index + 1}
-                    </Badge>
-                    {question.question}
-                  </CardTitle>
+                  <div className="flex items-start space-x-3 md:space-x-4">
+                    <div className="flex-shrink-0">
+                      <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center font-bold text-base md:text-lg">
+                        {index + 1}
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="text-lg md:text-xl leading-relaxed text-slate-800 mb-2">
+                        {question.question}
+                      </CardTitle>
+                      <div className="flex items-center space-x-2 text-xs md:text-sm text-slate-600">
+                        <BookOpen className="h-3 w-3 md:h-4 md:w-4" />
+                        <span>Câu hỏi trắc nghiệm</span>
+                        {examSession.answers[index] !== -1 && (
+                          <>
+                            <span>•</span>
+                            <span className="text-green-600 font-medium">Đã trả lời</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                   {examSession.answers[index] !== -1 && (
-                    <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-1" />
+                    <div className="flex-shrink-0">
+                      <div className="p-1.5 md:p-2 rounded-full bg-green-100">
+                        <CheckCircle className="h-4 w-4 md:h-6 md:w-6 text-green-600" />
+                      </div>
+                    </div>
                   )}
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="px-4 md:px-6">
                 <RadioGroup
                   value={examSession.answers[index]?.toString() || ""}
                   onValueChange={(value) => handleAnswerChange(index, Number.parseInt(value))}
-                  className="space-y-3"
+                  className="space-y-3 md:space-y-4"
                 >
                   {question.options.map((option, optionIndex) => (
-                    <div key={optionIndex} className="flex items-start space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                      <RadioGroupItem value={optionIndex.toString()} id={`q${index}-option-${optionIndex}`} className="mt-1" />
+                    <div 
+                      key={optionIndex} 
+                      className={`flex items-start space-x-3 md:space-x-4 p-3 md:p-4 rounded-lg md:rounded-xl border-2 transition-all duration-200 hover:shadow-md ${
+                        examSession.answers[index] === optionIndex
+                          ? 'bg-blue-50 border-blue-300 shadow-md'
+                          : 'bg-white border-slate-200 hover:border-slate-300'
+                      }`}
+                    >
+                      <RadioGroupItem 
+                        value={optionIndex.toString()} 
+                        id={`q${index}-option-${optionIndex}`} 
+                        className="mt-1 w-4 h-4 md:w-5 md:h-5" 
+                      />
                       <Label 
                         htmlFor={`q${index}-option-${optionIndex}`} 
-                        className="flex-1 cursor-pointer leading-relaxed"
+                        className="flex-1 cursor-pointer leading-relaxed text-slate-700"
                       >
-                        <span className="font-medium mr-2">{String.fromCharCode(65 + optionIndex)}.</span>
-                        {option}
+                        <div className="flex items-start space-x-2 md:space-x-3">
+                          <span className="font-bold text-blue-600 text-base md:text-lg">
+                            {String.fromCharCode(65 + optionIndex)}.
+                          </span>
+                          <span className="text-sm md:text-base">{option}</span>
+                        </div>
                       </Label>
                     </div>
                   ))}
@@ -287,31 +429,127 @@ export default function QuizPage() {
           ))}
         </div>
 
-        {/* Submit Section */}
-        <div className="sticky bottom-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t pt-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <p className="font-medium">
-                    Đã trả lời: {answeredQuestions}/{examSession.selectedQuestions.length} câu
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Còn lại: {examSession.selectedQuestions.length - answeredQuestions} câu chưa trả lời
-                  </p>
-                  <Progress value={progress} className="w-64 h-2" />
+        {/* Enhanced Submit Section - Mobile Optimized */}
+        <div className="sticky bottom-0 bg-gradient-to-r from-slate-50 to-white shadow-2xl border-t border-slate-200 pt-4 md:pt-6">
+          <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-4 md:p-6">
+            {/* Mobile Layout */}
+            <div className="md:hidden">
+              <div className="flex items-center justify-between mb-4">
+                <div className="text-center">
+                  <div className="flex items-center justify-center space-x-1 mb-1">
+                    <Target className="h-4 w-4 text-blue-600" />
+                    <span className="text-lg font-bold text-slate-800">
+                      {answeredQuestions}/{examSession.selectedQuestions.length}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-600">Đã trả lời</p>
                 </div>
+                
+                <div className="text-center">
+                  <div className="flex items-center justify-center space-x-1 mb-1">
+                    <Timer className="h-4 w-4 text-green-600" />
+                    <span className="text-lg font-bold text-slate-800">
+                      {formatTime(timeLeft)}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-600">Thời gian</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-2">
                 <Button 
-                  size="lg"
-                  onClick={handleSubmit} 
-                  disabled={submitting}
-                  className="min-w-32"
+                  variant="outline"
+                  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                  className="btn-secondary flex-1 text-sm"
                 >
-                  {submitting ? "Đang nộp bài..." : "Nộp bài thi"}
+                  <RotateCcw className="h-3 w-3 mr-1" />
+                  Lên đầu
+                </Button>
+                
+                <Button 
+                  onClick={handleSubmit}
+                  disabled={submitting}
+                  className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 flex-1 text-sm font-semibold"
+                >
+                  {submitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Đang nộp...
+                    </>
+                  ) : (
+                    <>
+                      <Trophy className="h-4 w-4 mr-2" />
+                      Nộp bài
+                    </>
+                  )}
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+            
+            {/* Desktop Layout */}
+            <div className="hidden md:flex items-center justify-between">
+              <div className="flex items-center space-x-8">
+                <div className="text-center">
+                  <div className="flex items-center justify-center space-x-2 mb-1">
+                    <Target className="h-5 w-5 text-blue-600" />
+                    <span className="text-2xl font-bold text-slate-800">
+                      {answeredQuestions}/{examSession.selectedQuestions.length}
+                    </span>
+                  </div>
+                  <p className="text-sm text-slate-600">Câu đã trả lời</p>
+                </div>
+                
+                <div className="text-center">
+                  <div className="flex items-center justify-center space-x-2 mb-1">
+                    <AlertCircle className="h-5 w-5 text-orange-500" />
+                    <span className="text-2xl font-bold text-slate-800">
+                      {examSession.selectedQuestions.length - answeredQuestions}
+                    </span>
+                  </div>
+                  <p className="text-sm text-slate-600">Câu chưa trả lời</p>
+                </div>
+                
+                <div className="text-center">
+                  <div className="flex items-center justify-center space-x-2 mb-1">
+                    <Timer className="h-5 w-5 text-green-600" />
+                    <span className="text-2xl font-bold text-slate-800">
+                      {formatTime(timeLeft)}
+                    </span>
+                  </div>
+                  <p className="text-sm text-slate-600">Thời gian còn lại</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-4">
+                <Button 
+                  variant="outline"
+                  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                  className="btn-secondary"
+                >
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  Lên đầu
+                </Button>
+                
+                <Button 
+                  onClick={handleSubmit}
+                  disabled={submitting}
+                  className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-8 py-3 text-lg font-semibold"
+                >
+                  {submitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                      Đang nộp bài...
+                    </>
+                  ) : (
+                    <>
+                      <Trophy className="h-5 w-5 mr-3" />
+                      Nộp bài thi
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </ProtectedRoute>
