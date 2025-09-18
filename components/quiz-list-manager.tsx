@@ -68,8 +68,8 @@ export function QuizListManager({ onQuizSelect, selectable = false }: QuizListMa
   // Filter and sort quizzes
   const filteredQuizzes = React.useMemo(() => {
     let filtered = quizzes.filter(quiz => {
-      const matchesSearch = quiz.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           quiz.description.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesSearch = quiz.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           quiz.description?.toLowerCase().includes(searchTerm.toLowerCase())
       
       const matchesStatus = statusFilter === "all" || 
                            (statusFilter === "active" && quiz.isActive) ||
@@ -164,7 +164,7 @@ export function QuizListManager({ onQuizSelect, selectable = false }: QuizListMa
 
   const getQuizStats = (quiz: Quiz) => {
     return {
-      questions: quiz.questions.length,
+      questions: quiz.questions?.length || 0,
       timeLimit: quiz.timeLimit,
       hasExplanations: quiz.questions.filter(q => q.explanation?.trim()).length
     }

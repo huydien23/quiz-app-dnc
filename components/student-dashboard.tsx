@@ -487,7 +487,7 @@ export function StudentDashboard() {
                               <div className="p-1.5 rounded-lg bg-blue-100">
                                 <BookOpen className="h-4 w-4 text-blue-600" />
                               </div>
-                              <span className="font-medium">{quiz.questions.length} câu</span>
+                              <span className="font-medium">{quiz.questions?.length || 0} câu</span>
                             </div>
                             <div className="flex items-center gap-2">
                               <div className="p-1.5 rounded-lg bg-cyan-100">

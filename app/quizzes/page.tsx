@@ -71,7 +71,7 @@ export default function QuizzesPage() {
                       <CardDescription className="text-pretty">{quiz.description}</CardDescription>
                     </div>
                     <Badge variant="secondary" className="ml-2">
-                      {quiz.questions.length} câu
+                      {quiz.questions?.length || 0} câu
                     </Badge>
                   </div>
                 </CardHeader>

@@ -27,7 +27,7 @@ export function InlineQuiz({ quiz, onClose, onComplete }: InlineQuizProps) {
   const [startTime, setStartTime] = useState<number>(0)
 
   useEffect(() => {
-    setSelectedAnswers(new Array(quiz.questions.length).fill(-1))
+    setSelectedAnswers(new Array(quiz.questions?.length || 0).fill(-1))
   }, [quiz])
 
   useEffect(() => {
@@ -58,7 +58,7 @@ export function InlineQuiz({ quiz, onClose, onComplete }: InlineQuizProps) {
   }
 
   const handleNextQuestion = () => {
-    if (currentQuestion < quiz.questions.length - 1) {
+    if (currentQuestion < (quiz.questions?.length || 0) - 1) {
       setCurrentQuestion(currentQuestion + 1)
     }
   }
@@ -77,13 +77,13 @@ export function InlineQuiz({ quiz, onClose, onComplete }: InlineQuizProps) {
     const correctAnswers = selectedAnswers.reduce((count, answer, index) => {
       return count + (answer === quiz.questions[index].correctAnswer ? 1 : 0)
     }, 0)
-    const score = Math.round((correctAnswers / quiz.questions.length) * 100)
+    const score = Math.round((correctAnswers / (quiz.questions?.length || 1)) * 100)
     
     onComplete(score, timeSpent)
   }
 
   const currentQ = quiz.questions[currentQuestion]
-  const progress = ((currentQuestion + 1) / quiz.questions.length) * 100
+  const progress = ((currentQuestion + 1) / (quiz.questions?.length || 1)) * 100
   const hasAnswered = selectedAnswers[currentQuestion] !== -1
 
   if (!isActive && !isCompleted) {
@@ -104,7 +104,7 @@ export function InlineQuiz({ quiz, onClose, onComplete }: InlineQuizProps) {
           <Card className="border-0 bg-blue-50">
             <CardContent className="p-4 text-center">
               <BookOpen className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-              <p className="font-semibold text-blue-800">{quiz.questions.length} câu hỏi</p>
+              <p className="font-semibold text-blue-800">{quiz.questions?.length || 0} câu hỏi</p>
             </CardContent>
           </Card>
           <Card className="border-0 bg-green-50">
@@ -136,7 +136,7 @@ export function InlineQuiz({ quiz, onClose, onComplete }: InlineQuizProps) {
     const correctAnswers = selectedAnswers.reduce((count, answer, index) => {
       return count + (answer === quiz.questions[index].correctAnswer ? 1 : 0)
     }, 0)
-    const score = Math.round((correctAnswers / quiz.questions.length) * 100)
+    const score = Math.round((correctAnswers / (quiz.questions?.length || 1)) * 100)
     const timeSpent = Math.floor((Date.now() - startTime) / 1000)
 
     return (
@@ -152,7 +152,7 @@ export function InlineQuiz({ quiz, onClose, onComplete }: InlineQuizProps) {
                 <p className="text-sm text-green-600">Điểm số</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-bold text-green-800">{correctAnswers}/{quiz.questions.length}</p>
+                <p className="text-2xl font-bold text-green-800">{correctAnswers}/{quiz.questions?.length || 0}</p>
                 <p className="text-sm text-green-600">Câu đúng</p>
               </div>
               <div className="text-center">
@@ -167,7 +167,7 @@ export function InlineQuiz({ quiz, onClose, onComplete }: InlineQuizProps) {
             </Button>
             <Button onClick={() => {
               setCurrentQuestion(0)
-              setSelectedAnswers(new Array(quiz.questions.length).fill(-1))
+              setSelectedAnswers(new Array(quiz.questions?.length || 0).fill(-1))
               setTimeLeft(quiz.timeLimit * 60)
               setIsCompleted(false)
               setIsActive(false)
@@ -187,7 +187,7 @@ export function InlineQuiz({ quiz, onClose, onComplete }: InlineQuizProps) {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-slate-800">{quiz.title}</h2>
-          <p className="text-slate-600">Câu {currentQuestion + 1} / {quiz.questions.length}</p>
+          <p className="text-slate-600">Câu {currentQuestion + 1} / {quiz.questions?.length || 0}</p>
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 text-red-600 font-semibold">
@@ -243,7 +243,7 @@ export function InlineQuiz({ quiz, onClose, onComplete }: InlineQuizProps) {
           Câu trước
         </Button>
         <div className="flex gap-2">
-          {currentQuestion === quiz.questions.length - 1 ? (
+          {currentQuestion === (quiz.questions?.length || 0) - 1 ? (
             <Button onClick={handleSubmitQuiz} className="btn-primary">
               <CheckCircle className="h-4 w-4 mr-2" />
               Nộp bài

@@ -28,7 +28,7 @@ export default function AdminQuizzesPage() {
   useEffect(() => {
     const filtered = quizzes.filter(
       (quiz) =>
-        quiz.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        quiz.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         quiz.description?.toLowerCase().includes(searchTerm.toLowerCase())
     )
     setFilteredQuizzes(filtered)
@@ -184,7 +184,7 @@ export default function AdminQuizzesPage() {
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <BookOpen className="h-4 w-4" />
-                        <span>{quiz.questions.length} câu</span>
+                        <span>{quiz.questions?.length || 0} câu</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <Clock className="h-4 w-4" />

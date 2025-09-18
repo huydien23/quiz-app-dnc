@@ -109,8 +109,8 @@ export class QuizService {
           attempt,
           quiz,
           correctAnswers,
-          totalQuestions: quiz.questions.length,
-          percentage: Math.round((correctAnswers / quiz.questions.length) * 100),
+          totalQuestions: quiz.questions?.length || 0,
+          percentage: Math.round((correctAnswers / (quiz.questions?.length || 1)) * 100),
         })
       }
     }

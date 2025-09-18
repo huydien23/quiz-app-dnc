@@ -420,7 +420,7 @@ export function AdminDashboard() {
                   <div key={quiz.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50/50 hover:bg-slate-100/50 transition-colors">
                     <div className="flex-1">
                       <h4 className="font-medium text-slate-800">{quiz.title}</h4>
-                      <p className="text-sm text-slate-600">{quiz.questions.length} câu hỏi</p>
+                      <p className="text-sm text-slate-600">{quiz.questions?.length || 0} câu hỏi</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge variant={quiz.isActive ? "default" : "secondary"}>

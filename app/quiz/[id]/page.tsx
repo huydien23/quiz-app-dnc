@@ -211,7 +211,7 @@ export default function QuizPage() {
                   <div className="flex-1 min-w-0">
                     <h1 className="text-lg font-bold truncate">{quiz.title}</h1>
                     <p className="text-blue-100 text-sm">
-                      {examSession.selectedQuestions.length}/{quiz.questions.length} câu
+                      {examSession.selectedQuestions.length}/{quiz.questions?.length || 0} câu
                     </p>
                   </div>
                 </div>
@@ -252,7 +252,7 @@ export default function QuizPage() {
                   <div>
                     <h1 className="text-3xl font-bold">{quiz.title}</h1>
                     <p className="text-blue-100 text-lg">
-                      Đã chọn ngẫu nhiên {examSession.selectedQuestions.length} câu từ tổng số {quiz.questions.length} câu
+                      Đã chọn ngẫu nhiên {examSession.selectedQuestions.length} câu từ tổng số {quiz.questions?.length || 0} câu
                     </p>
                   </div>
                 </div>
