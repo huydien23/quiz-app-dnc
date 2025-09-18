@@ -166,69 +166,67 @@ export function StudentDashboard() {
     color: string
     trend?: number
   }) => (
-    <Card className="relative overflow-hidden">
+    <Card className="relative overflow-hidden group hover:shadow-xl transition-all duration-300 border-0 bg-white/80 backdrop-blur-sm card-shadow-lg hover:-translate-y-1">
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            <p className="text-2xl font-bold">{value}</p>
+          <div className="flex-1">
+            <p className="text-sm font-medium text-slate-600 mb-1 font-body">{title}</p>
+            <p className="text-3xl font-bold text-slate-800 mb-1 font-heading">{value}</p>
             {subtitle && (
-              <p className="text-xs text-muted-foreground">{subtitle}</p>
+              <p className="text-xs text-slate-500 font-body">{subtitle}</p>
             )}
             {trend !== undefined && (
-              <div className={`flex items-center text-xs mt-1 ${trend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <div className={`flex items-center text-xs mt-2 ${trend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 <TrendingUp className="h-3 w-3 mr-1" />
-                {trend > 0 ? '+' : ''}{trend.toFixed(1)} điểm gần đây
+                <span className="font-medium">{trend > 0 ? '+' : ''}{trend.toFixed(1)} điểm gần đây</span>
               </div>
             )}
           </div>
-          <div className={`p-3 rounded-full ${color}`}>
-            <Icon className="h-6 w-6" />
+          <div className={`p-4 rounded-2xl ${color} group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+            <Icon className="h-8 w-8" />
           </div>
         </div>
       </CardContent>
-      <div className={`absolute bottom-0 left-0 right-0 h-1 ${color.replace('bg-', 'bg-').replace('/10', '')}`} />
+      <div className={`absolute bottom-0 left-0 right-0 h-1 ${color.replace('bg-', 'bg-').replace('/10', '')} opacity-60`} />
     </Card>
   )
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i}>
-              <CardContent className="p-6">
-                <div className="animate-pulse">
-                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                  <div className="h-8 bg-gray-200 rounded w-1/2 mb-2"></div>
-                  <div className="h-3 bg-gray-200 rounded w-full"></div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50">
+        <div className="space-y-8 p-6">
+          {/* Loading Header */}
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-cyan-500/5 to-blue-600/5 rounded-2xl"></div>
+            <div className="relative bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-blue-100">
+              <div className="animate-pulse">
+                <div className="h-12 bg-slate-200 rounded w-1/2 mb-4"></div>
+                <div className="h-6 bg-slate-200 rounded w-1/3"></div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Loading Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[...Array(4)].map((_, i) => (
+              <Card key={i} className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
+                <CardContent className="p-6">
+                  <div className="animate-pulse">
+                    <div className="h-4 bg-slate-200 rounded w-3/4 mb-2"></div>
+                    <div className="h-8 bg-slate-200 rounded w-1/2 mb-2"></div>
+                    <div className="h-3 bg-slate-200 rounded w-full"></div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      {/* Welcome Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Chào mừng, {user?.name || 'Học sinh'}!</h1>
-          <p className="text-muted-foreground">Tiếp tục hành trình học tập của bạn</p>
-        </div>
-        <div className="flex items-center gap-4">
-          <Avatar className="h-12 w-12">
-            <AvatarImage src={""} />
-            <AvatarFallback>
-              {user?.name?.charAt(0) || user?.email?.charAt(0) || 'U'}
-            </AvatarFallback>
-          </Avatar>
-        </div>
-      </div>
-
+    <div className="space-y-8">
       {/* Progress Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
@@ -236,42 +234,42 @@ export function StudentDashboard() {
           value={stats.totalAttempts}
           subtitle={`${stats.quizzesCompleted} bài khác nhau`}
           icon={BookOpen}
-          color="bg-blue-100 text-blue-600"
+          color="bg-gradient-to-br from-blue-500 to-blue-600 text-white"
         />
         <StatCard
           title="Điểm trung bình"
           value={`${stats.averageScore}%`}
           icon={Target}
-          color="bg-green-100 text-green-600"
+          color="bg-gradient-to-br from-green-500 to-green-600 text-white"
           trend={stats.recentImprovement}
         />
         <StatCard
           title="Điểm cao nhất"
           value={`${stats.bestScore}%`}
           icon={Award}
-          color="bg-purple-100 text-purple-600"
+          color="bg-gradient-to-br from-purple-500 to-purple-600 text-white"
         />
         <StatCard
           title="Xếp hạng"
           value={stats.rank > 0 ? `#${stats.rank}` : 'N/A'}
           subtitle={`trong ${stats.totalStudents} học sinh`}
           icon={Trophy}
-          color="bg-orange-100 text-orange-600"
+          color="bg-gradient-to-br from-orange-500 to-orange-600 text-white"
         />
       </div>
 
       {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Available Quizzes */}
         <div className="lg:col-span-2">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
+          <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
+            <CardHeader className="flex flex-row items-center justify-between pb-4">
               <div>
-                <CardTitle>Bài thi mới</CardTitle>
-                <CardDescription>Những bài thi bạn có thể làm ngay</CardDescription>
+                <CardTitle className="text-2xl font-bold text-slate-800 font-heading">Bài thi mới</CardTitle>
+                <CardDescription className="text-slate-600 font-body">Những bài thi bạn có thể làm ngay</CardDescription>
               </div>
               <Link href="/quizzes">
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="btn-secondary">
                   Xem tất cả
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
@@ -280,26 +278,30 @@ export function StudentDashboard() {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {recentQuizzes.map(({ quiz, attempt, status }) => (
-                  <Card key={quiz.id} className="relative group hover:shadow-md transition-shadow">
-                    <CardContent className="p-4">
-                      <div className="space-y-3">
+                  <Card key={quiz.id} className="relative group hover:shadow-xl transition-all duration-300 border-0 bg-white/90 backdrop-blur-sm card-shadow hover:-translate-y-1">
+                    <CardContent className="p-6">
+                      <div className="space-y-4">
                         <div className="flex items-start justify-between">
-                          <h4 className="font-medium group-hover:text-primary transition-colors line-clamp-2">
+                          <h4 className="font-semibold text-slate-800 group-hover:text-blue-600 transition-colors line-clamp-2 font-heading">
                             {quiz.title}
                           </h4>
                           {status === 'completed' && (
-                            <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 ml-2" />
+                            <CheckCircle className="h-6 w-6 text-green-600 flex-shrink-0 ml-2" />
                           )}
                         </div>
                         
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-1">
-                            <BookOpen className="h-4 w-4" />
-                            {quiz.questions.length} câu
+                        <div className="flex items-center gap-6 text-sm text-slate-600 font-body">
+                          <div className="flex items-center gap-2">
+                            <div className="p-1.5 rounded-lg bg-blue-100">
+                              <BookOpen className="h-4 w-4 text-blue-600" />
+                            </div>
+                            <span className="font-medium">{quiz.questions.length} câu</span>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-4 w-4" />
-                            {quiz.timeLimit} phút
+                          <div className="flex items-center gap-2">
+                            <div className="p-1.5 rounded-lg bg-cyan-100">
+                              <Clock className="h-4 w-4 text-cyan-600" />
+                            </div>
+                            <span className="font-medium">{quiz.timeLimit} phút</span>
                           </div>
                         </div>
 
@@ -314,17 +316,17 @@ export function StudentDashboard() {
                           </div>
                         )}
 
-                        <div className="flex gap-2">
+                        <div className="flex gap-3">
                           {status === 'completed' ? (
                             <>
                               <Link href={`/quiz/${quiz.id}/result`} className="flex-1">
-                                <Button variant="outline" size="sm" className="w-full">
+                                <Button variant="outline" size="sm" className="w-full btn-secondary">
                                   <Eye className="h-4 w-4 mr-2" />
                                   Xem kết quả
                                 </Button>
                               </Link>
                               <Link href={`/quiz/${quiz.id}`} className="flex-1">
-                                <Button size="sm" className="w-full">
+                                <Button size="sm" className="w-full btn-primary">
                                   <Play className="h-4 w-4 mr-2" />
                                   Làm lại
                                 </Button>
@@ -332,7 +334,7 @@ export function StudentDashboard() {
                             </>
                           ) : (
                             <Link href={`/quiz/${quiz.id}`} className="w-full">
-                              <Button size="sm" className="w-full">
+                              <Button size="sm" className="w-full btn-primary">
                                 <Play className="h-4 w-4 mr-2" />
                                 Bắt đầu làm bài
                               </Button>
@@ -346,9 +348,11 @@ export function StudentDashboard() {
               </div>
               
               {recentQuizzes.length === 0 && (
-                <div className="text-center py-8">
-                  <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">Chưa có bài thi nào được tạo</p>
+                <div className="text-center py-12">
+                  <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-100 to-cyan-100 w-fit mx-auto mb-4">
+                    <BookOpen className="h-12 w-12 text-blue-600" />
+                  </div>
+                  <p className="text-slate-600 font-body">Chưa có bài thi nào được tạo</p>
                 </div>
               )}
             </CardContent>
@@ -358,10 +362,10 @@ export function StudentDashboard() {
         {/* Recent Activity & Progress */}
         <div className="space-y-6">
           {/* Recent Performance */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Kết quả gần đây</CardTitle>
-              <CardDescription>5 lần làm bài mới nhất</CardDescription>
+          <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl font-bold text-slate-800 font-heading">Kết quả gần đây</CardTitle>
+              <CardDescription className="text-slate-600 font-body">5 lần làm bài mới nhất</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -385,9 +389,11 @@ export function StudentDashboard() {
                 })}
                 
                 {userAttempts.length === 0 && (
-                  <div className="text-center py-4">
-                    <Clock className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">Chưa có kết quả nào</p>
+                  <div className="text-center py-8">
+                    <div className="p-3 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 w-fit mx-auto mb-3">
+                      <Clock className="h-8 w-8 text-slate-600" />
+                    </div>
+                    <p className="text-sm text-slate-600 font-body">Chưa có kết quả nào</p>
                   </div>
                 )}
               </div>
@@ -395,35 +401,37 @@ export function StudentDashboard() {
           </Card>
 
           {/* Progress Overview */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Tiến độ học tập</CardTitle>
+          <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl font-bold text-slate-800 font-heading">Tiến độ học tập</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
               <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span>Bài thi đã hoàn thành</span>
-                  <span>{stats.quizzesCompleted}/{availableQuizzes.length}</span>
+                <div className="flex justify-between text-sm mb-3 font-body">
+                  <span className="text-slate-600">Bài thi đã hoàn thành</span>
+                  <span className="font-semibold text-slate-800">{stats.quizzesCompleted}/{availableQuizzes.length}</span>
                 </div>
                 <Progress 
                   value={availableQuizzes.length > 0 ? (stats.quizzesCompleted / availableQuizzes.length) * 100 : 0} 
-                  className="h-2" 
+                  className="h-3" 
                 />
               </div>
               
               <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span>Điểm trung bình</span>
-                  <span className={getScoreColor(stats.averageScore)}>{stats.averageScore}%</span>
+                <div className="flex justify-between text-sm mb-3 font-body">
+                  <span className="text-slate-600">Điểm trung bình</span>
+                  <span className={`font-semibold ${getScoreColor(stats.averageScore)}`}>{stats.averageScore}%</span>
                 </div>
-                <Progress value={stats.averageScore} className="h-2" />
+                <Progress value={stats.averageScore} className="h-3" />
               </div>
 
               {stats.rank > 0 && (
-                <div className="text-center pt-4 border-t">
-                  <div className="flex items-center justify-center gap-2 text-sm">
-                    <Trophy className="h-4 w-4 text-orange-600" />
-                    <span>Bạn đang xếp hạng #{stats.rank} trong lớp</span>
+                <div className="text-center pt-6 border-t border-slate-200">
+                  <div className="flex items-center justify-center gap-2 text-sm font-body">
+                    <div className="p-1.5 rounded-lg bg-orange-100">
+                      <Trophy className="h-4 w-4 text-orange-600" />
+                    </div>
+                    <span className="text-slate-600">Bạn đang xếp hạng <span className="font-semibold text-orange-600">#{stats.rank}</span> trong lớp</span>
                   </div>
                 </div>
               )}
@@ -431,20 +439,20 @@ export function StudentDashboard() {
           </Card>
 
           {/* Quick Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Thao tác nhanh</CardTitle>
+          <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl font-bold text-slate-800 font-heading">Thao tác nhanh</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
+            <CardContent className="space-y-3">
               <Link href="/quizzes">
-                <Button variant="outline" className="w-full justify-start">
-                  <BookOpen className="h-4 w-4 mr-2" />
+                <Button variant="outline" className="w-full justify-start btn-secondary">
+                  <BookOpen className="h-4 w-4 mr-3" />
                   Xem tất cả bài thi
                 </Button>
               </Link>
               <Link href="/dashboard/history">
-                <Button variant="outline" className="w-full justify-start">
-                  <BarChart3 className="h-4 w-4 mr-2" />
+                <Button variant="outline" className="w-full justify-start btn-secondary">
+                  <BarChart3 className="h-4 w-4 mr-3" />
                   Lịch sử làm bài
                 </Button>
               </Link>

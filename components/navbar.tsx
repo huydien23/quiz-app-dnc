@@ -64,13 +64,15 @@ export function Navbar() {
   }
 
   return (
-    <nav className="border-b bg-card" suppressHydrationWarning>
+    <nav className="border-b bg-white/80 backdrop-blur-md shadow-sm" suppressHydrationWarning>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" suppressHydrationWarning>
         <div className="flex justify-between h-16" suppressHydrationWarning>
           <div className="flex items-center">
-            <Link href="/" className="flex items-center space-x-2">
-              <BookOpen className="h-8 w-8 text-primary" />
-              <span className="text-xl font-bold text-foreground">QuizMaster</span>
+            <Link href="/" className="flex items-center space-x-3 group">
+              <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white group-hover:scale-105 transition-transform duration-200">
+                <BookOpen className="h-6 w-6" />
+              </div>
+              <span className="text-xl font-bold text-gradient">QuizMaster</span>
             </Link>
           </div>
 
@@ -78,17 +80,23 @@ export function Navbar() {
             {user ? (
               <>
                 {/* Desktop Navigation */}
-                <div className="hidden md:flex items-center space-x-4">
+                <div className="hidden md:flex items-center space-x-2">
                   <Link href="/quizzes">
-                    <Button variant="ghost">Bài Thi</Button>
+                    <Button variant="ghost" className="text-slate-600 hover:text-blue-600 hover:bg-blue-50/50">
+                      Bài Thi
+                    </Button>
                   </Link>
                   {user.role === 0 && (
                     <Link href="/admin">
-                      <Button variant="ghost">Quản Trị</Button>
+                      <Button variant="ghost" className="text-slate-600 hover:text-blue-600 hover:bg-blue-50/50">
+                        Quản Trị
+                      </Button>
                     </Link>
                   )}
                   <Link href="/dashboard">
-                    <Button variant="ghost">Dashboard</Button>
+                    <Button variant="ghost" className="text-slate-600 hover:text-blue-600 hover:bg-blue-50/50">
+                      Dashboard
+                    </Button>
                   </Link>
                 </div>
 
@@ -226,12 +234,16 @@ export function Navbar() {
                 </div>
               </>
             ) : (
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-3">
                 <Link href="/login">
-                  <Button variant="ghost">Đăng nhập</Button>
+                  <Button variant="ghost" className="text-slate-600 hover:text-blue-600 hover:bg-blue-50/50">
+                    Đăng nhập
+                  </Button>
                 </Link>
                 <Link href="/register">
-                  <Button>Đăng ký</Button>
+                  <Button className="btn-primary">
+                    Đăng ký
+                  </Button>
                 </Link>
               </div>
             )}

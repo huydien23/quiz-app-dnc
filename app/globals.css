@@ -4,80 +4,81 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Updated color tokens for educational quiz app theme */
+  /* Professional Blue-White Theme for Educational Quiz App */
   --background: #ffffff;
-  --foreground: #374151;
-  --card: #fef2f2;
-  --card-foreground: #374151;
+  --foreground: #1e293b;
+  --card: #f8fafc;
+  --card-foreground: #1e293b;
   --popover: #ffffff;
-  --popover-foreground: #374151;
-  --primary: #dc2626;
+  --popover-foreground: #1e293b;
+  --primary: #2563eb;
   --primary-foreground: #ffffff;
-  --secondary: #f59e0b;
+  --secondary: #0ea5e9;
   --secondary-foreground: #ffffff;
-  --muted: #ecfeff;
-  --muted-foreground: #374151;
-  --accent: #f59e0b;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #06b6d4;
   --accent-foreground: #ffffff;
-  --destructive: #dc2626;
+  --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  --border: #e5e7eb;
-  --input: #fef2f2;
-  --ring: rgba(220, 38, 38, 0.5);
-  --chart-1: #dc2626;
-  --chart-2: #f59e0b;
-  --chart-3: #3b82f6;
-  --chart-4: #4ade80;
-  --chart-5: #a855f7;
-  --radius: 0.5rem;
-  --sidebar: #fef2f2;
-  --sidebar-foreground: #374151;
-  --sidebar-primary: #dc2626;
+  --border: #e2e8f0;
+  --input: #f8fafc;
+  --ring: rgba(37, 99, 235, 0.2);
+  --chart-1: #2563eb;
+  --chart-2: #0ea5e9;
+  --chart-3: #06b6d4;
+  --chart-4: #10b981;
+  --chart-5: #8b5cf6;
+  --radius: 0.75rem;
+  --sidebar: #f8fafc;
+  --sidebar-foreground: #1e293b;
+  --sidebar-primary: #2563eb;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f59e0b;
+  --sidebar-accent: #0ea5e9;
   --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #e5e7eb;
-  --sidebar-ring: rgba(220, 38, 38, 0.5);
+  --sidebar-border: #e2e8f0;
+  --sidebar-ring: rgba(37, 99, 235, 0.2);
 }
 
 .dark {
-  --background: #1f2937;
-  --foreground: #f9fafb;
-  --card: #374151;
-  --card-foreground: #f9fafb;
-  --popover: #1f2937;
-  --popover-foreground: #f9fafb;
-  --primary: #ef4444;
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+  --card: #1e293b;
+  --card-foreground: #f1f5f9;
+  --popover: #0f172a;
+  --popover-foreground: #f1f5f9;
+  --primary: #3b82f6;
   --primary-foreground: #ffffff;
-  --secondary: #fbbf24;
-  --secondary-foreground: #1f2937;
-  --muted: #4b5563;
-  --muted-foreground: #d1d5db;
-  --accent: #fbbf24;
-  --accent-foreground: #1f2937;
+  --secondary: #0ea5e9;
+  --secondary-foreground: #ffffff;
+  --muted: #334155;
+  --muted-foreground: #94a3b8;
+  --accent: #06b6d4;
+  --accent-foreground: #ffffff;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  --border: #4b5563;
-  --input: #374151;
-  --ring: rgba(239, 68, 68, 0.5);
-  --chart-1: #ef4444;
-  --chart-2: #fbbf24;
-  --chart-3: #3b82f6;
-  --chart-4: #4ade80;
-  --chart-5: #a855f7;
-  --sidebar: #374151;
-  --sidebar-foreground: #f9fafb;
-  --sidebar-primary: #ef4444;
+  --border: #334155;
+  --input: #1e293b;
+  --ring: rgba(59, 130, 246, 0.3);
+  --chart-1: #3b82f6;
+  --chart-2: #0ea5e9;
+  --chart-3: #06b6d4;
+  --chart-4: #10b981;
+  --chart-5: #8b5cf6;
+  --sidebar: #1e293b;
+  --sidebar-foreground: #f1f5f9;
+  --sidebar-primary: #3b82f6;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #fbbf24;
-  --sidebar-accent-foreground: #1f2937;
-  --sidebar-border: #4b5563;
-  --sidebar-ring: rgba(239, 68, 68, 0.5);
+  --sidebar-accent: #0ea5e9;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #334155;
+  --sidebar-ring: rgba(59, 130, 246, 0.3);
 }
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-nunito);
+  --font-body: var(--font-open-sans);
+  --font-heading: var(--font-poppins);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -122,5 +123,130 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1, "liga" 1, "kern" 1;
+    font-family: var(--font-nunito), 'Inter', 'Roboto', 'Noto Sans', system-ui, -apple-system, sans-serif;
+    font-weight: 400;
+    line-height: 1.7; /* Tối ưu cho tiếng Việt */
+    letter-spacing: 0.01em; /* Cải thiện readability cho tiếng Việt */
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-poppins), 'Inter', 'Roboto', system-ui, -apple-system, sans-serif;
+    font-weight: 600;
+    line-height: 1.4; /* Tối ưu cho tiếng Việt */
+    letter-spacing: -0.015em; /* Cải thiện cho tiếng Việt */
+  }
+}
+
+@layer components {
+  /* Professional gradient backgrounds */
+  .gradient-primary {
+    background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
+  }
+  
+  .gradient-secondary {
+    background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+  }
+  
+  .gradient-accent {
+    background: linear-gradient(135deg, #06b6d4 0%, #10b981 100%);
+  }
+  
+  /* Soft shadows for cards */
+  .card-shadow {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  }
+  
+  .card-shadow-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+  
+  /* Professional button styles */
+  .btn-primary {
+    @apply bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-6 py-3 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md;
+  }
+  
+  .btn-secondary {
+    @apply bg-secondary hover:bg-secondary/90 text-secondary-foreground font-medium px-6 py-3 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md;
+  }
+  
+  /* Glass morphism effect */
+  .glass {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+  }
+  
+  .glass-dark {
+    background: rgba(15, 23, 42, 0.25);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Professional text styles */
+  .text-gradient {
+    background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  /* Smooth animations */
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.5s ease-out;
+  }
+  
+  .animate-scale-in {
+    animation: scaleIn 0.3s ease-out;
+  }
+  
+  /* Font utilities */
+  .font-heading {
+    font-family: var(--font-poppins), system-ui, -apple-system, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+  
+  .font-body {
+    font-family: var(--font-open-sans), 'Inter', 'Roboto', 'Noto Sans', system-ui, -apple-system, sans-serif;
+    font-weight: 400;
+    line-height: 1.7; /* Tối ưu cho tiếng Việt */
+    letter-spacing: 0.01em;
+  }
+  
+  .font-nunito {
+    font-family: var(--font-nunito), system-ui, -apple-system, sans-serif;
+    font-weight: 400;
+    line-height: 1.6;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from { 
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to { 
+    opacity: 1;
+    transform: scale(1);
   }
 }

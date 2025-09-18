@@ -29,53 +29,66 @@ export default function AdminQuizzesPage() {
     const filtered = quizzes.filter(
       (quiz) =>
         quiz.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        quiz.description.toLowerCase().includes(searchTerm.toLowerCase()),
+        quiz.description?.toLowerCase().includes(searchTerm.toLowerCase())
     )
     setFilteredQuizzes(filtered)
-  }, [searchTerm, quizzes])
+  }, [quizzes, searchTerm])
 
   const loadQuizzes = async () => {
     try {
-      const allQuizzes = await AdminService.getAllQuizzes()
+      setLoading(true)
+      const allQuizzes = await QuizService.getAllQuizzes()
       setQuizzes(allQuizzes)
       setFilteredQuizzes(allQuizzes)
-    } catch (error) {
-      setError("Có lỗi xảy ra khi tải danh sách bài thi")
+    } catch (err) {
+      setError("Không thể tải danh sách bài thi")
     } finally {
       setLoading(false)
     }
   }
 
-  const toggleQuizStatus = async (quizId: string, currentStatus: boolean) => {
+  const handleToggleActive = async (quizId: string, isActive: boolean) => {
     try {
-      const quiz = quizzes.find((q) => q.id === quizId)
-      if (quiz) {
-        await QuizService.updateQuiz(quizId, { ...quiz, isActive: !currentStatus })
-        await loadQuizzes()
-      }
-    } catch (error) {
-      setError("Có lỗi xảy ra khi cập nhật trạng thái bài thi")
+      await QuizService.updateQuiz(quizId, { isActive })
+      setQuizzes(prev =>
+        prev.map(quiz =>
+          quiz.id === quizId ? { ...quiz, isActive } : quiz
+        )
+      )
+    } catch (err) {
+      setError("Không thể cập nhật trạng thái bài thi")
     }
   }
 
-  const deleteQuiz = async (quizId: string) => {
-    if (confirm("Bạn có chắc chắn muốn xóa bài thi này?")) {
-      try {
-        await QuizService.deleteQuiz(quizId)
-        await loadQuizzes()
-      } catch (error) {
-        setError("Có lỗi xảy ra khi xóa bài thi")
-      }
+  const handleDeleteQuiz = async (quizId: string) => {
+    if (!confirm("Bạn có chắc chắn muốn xóa bài thi này?")) return
+
+    try {
+      await QuizService.deleteQuiz(quizId)
+      setQuizzes(prev => prev.filter(quiz => quiz.id !== quizId))
+    } catch (err) {
+      setError("Không thể xóa bài thi")
     }
   }
 
   if (loading) {
     return (
       <ProtectedRoute requireAdmin>
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <BookOpen className="h-12 w-12 animate-pulse text-primary mx-auto mb-4" />
-            <p className="text-muted-foreground">Đang tải danh sách bài thi...</p>
+        <div className="space-y-6">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
+            <div className="h-10 bg-gray-200 rounded w-1/2 mb-6"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <Card key={i}>
+                  <CardContent className="p-6">
+                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                    <div className="h-6 bg-gray-200 rounded w-1/2 mb-4"></div>
+                    <div className="h-3 bg-gray-200 rounded w-full"></div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
         </div>
       </ProtectedRoute>
@@ -84,7 +97,7 @@ export default function AdminQuizzesPage() {
 
   return (
     <ProtectedRoute requireAdmin>
-      <div className="container mx-auto px-4 py-8">
+      <div className="space-y-6">
         {/* Header */}
         <div className="mb-8">
           <Link href="/admin">
@@ -129,81 +142,80 @@ export default function AdminQuizzesPage() {
         {/* Quizzes List */}
         {filteredQuizzes.length === 0 ? (
           <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <BookOpen className="h-16 w-16 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold text-foreground mb-2">
-                {searchTerm ? "Không tìm thấy bài thi" : "Chưa có bài thi nào"}
-              </h3>
-              <p className="text-muted-foreground text-center mb-4">
-                {searchTerm ? "Thử tìm kiếm với từ khóa khác" : "Tạo bài thi đầu tiên để bắt đầu"}
+            <CardContent className="p-12 text-center">
+              <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Chưa có bài thi nào</h3>
+              <p className="text-muted-foreground mb-4">
+                {searchTerm ? "Không tìm thấy bài thi phù hợp" : "Hãy tạo bài thi đầu tiên của bạn"}
               </p>
-              {!searchTerm && (
-                <Link href="/admin/quiz/create">
-                  <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Tạo bài thi mới
-                  </Button>
-                </Link>
-              )}
+              <Link href="/admin/quiz/create">
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Tạo bài thi mới
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredQuizzes.map((quiz) => (
-              <Card key={quiz.id} className="hover:shadow-md transition-shadow">
+              <Card key={quiz.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <CardTitle className="text-lg">{quiz.title}</CardTitle>
-                        <Badge variant={quiz.isActive ? "default" : "secondary"}>
-                          {quiz.isActive ? "Hoạt động" : "Tạm dừng"}
-                        </Badge>
-                      </div>
-                      <CardDescription>{quiz.description}</CardDescription>
+                      <CardTitle className="text-lg line-clamp-2">{quiz.title}</CardTitle>
+                      <CardDescription className="mt-2 line-clamp-2">
+                        {quiz.description || "Không có mô tả"}
+                      </CardDescription>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center gap-2 ml-4">
                       <Switch
                         checked={quiz.isActive}
-                        onCheckedChange={() => toggleQuizStatus(quiz.id, quiz.isActive)}
+                        onCheckedChange={(checked) => handleToggleActive(quiz.id, checked)}
                       />
-                      {quiz.isActive ? (
-                        <Eye className="h-4 w-4 text-green-600" />
-                      ) : (
-                        <EyeOff className="h-4 w-4 text-gray-400" />
-                      )}
+                      <Badge variant={quiz.isActive ? "default" : "secondary"}>
+                        {quiz.isActive ? "Hoạt động" : "Tạm dừng"}
+                      </Badge>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-6 text-sm text-muted-foreground">
-                      <div className="flex items-center">
-                        <Users className="h-4 w-4 mr-1" />
-                        {quiz.questions.length} câu hỏi
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <BookOpen className="h-4 w-4" />
+                        <span>{quiz.questions.length} câu</span>
                       </div>
-                      <div className="flex items-center">
-                        <Clock className="h-4 w-4 mr-1" />
-                        {quiz.timeLimit} phút
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-4 w-4" />
+                        <span>{quiz.timeLimit} phút</span>
                       </div>
-                      <div>Tạo: {new Date(quiz.createdAt).toLocaleDateString("vi-VN")}</div>
                     </div>
-
-                    <div className="flex items-center space-x-2">
-                      <Link href={`/quiz/${quiz.id}`}>
-                        <Button variant="outline" size="sm">
-                          <Eye className="h-4 w-4 mr-1" />
-                          Xem
+                    
+                    <div className="flex items-center justify-between pt-3 border-t">
+                      <div className="flex gap-2">
+                        <Link href={`/quiz/${quiz.id}`}>
+                          <Button variant="outline" size="sm">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </Link>
+                        <Link href={`/admin/quiz/edit/${quiz.id}`}>
+                          <Button variant="outline" size="sm">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </Link>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteQuiz(quiz.id)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
                         </Button>
-                      </Link>
-                      <Button variant="outline" size="sm">
-                        <Edit className="h-4 w-4 mr-1" />
-                        Sửa
-                      </Button>
-                      <Button variant="outline" size="sm" onClick={() => deleteQuiz(quiz.id)}>
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        Xóa
-                      </Button>
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Tạo {new Date(quiz.createdAt).toLocaleDateString('vi-VN')}
+                      </div>
                     </div>
                   </div>
                 </CardContent>

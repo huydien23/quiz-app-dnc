@@ -65,16 +65,18 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50 px-4">
       <div className="w-full max-w-md">
         <div className="flex justify-center mb-8">
-          <div className="flex items-center space-x-2">
-            <BookOpen className="h-10 w-10 text-primary" />
-            <span className="text-2xl font-bold text-foreground">QuizMaster</span>
+          <div className="flex items-center space-x-3">
+            <div className="p-3 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white">
+              <BookOpen className="h-8 w-8" />
+            </div>
+            <span className="text-2xl font-bold text-gradient">QuizMaster</span>
           </div>
         </div>
 
-        <Card>
+        <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl text-center">Đăng nhập</CardTitle>
             <CardDescription className="text-center">Nhập email và mật khẩu để truy cập tài khoản</CardDescription>
@@ -111,7 +113,7 @@ export default function LoginPage() {
                 />
               </div>
 
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button type="submit" className="w-full btn-primary" disabled={loading}>
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Đăng nhập
               </Button>

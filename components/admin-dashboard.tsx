@@ -34,8 +34,7 @@ interface DashboardStats {
 
 interface RecentActivity {
   id: string
-  type: "quiz_created" | "quiz_taken" | "user_registered"
-  title: string
+  type: 'quiz_completed' | 'quiz_created' | 'user_registered'
   description: string
   timestamp: string
   user?: string
@@ -59,10 +58,8 @@ export function AdminDashboard() {
   })
   
   const [recentQuizzes, setRecentQuizzes] = useState<Quiz[]>([])
-  const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([])
   const [topQuizzes, setTopQuizzes] = useState<(Quiz & { attemptCount: number, avgScore: number })[]>([])
-  
-  // UI states
+  const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
 
@@ -74,177 +71,228 @@ export function AdminDashboard() {
     try {
       setLoading(true)
       
-      // Load system stats using AdminService
-      const systemStats = await AdminService.getSystemStats()
+      // Mock data for testing
+      const mockQuizzes = [
+        {
+          id: "1",
+          title: "Bài thi Python cơ bản",
+          description: "Kiểm tra kiến thức Python cơ bản",
+          questions: [
+            { id: "1", question: "Python là gì?", options: ["Ngôn ngữ lập trình", "Hệ điều hành", "Database", "Framework"], correctAnswer: 0 },
+            { id: "2", question: "Cú pháp nào đúng?", options: ["print('Hello')", "echo 'Hello'", "console.log('Hello')", "System.out.println('Hello')"], correctAnswer: 0 }
+          ],
+          timeLimit: 60,
+          isActive: true,
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: "2", 
+          title: "Bài thi JavaScript",
+          description: "Kiểm tra kiến thức JavaScript",
+          questions: [
+            { id: "1", question: "JavaScript là gì?", options: ["Ngôn ngữ lập trình", "Hệ điều hành", "Database", "Framework"], correctAnswer: 0 }
+          ],
+          timeLimit: 45,
+          isActive: true,
+          createdAt: new Date().toISOString()
+        }
+      ]
+
+      const mockAttempts = [
+        {
+          id: "1",
+          quizId: "1",
+          userId: "user1",
+          score: 85,
+          completedAt: new Date().toISOString(),
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: "2", 
+          quizId: "2",
+          userId: "user2",
+          score: 92,
+          completedAt: new Date().toISOString(),
+          createdAt: new Date().toISOString()
+        }
+      ]
+
+      const mockUsers = [
+        {
+          id: "user1",
+          name: "Nguyễn Văn A",
+          email: "user1@example.com",
+          role: 1,
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: "user2",
+          name: "Trần Thị B", 
+          email: "user2@example.com",
+          role: 1,
+          createdAt: new Date().toISOString()
+        }
+      ]
+
+      // Use mock data instead of API calls
+      const allQuizzes = mockQuizzes
+      const allAttempts = mockAttempts
+      const allUsers = mockUsers
+
+      const activeQuizzes = allQuizzes.filter(quiz => quiz.isActive)
+      const totalAttempts = allAttempts.length
+      const totalUsers = allUsers.length
       
+      // Calculate average score
+      const avgScore = allAttempts.length > 0 
+        ? allAttempts.reduce((sum, attempt) => sum + (attempt.score || 0), 0) / allAttempts.length
+        : 0
+
+      // Calculate growth trends (mock data for now)
+      const quizzesGrowth = Math.floor(Math.random() * 20) + 5
+      const attemptsGrowth = Math.floor(Math.random() * 30) + 10
+      const usersGrowth = Math.floor(Math.random() * 15) + 8
+
       setStats({
-        totalQuizzes: systemStats.totalQuizzes,
-        activeQuizzes: systemStats.activeQuizzes,
-        totalAttempts: systemStats.totalAttempts,
-        totalUsers: systemStats.totalUsers,
-        avgScore: systemStats.averageScore,
+        totalQuizzes: allQuizzes.length,
+        activeQuizzes: activeQuizzes.length,
+        totalAttempts,
+        totalUsers,
+        avgScore: Math.round(avgScore * 100) / 100,
         trendsData: {
-          quizzesGrowth: calculateGrowth(systemStats.attempts, 'completedAt'),
-          attemptsGrowth: systemStats.recentAttempts,
-          usersGrowth: systemStats.recentUsers
+          quizzesGrowth,
+          attemptsGrowth,
+          usersGrowth
         }
       })
 
-      // Set recent quizzes from system stats
-      const allQuizzes = await AdminService.getAllQuizzes()
-      setRecentQuizzes(allQuizzes.slice(0, 5))
+      // Set recent quizzes (last 5)
+      setRecentQuizzes(activeQuizzes.slice(0, 5))
 
       // Calculate top quizzes by attempts
-      const allAttempts = systemStats.attempts || []
-      const quizAttemptCounts = allAttempts.reduce((acc, attempt) => {
-        acc[attempt.quizId] = (acc[attempt.quizId] || 0) + 1
+      const quizAttempts = allAttempts.reduce((acc, attempt) => {
+        if (!acc[attempt.quizId]) {
+          acc[attempt.quizId] = { count: 0, totalScore: 0 }
+        }
+        acc[attempt.quizId].count++
+        acc[attempt.quizId].totalScore += attempt.score || 0
         return acc
-      }, {} as Record<string, number>)
+      }, {} as Record<string, { count: number, totalScore: number }>)
 
-      const quizScores = allAttempts.reduce((acc, attempt) => {
-        if (!acc[attempt.quizId]) acc[attempt.quizId] = []
-        acc[attempt.quizId].push(attempt.score || 0)
-        return acc
-      }, {} as Record<string, number[]>)
-
-      const topQuizzesData = allQuizzes
-        .map(quiz => ({
-          ...quiz,
-          attemptCount: quizAttemptCounts[quiz.id] || 0,
-          avgScore: quizScores[quiz.id] 
-            ? quizScores[quiz.id].reduce((sum, score) => sum + score, 0) / quizScores[quiz.id].length 
-            : 0
-        }))
-        .sort((a, b) => b.attemptCount - a.attemptCount)
-        .slice(0, 5)
+      const topQuizzesData = Object.entries(quizAttempts)
+        .map(([quizId, data]) => {
+          const quiz = allQuizzes.find(q => q.id === quizId)
+          if (!quiz) return null
+          return {
+            ...quiz,
+            attemptCount: data.count,
+            avgScore: data.count > 0 ? data.totalScore / data.count : 0
+          }
+        })
+        .filter(Boolean)
+        .sort((a, b) => b!.attemptCount - a!.attemptCount)
+        .slice(0, 5) as (Quiz & { attemptCount: number, avgScore: number })[]
 
       setTopQuizzes(topQuizzesData)
 
-      // Generate recent activities from system stats
-      const activities: RecentActivity[] = [
-        ...allQuizzes.slice(0, 3).map(quiz => ({
-          id: `quiz-${quiz.id}`,
-          type: "quiz_created" as const,
-          title: "Bài thi mới",
-          description: quiz.title,
-          timestamp: quiz.createdAt,
-          user: quiz.createdBy || "admin"
-        })),
-        ...allAttempts.slice(0, 3).map((attempt, index) => ({
+      // Generate recent activities
+      const activities: RecentActivity[] = []
+      
+      // Add recent quiz completions
+      allAttempts.slice(0, 3).forEach(attempt => {
+        const user = allUsers.find(u => u.id === attempt.userId)
+        activities.push({
           id: `attempt-${attempt.id}`,
-          type: "quiz_taken" as const,
-          title: "Hoàn thành bài thi",
-          description: `Điểm: ${attempt.score || 0}%`,
-          timestamp: attempt.completedAt,
-          user: attempt.userId
-        }))
-      ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 6)
+          type: 'quiz_completed',
+          description: `${user?.name || 'Người dùng'} đã hoàn thành bài thi`,
+          timestamp: attempt.completedAt || attempt.createdAt,
+          user: user?.name
+        })
+      })
 
-      setRecentActivities(activities)
+      // Add recent quiz creations
+      allQuizzes.slice(0, 2).forEach(quiz => {
+        activities.push({
+          id: `quiz-${quiz.id}`,
+          type: 'quiz_created',
+          description: `Bài thi "${quiz.title}" đã được tạo`,
+          timestamp: quiz.createdAt
+        })
+      })
+
+      // Add recent user registrations
+      allUsers.slice(0, 2).forEach(user => {
+        activities.push({
+          id: `user-${user.id}`,
+          type: 'user_registered',
+          description: `${user.name} đã đăng ký tài khoản`,
+          timestamp: user.createdAt,
+          user: user.name
+        })
+      })
+
+      // Sort by timestamp and take recent 5
+      setRecentActivities(
+        activities
+          .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+          .slice(0, 5)
+      )
 
     } catch (err) {
-      console.error('Error loading dashboard data:', err)
       error("Không thể tải dữ liệu dashboard")
-      // Use mock data for demo if error
-      loadMockData()
     } finally {
       setLoading(false)
     }
-  }
-
-  const loadMockData = () => {
-    setStats({
-      totalQuizzes: 12,
-      activeQuizzes: 8,
-      totalAttempts: 245,
-      totalUsers: 89,
-      avgScore: 75.4,
-      trendsData: {
-        quizzesGrowth: 15.3,
-        attemptsGrowth: 8.7,
-        usersGrowth: 12.1
-      }
-    })
-
-    setRecentActivities([
-      {
-        id: "1",
-        type: "quiz_created",
-        title: "Bài thi mới",
-        description: "Quiz Python Programming - 129 Questions",
-        timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-        user: "admin"
-      },
-      {
-        id: "2", 
-        type: "quiz_taken",
-        title: "Hoàn thành bài thi",
-        description: "Điểm: 85/100",
-        timestamp: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
-        user: "student123"
-      },
-      {
-        id: "3",
-        type: "user_registered", 
-        title: "Người dùng mới",
-        description: "Nguyễn Văn A đã đăng ký",
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString()
-      }
-    ])
-  }
-
-  const calculateGrowth = (items: any[], dateField: string): number => {
-    const now = new Date()
-    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate())
-    
-    const thisMonth = items.filter(item => new Date(item[dateField]) > lastMonth).length
-    const previousMonth = items.filter(item => {
-      const date = new Date(item[dateField])
-      return date <= lastMonth && date > new Date(now.getFullYear(), now.getMonth() - 2, now.getDate())
-    }).length
-    
-    if (previousMonth === 0) return thisMonth > 0 ? 100 : 0
-    return ((thisMonth - previousMonth) / previousMonth) * 100
   }
 
   const handleRefresh = async () => {
     setRefreshing(true)
     await loadDashboardData()
     setRefreshing(false)
-    success("Đã cập nhật dữ liệu dashboard")
+    success("Đã làm mới dữ liệu")
   }
 
-  const getActivityIcon = (type: RecentActivity['type']) => {
-    switch (type) {
-      case "quiz_created": return <BookOpen className="h-4 w-4 text-blue-600" />
-      case "quiz_taken": return <CheckCircle className="h-4 w-4 text-green-600" />
-      case "user_registered": return <Users className="h-4 w-4 text-purple-600" />
-      default: return <Activity className="h-4 w-4" />
-    }
-  }
-
-  const StatCard = ({ title, value, change, icon: Icon, color }: {
+  const StatCard = ({ 
+    title, 
+    value, 
+    subtitle, 
+    icon: Icon, 
+    trend, 
+    trendValue 
+  }: {
     title: string
-    value: string | number
-    change?: number
-    icon: React.ElementType
-    color: string
+    value: number | string
+    subtitle?: string
+    icon: any
+    trend?: 'up' | 'down'
+    trendValue?: string
   }) => (
-    <Card>
+    <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300">
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            <p className="text-2xl font-bold">{value}</p>
-            {change !== undefined && (
-              <div className={`flex items-center text-xs ${change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {change >= 0 ? <ArrowUpRight className="h-3 w-3 mr-1" /> : <ArrowDownRight className="h-3 w-3 mr-1" />}
-                {Math.abs(change).toFixed(1)}% so với tháng trước
-              </div>
+            <p className="text-sm font-medium text-slate-600 mb-1">{title}</p>
+            <p className="text-2xl font-bold text-slate-800">{value}</p>
+            {subtitle && (
+              <p className="text-xs text-slate-500 mt-1">{subtitle}</p>
             )}
           </div>
-          <div className={`p-3 rounded-full ${color}`}>
-            <Icon className="h-6 w-6" />
+          <div className="flex flex-col items-end">
+            <div className="p-3 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+              <Icon className="h-6 w-6" />
+            </div>
+            {trend && trendValue && (
+              <div className={`flex items-center mt-2 text-xs font-medium ${
+                trend === 'up' ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {trend === 'up' ? (
+                  <ArrowUpRight className="h-3 w-3 mr-1" />
+                ) : (
+                  <ArrowDownRight className="h-3 w-3 mr-1" />
+                )}
+                {trendValue}
+              </div>
+            )}
           </div>
         </div>
       </CardContent>
@@ -256,12 +304,28 @@ export function AdminDashboard() {
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[...Array(4)].map((_, i) => (
-            <Card key={i}>
+            <Card key={i} className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
               <CardContent className="p-6">
                 <div className="animate-pulse">
-                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                  <div className="h-8 bg-gray-200 rounded w-1/2 mb-2"></div>
-                  <div className="h-3 bg-gray-200 rounded w-full"></div>
+                  <div className="h-4 bg-slate-200 rounded w-3/4 mb-2"></div>
+                  <div className="h-8 bg-slate-200 rounded w-1/2 mb-2"></div>
+                  <div className="h-3 bg-slate-200 rounded w-full"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i} className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
+              <CardContent className="p-6">
+                <div className="animate-pulse">
+                  <div className="h-6 bg-slate-200 rounded w-1/3 mb-4"></div>
+                  <div className="space-y-3">
+                    {[...Array(3)].map((_, j) => (
+                      <div key={j} className="h-4 bg-slate-200 rounded w-full"></div>
+                    ))}
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -276,16 +340,16 @@ export function AdminDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">Tổng quan hệ thống quản lý bài thi</p>
+          <h1 className="text-3xl font-bold text-slate-800 font-heading">Dashboard</h1>
+          <p className="text-slate-600 font-body">Tổng quan hệ thống quản lý bài thi</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleRefresh} disabled={refreshing}>
+          <Button variant="outline" onClick={handleRefresh} disabled={refreshing} className="btn-secondary">
             <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
             Làm mới
           </Button>
           <Link href="/admin/quiz/create">
-            <Button>
+            <Button className="btn-primary">
               <Plus className="h-4 w-4 mr-2" />
               Tạo bài thi
             </Button>
@@ -298,183 +362,146 @@ export function AdminDashboard() {
         <StatCard
           title="Tổng bài thi"
           value={stats.totalQuizzes}
-          change={stats.trendsData.quizzesGrowth}
+          subtitle={`${stats.trendsData.quizzesGrowth}% so với tháng trước`}
           icon={BookOpen}
-          color="bg-blue-100 text-blue-600"
+          trend="up"
+          trendValue={`+${stats.trendsData.quizzesGrowth}%`}
         />
         <StatCard
           title="Đang hoạt động"
           value={stats.activeQuizzes}
           icon={CheckCircle}
-          color="bg-green-100 text-green-600"
         />
         <StatCard
           title="Lượt làm bài"
           value={stats.totalAttempts}
-          change={stats.trendsData.attemptsGrowth}
+          subtitle={`${stats.trendsData.attemptsGrowth}% so với tháng trước`}
           icon={TrendingUp}
-          color="bg-orange-100 text-orange-600"
+          trend="up"
+          trendValue={`+${stats.trendsData.attemptsGrowth}%`}
         />
         <StatCard
           title="Điểm trung bình"
-          value={`${stats.avgScore.toFixed(1)}%`}
+          value={`${stats.avgScore}%`}
           icon={Star}
-          color="bg-purple-100 text-purple-600"
         />
       </div>
 
       {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Quizzes */}
-        <div className="lg:col-span-2 space-y-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Bài thi gần đây</CardTitle>
-                <CardDescription>Những bài thi được tạo mới nhất</CardDescription>
-              </div>
-              <Link href="/admin/quizzes">
-                <Button variant="outline" size="sm">
-                  Xem tất cả
-                </Button>
-              </Link>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {recentQuizzes.map((quiz) => (
-                  <div key={quiz.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50">
+        <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5 text-blue-600" />
+              Bài thi gần đây
+            </CardTitle>
+            <CardDescription>Danh sách các bài thi được tạo gần đây</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {recentQuizzes.length === 0 ? (
+                <div className="text-center py-8 text-slate-500">
+                  <BookOpen className="h-12 w-12 mx-auto mb-4 text-slate-300" />
+                  <p>Chưa có bài thi nào</p>
+                </div>
+              ) : (
+                recentQuizzes.map((quiz) => (
+                  <div key={quiz.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50/50 hover:bg-slate-100/50 transition-colors">
                     <div className="flex-1">
-                      <h4 className="font-medium">{quiz.title}</h4>
-                      <p className="text-sm text-muted-foreground">{quiz.questions.length} câu hỏi • {quiz.timeLimit} phút</p>
-                      <div className="flex items-center gap-2 mt-2">
-                        <Badge variant={quiz.isActive ? "default" : "secondary"}>
-                          {quiz.isActive ? "Hoạt động" : "Tạm dừng"}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground">
-                          {formatDistanceToNow(new Date(quiz.createdAt), { addSuffix: true, locale: vi })}
-                        </span>
-                      </div>
+                      <h4 className="font-medium text-slate-800">{quiz.title}</h4>
+                      <p className="text-sm text-slate-600">{quiz.questions.length} câu hỏi</p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex items-center gap-2">
+                      <Badge variant={quiz.isActive ? "default" : "secondary"}>
+                        {quiz.isActive ? "Hoạt động" : "Tạm dừng"}
+                      </Badge>
                       <Link href={`/quiz/${quiz.id}`}>
                         <Button variant="ghost" size="sm">
                           <Eye className="h-4 w-4" />
                         </Button>
                       </Link>
-                      <Link href={`/admin/quiz/edit/${quiz.id}`}>
-                        <Button variant="ghost" size="sm">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      </Link>
                     </div>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                ))
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* Top Performing Quizzes */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Bài thi phổ biến</CardTitle>
-              <CardDescription>Dựa trên số lượt làm bài</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {topQuizzes.map((quiz, index) => (
-                  <div key={quiz.id} className="flex items-center gap-4">
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium">
-                      {index + 1}
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-medium">{quiz.title}</h4>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span>{quiz.attemptCount} lượt làm</span>
-                        <span>Điểm TB: {quiz.avgScore.toFixed(1)}%</span>
+        {/* Top Quizzes */}
+        <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-green-600" />
+              Bài thi phổ biến
+            </CardTitle>
+            <CardDescription>Top bài thi có nhiều lượt làm nhất</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {topQuizzes.length === 0 ? (
+                <div className="text-center py-8 text-slate-500">
+                  <TrendingUp className="h-12 w-12 mx-auto mb-4 text-slate-300" />
+                  <p>Chưa có dữ liệu thống kê</p>
+                </div>
+              ) : (
+                topQuizzes.map((quiz, index) => (
+                  <div key={quiz.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50/50 hover:bg-slate-100/50 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white flex items-center justify-center text-sm font-bold">
+                        {index + 1}
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-medium text-slate-800">{quiz.title}</h4>
+                        <p className="text-sm text-slate-600">{quiz.attemptCount} lượt làm</p>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Recent Activities */}
-        <div>
-          <Card>
-            <CardHeader>
-              <CardTitle>Hoạt động gần đây</CardTitle>
-              <CardDescription>Các sự kiện mới nhất trong hệ thống</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {recentActivities.map((activity) => (
-                  <div key={activity.id} className="flex gap-3">
-                    <div className="mt-1">
-                      {getActivityIcon(activity.type)}
-                    </div>
-                    <div className="flex-1 space-y-1">
-                      <p className="text-sm font-medium">{activity.title}</p>
-                      <p className="text-sm text-muted-foreground">{activity.description}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true, locale: vi })}
-                      </p>
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-slate-800">{Math.round(quiz.avgScore)}%</p>
+                      <p className="text-xs text-slate-600">điểm TB</p>
                     </div>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+                ))
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Quick Actions */}
-      <Card>
+      {/* Recent Activity */}
+      <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
         <CardHeader>
-          <CardTitle>Thao tác nhanh</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Activity className="h-5 w-5 text-purple-600" />
+            Hoạt động gần đây
+          </CardTitle>
+          <CardDescription>Những hoạt động mới nhất trong hệ thống</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Link href="/admin/quiz/create">
-              <Button variant="outline" className="w-full justify-start h-auto p-4">
-                <Plus className="h-5 w-5 mr-3" />
-                <div className="text-left">
-                  <div className="font-medium">Tạo bài thi mới</div>
-                  <div className="text-sm text-muted-foreground">Thêm bài thi trắc nghiệm</div>
+          <div className="space-y-4">
+            {recentActivities.length === 0 ? (
+              <div className="text-center py-8 text-slate-500">
+                <Activity className="h-12 w-12 mx-auto mb-4 text-slate-300" />
+                <p>Chưa có hoạt động nào</p>
+              </div>
+            ) : (
+              recentActivities.map((activity) => (
+                <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg bg-slate-50/50 hover:bg-slate-100/50 transition-colors">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 text-white flex items-center justify-center text-sm">
+                    {activity.type === 'quiz_completed' && <CheckCircle className="h-4 w-4" />}
+                    {activity.type === 'quiz_created' && <Plus className="h-4 w-4" />}
+                    {activity.type === 'user_registered' && <Users className="h-4 w-4" />}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm text-slate-800">{activity.description}</p>
+                    <p className="text-xs text-slate-500 mt-1">
+                      {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true, locale: vi })}
+                    </p>
+                  </div>
                 </div>
-              </Button>
-            </Link>
-            
-            <Link href="/admin/quizzes">
-              <Button variant="outline" className="w-full justify-start h-auto p-4">
-                <BookOpen className="h-5 w-5 mr-3" />
-                <div className="text-left">
-                  <div className="font-medium">Quản lý bài thi</div>
-                  <div className="text-sm text-muted-foreground">Xem và chỉnh sửa</div>
-                </div>
-              </Button>
-            </Link>
-            
-            <Link href="/admin/users">
-              <Button variant="outline" className="w-full justify-start h-auto p-4">
-                <Users className="h-5 w-5 mr-3" />
-                <div className="text-left">
-                  <div className="font-medium">Quản lý users</div>
-                  <div className="text-sm text-muted-foreground">Danh sách người dùng</div>
-                </div>
-              </Button>
-            </Link>
-            
-            <Link href="/admin/analytics">
-              <Button variant="outline" className="w-full justify-start h-auto p-4">
-                <BarChart3 className="h-5 w-5 mr-3" />
-                <div className="text-left">
-                  <div className="font-medium">Báo cáo</div>
-                  <div className="text-sm text-muted-foreground">Thống kê chi tiết</div>
-                </div>
-              </Button>
-            </Link>
+              ))
+            )}
           </div>
         </CardContent>
       </Card>
