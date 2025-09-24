@@ -64,7 +64,7 @@ export function Navbar() {
   }
 
   return (
-    <nav className="border-b bg-white/80 backdrop-blur-md shadow-sm" suppressHydrationWarning>
+    <nav className="fixed top-0 left-0 right-0 z-50 border-b bg-white/80 backdrop-blur-md shadow-sm" suppressHydrationWarning>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" suppressHydrationWarning>
         <div className="flex justify-between h-16" suppressHydrationWarning>
           <div className="flex items-center">
@@ -73,6 +73,25 @@ export function Navbar() {
                 <BookOpen className="h-6 w-6" />
               </div>
               <span className="text-xl font-bold text-gradient">QuizMaster</span>
+            </Link>
+          </div>
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-8">
+            <Link href="/" className="text-slate-600 hover:text-blue-600 font-medium transition-colors">
+              Trang chủ
+            </Link>
+            <Link href="#features" className="text-slate-600 hover:text-blue-600 font-medium transition-colors">
+              Tính năng
+            </Link>
+            <Link href="#about" className="text-slate-600 hover:text-blue-600 font-medium transition-colors">
+              Giới thiệu
+            </Link>
+            <Link href="#contact" className="text-slate-600 hover:text-blue-600 font-medium transition-colors">
+              Liên hệ
+            </Link>
+            <Link href="/guide" className="text-slate-600 hover:text-blue-600 font-medium transition-colors">
+              Hướng dẫn
             </Link>
           </div>
 

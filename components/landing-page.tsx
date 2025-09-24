@@ -15,10 +15,13 @@ import Link from "next/link"
 export function LandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50">
+      {/* Navbar Spacer */}
+      <div className="h-20"></div>
+      
       {/* Hero Section */}
-      <section className="relative py-20 px-6">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-cyan-500/5 to-blue-600/5 rounded-2xl"></div>
-        <div className="relative max-w-6xl mx-auto text-center">
+      <section className="relative px-6 pt-16 pb-20">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-cyan-500/5 to-blue-600/5 rounded-2xl -z-10"></div>
+        <div className="relative max-w-6xl mx-auto text-center z-10">
           <div className="mb-8">
             <Badge className="mb-4 bg-blue-100 text-blue-800 hover:bg-blue-200">
               <Brain className="h-4 w-4 mr-2" />
@@ -72,7 +75,7 @@ export function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 px-6">
+      <section id="features" className="py-20 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-slate-800 mb-4 font-heading">
@@ -166,16 +169,17 @@ export function LandingPage() {
       </section>
 
       {/* About Section */}
-      <section className="py-20 px-6 bg-white/50">
+      <section id="about" className="py-20 px-6 bg-white/50">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <h2 className="text-4xl font-bold text-slate-800 mb-6 font-heading">
-                Về chúng tôi
+                Về tác giả
               </h2>
               <p className="text-lg text-slate-600 font-body mb-6">
-                QuizMaster được phát triển bởi đội ngũ chuyên gia giáo dục và công nghệ Việt Nam, 
-                với mong muốn mang đến giải pháp luyện thi hiệu quả cho học sinh.
+                Tôi là <strong>Nguyễn Huy Điền</strong>, sinh viên năm cuối ngành Công nghệ thông tin 
+                tại Đại học Nam Cần Thơ. Chuyên về phát triển web fullstack với 
+                niềm đam mê tạo ra những sản phẩm công nghệ hữu ích cho cộng đồng.
               </p>
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
@@ -188,13 +192,13 @@ export function LandingPage() {
                   <div className="p-2 rounded-lg bg-green-100">
                     <Code className="h-5 w-5 text-green-600" />
                   </div>
-                  <span className="font-body">Công nghệ tiên tiến, dễ sử dụng</span>
+                  <span className="font-body">Fullstack Developer - Next.js, TypeScript</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-purple-100">
                     <Lightbulb className="h-5 w-5 text-purple-600" />
                   </div>
-                  <span className="font-body">Đổi mới liên tục, cải tiến không ngừng</span>
+                  <span className="font-body">Đang sinh sống và học tập tại Cần Thơ</span>
                 </div>
               </div>
             </div>
@@ -203,17 +207,98 @@ export function LandingPage() {
               <div className="relative bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-xl">
                 <div className="text-center">
                   <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full mx-auto mb-6 flex items-center justify-center">
-                    <Globe className="h-12 w-12 text-white" />
+                    <Code className="h-12 w-12 text-white" />
                   </div>
                   <h3 className="text-2xl font-bold text-slate-800 mb-4 font-heading">
-                    Made in Vietnam
+                    Dự án cá nhân
                   </h3>
-                  <p className="text-slate-600 font-body">
-                    Sản phẩm được phát triển 100% tại Việt Nam, 
-                    hiểu rõ nhu cầu và đặc thù của học sinh Việt Nam
+                  <p className="text-slate-600 font-body mb-4">
+                    Được phát triển với công nghệ hiện đại: Next.js 14, 
+                    TypeScript, Firebase và Tailwind CSS
                   </p>
+                  <div className="text-sm text-slate-500">
+                    🎓 Đại học Nam Cần Thơ<br/>
+                    📍 Cần Thơ, Việt Nam
+                  </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Section */}
+      <section id="contact" className="py-20 px-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold text-slate-800 mb-4 font-heading">
+              Liên hệ
+            </h2>
+            <p className="text-xl text-slate-600 font-body">
+              Kết nối với tôi qua các kênh sau
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* GitHub */}
+            <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300">
+              <CardContent className="p-6 text-center">
+                <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
+                  <Code className="h-8 w-8 text-gray-700" />
+                </div>
+                <h3 className="font-bold text-lg mb-2">GitHub</h3>
+                <p className="text-slate-600 mb-4 font-mono text-sm">huydien23</p>
+                <Button variant="outline" size="sm" asChild>
+                  <a href="https://github.com/huydien23" target="_blank" rel="noopener noreferrer">
+                    Xem Profile
+                  </a>
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Facebook */}
+            <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300">
+              <CardContent className="p-6 text-center">
+                <div className="w-16 h-16 bg-blue-100 rounded-full mx-auto mb-4 flex items-center justify-center">
+                  <Users className="h-8 w-8 text-blue-600" />
+                </div>
+                <h3 className="font-bold text-lg mb-2">Facebook</h3>
+                <p className="text-slate-600 mb-4">Nguyễn Huy Điền</p>
+                <Button variant="outline" size="sm" asChild>
+                  <a href="https://www.facebook.com/profile.php?id=100015449474747" target="_blank" rel="noopener noreferrer">
+                    Kết bạn
+                  </a>
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Zalo */}
+            <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300">
+              <CardContent className="p-6 text-center">
+                <div className="w-16 h-16 bg-green-100 rounded-full mx-auto mb-4 flex items-center justify-center">
+                  <Smartphone className="h-8 w-8 text-green-600" />
+                </div>
+                <h3 className="font-bold text-lg mb-2">Zalo</h3>
+                <p className="text-slate-600 mb-4 font-mono">0945700813</p>
+                <Button variant="outline" size="sm" asChild>
+                  <a href="tel:0945700813">
+                    Gọi điện
+                  </a>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="text-center mt-12">
+            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-2xl p-8">
+              <h3 className="text-2xl font-bold text-slate-800 mb-4 font-heading">
+                Cảm ơn bạn đã quan tâm!
+              </h3>
+              <p className="text-slate-600 font-body max-w-2xl mx-auto">
+                QuizMaster là dự án tốt nghiệp của tôi, được phát triển với mong muốn 
+                tạo ra công cụ hữu ích cho việc luyện thi trắc nghiệm. Mọi góp ý và 
+                phản hồi đều rất được hoan nghênh!
+              </p>
             </div>
           </div>
         </div>
