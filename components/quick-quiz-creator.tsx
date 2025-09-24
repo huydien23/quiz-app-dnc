@@ -158,12 +158,14 @@ export function QuickQuizCreator() {
         description: quizData.description,
         timeLimit: quizData.timeLimit,
         questions: quizData.questions.map(q => ({
+          id: q.id || `${Date.now()}-${Math.random()}`,
           question: q.question,
           options: q.options,
           correctAnswer: q.correctAnswer
         })),
         isActive: true,
-        createdBy: user?.id || ""
+        createdBy: user?.id || "",
+        createdAt: new Date().toISOString()
       }
 
       await QuizService.createQuiz(quiz)

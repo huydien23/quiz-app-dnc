@@ -84,6 +84,7 @@ export function AdminDashboard() {
           ],
           timeLimit: 60,
           isActive: true,
+          createdBy: "admin",
           createdAt: new Date().toISOString()
         },
         {
@@ -95,6 +96,7 @@ export function AdminDashboard() {
           ],
           timeLimit: 45,
           isActive: true,
+          createdBy: "admin",
           createdAt: new Date().toISOString()
         }
       ]

@@ -5,7 +5,12 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
-import { Upload, FileText, File, FileSpreadsheet, Loader2, CheckCircle, AlertTriangle } from "lucide-react"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Upload, FileText, File, FileSpreadsheet, Loader2, CheckCircle, AlertTriangle, Edit, Save, ArrowLeft } from "lucide-react"
 import type { Question } from "@/lib/types"
 
 interface QuizFileUploaderProps {
@@ -17,6 +22,7 @@ interface ParsedQuizData {
   description?: string
   timeLimit?: number
   questions: Question[]
+  warnings?: string[]
 }
 
 export function EnhancedQuizFileUploader({ onQuestionsImported }: QuizFileUploaderProps) {
@@ -24,6 +30,9 @@ export function EnhancedQuizFileUploader({ onQuestionsImported }: QuizFileUpload
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
   const [fileInfo, setFileInfo] = useState<{ name: string; size: number } | null>(null)
+  const [previewMode, setPreviewMode] = useState(false)
+  const [parsedData, setParsedData] = useState<ParsedQuizData | null>(null)
+  const [editingQuestions, setEditingQuestions] = useState<Question[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const supportedFormats = [
@@ -77,22 +86,38 @@ export function EnhancedQuizFileUploader({ onQuestionsImported }: QuizFileUpload
         throw new Error("Không tìm thấy câu hỏi nào trong file")
       }
 
-      // Validate questions
-      const validQuestions = parsedData.questions.filter(q => 
-        q.question && q.options && q.options.length >= 2
-      )
+      // Validate questions but don't filter out incomplete ones
+      const processedQuestions = parsedData.questions.map((q, index) => {
+        const hasValidOptions = q.options && q.options.length >= 2
+        const hasMissingAnswer = q.correctAnswer === -1
+        const hasValidQuestion = q.question && q.question.trim().length > 0
+        
+        let warning = ''
+        let hasWarning = false
+        
+        if (!hasValidQuestion) {
+          warning = 'Thiếu nội dung câu hỏi'
+          hasWarning = true
+        } else if (!hasValidOptions) {
+          warning = 'Cần ít nhất 2 lựa chọn'
+          hasWarning = true
+        } else if (hasMissingAnswer) {
+          warning = 'Chưa có đáp án đúng'
+          hasWarning = true
+        }
+        
+        return {
+          ...q,
+          hasWarning,
+          warningMessage: warning
+        }
+      })
 
-      if (validQuestions.length === 0) {
-        throw new Error("Không có câu hỏi hợp lệ nào trong file")
-      }
-
-      onQuestionsImported(validQuestions)
-      setSuccess(`Đã import thành công ${validQuestions.length} câu hỏi từ file ${file.name}`)
-      
-      // Reset file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ""
-      }
+      // Show preview mode instead of directly importing
+      setParsedData({ ...parsedData, questions: processedQuestions })
+      setEditingQuestions(processedQuestions)
+      setPreviewMode(true)
+      setSuccess(`Đã phân tích ${processedQuestions.length} câu hỏi từ file ${file.name}. Vui lòng kiểm tra và xác nhận.`)
     } catch (error: any) {
       console.error('File upload error:', error)
       setError(error.message || "Có lỗi xảy ra khi xử lý file")
@@ -148,17 +173,17 @@ export function EnhancedQuizFileUploader({ onQuestionsImported }: QuizFileUpload
               throw new Error(`Câu hỏi ${index + 1} cần ít nhất 2 lựa chọn`)
             }
             
-            // Handle both 'correct' and 'correctAnswer' fields
-            let correctAnswer = 0
-            if (typeof q.correctAnswer === 'number') {
+            // Handle both 'correct' and 'correctAnswer' fields - default to -1 (unknown)
+            let correctAnswer = -1
+            if (typeof q.correctAnswer === 'number' && q.correctAnswer >= 0) {
               correctAnswer = q.correctAnswer
-            } else if (typeof q.correct === 'number') {
+            } else if (typeof q.correct === 'number' && q.correct >= 0) {
               correctAnswer = q.correct
             }
             
-            // Validate correct answer index
-            if (correctAnswer < 0 || correctAnswer >= q.options.length) {
-              correctAnswer = 0 // Default to first option if invalid
+            // Validate correct answer index - keep -1 if invalid
+            if (correctAnswer >= 0 && (correctAnswer < 0 || correctAnswer >= q.options.length)) {
+              correctAnswer = -1 // Set to unknown if invalid index
             }
             
             return {
@@ -280,14 +305,16 @@ export function EnhancedQuizFileUploader({ onQuestionsImported }: QuizFileUpload
               String(row[4] || "").trim(),
             ]
             
-            let correctAnswer = 0
-            const correctAnswerLetter = String(row[5] || "A").trim().toUpperCase()
-            switch (correctAnswerLetter) {
-              case "A": correctAnswer = 0; break
-              case "B": correctAnswer = 1; break
-              case "C": correctAnswer = 2; break
-              case "D": correctAnswer = 3; break
-              default: correctAnswer = 0
+            let correctAnswer = -1 // Default to unknown
+            if (row[5] && String(row[5]).trim()) {
+              const correctAnswerLetter = String(row[5]).trim().toUpperCase()
+              switch (correctAnswerLetter) {
+                case "A": correctAnswer = 0; break
+                case "B": correctAnswer = 1; break
+                case "C": correctAnswer = 2; break
+                case "D": correctAnswer = 3; break
+                default: correctAnswer = -1 // Keep unknown if invalid
+              }
             }
             
             const explanation = String(row[6] || "").trim()
@@ -345,7 +372,7 @@ export function EnhancedQuizFileUploader({ onQuestionsImported }: QuizFileUpload
         
         if (options.length !== 4) return
         
-        let correctAnswer = 0
+        let correctAnswer = -1 // Default to unknown
         const answerLine = lines.find(line => 
           line.toLowerCase().startsWith('answer:') || 
           line.toLowerCase().startsWith('đáp án:')
@@ -358,6 +385,7 @@ export function EnhancedQuizFileUploader({ onQuestionsImported }: QuizFileUpload
             case "B": correctAnswer = 1; break
             case "C": correctAnswer = 2; break
             case "D": correctAnswer = 3; break
+            default: correctAnswer = -1 // Keep unknown if invalid
           }
         }
         
@@ -394,6 +422,179 @@ export function EnhancedQuizFileUploader({ onQuestionsImported }: QuizFileUpload
     const sizes = ['Bytes', 'KB', 'MB', 'GB']
     const i = Math.floor(Math.log(bytes) / Math.log(k))
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+  }
+
+  const handleQuestionUpdate = (index: number, field: string, value: any) => {
+    const updatedQuestions = [...editingQuestions]
+    updatedQuestions[index] = {
+      ...updatedQuestions[index],
+      [field]: value
+    }
+    
+    // Update warnings
+    if (field === 'correctAnswer' && value !== -1) {
+      updatedQuestions[index].hasWarning = false
+      updatedQuestions[index].warningMessage = ''
+    }
+    
+    setEditingQuestions(updatedQuestions)
+  }
+
+  const handleConfirmImport = () => {
+    if (editingQuestions.length === 0) return
+    
+    onQuestionsImported(editingQuestions)
+    setSuccess(`Đã import thành công ${editingQuestions.length} câu hỏi!`)
+    setPreviewMode(false)
+    setParsedData(null)
+    setEditingQuestions([])
+    
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
+    }
+  }
+
+  const handleCancelPreview = () => {
+    setPreviewMode(false)
+    setParsedData(null)
+    setEditingQuestions([])
+    setError("")
+    setSuccess("")
+  }
+
+  if (previewMode && parsedData) {
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Edit className="h-5 w-5" />
+                Kiểm tra và chỉnh sửa câu hỏi
+              </CardTitle>
+              <CardDescription>
+                Đã phân tích {editingQuestions.length} câu hỏi. Vui lòng kiểm tra và sửa lỗi trước khi import.
+              </CardDescription>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={handleCancelPreview}>
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Quay lại
+              </Button>
+              <Button onClick={handleConfirmImport} className="bg-green-600 hover:bg-green-700">
+                <Save className="h-4 w-4 mr-2" />
+                Xác nhận import
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {/* Summary */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-slate-50 rounded-lg">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600">{editingQuestions.length}</div>
+                <div className="text-sm text-slate-600">Tổng câu hỏi</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-red-600">
+                  {editingQuestions.filter(q => q.hasWarning).length}
+                </div>
+                <div className="text-sm text-slate-600">Câu cần sửa</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600">
+                  {editingQuestions.filter(q => !q.hasWarning).length}
+                </div>
+                <div className="text-sm text-slate-600">Câu hoàn chỉnh</div>
+              </div>
+            </div>
+
+            {/* Questions Table */}
+            <div className="border rounded-lg">
+              <div className="max-h-96 overflow-y-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12">#</TableHead>
+                      <TableHead>Câu hỏi</TableHead>
+                      <TableHead className="w-32">Đáp án đúng</TableHead>
+                      <TableHead className="w-24">Trạng thái</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {editingQuestions.map((question, index) => (
+                      <TableRow key={index} className={question.hasWarning ? 'bg-red-50' : ''}>
+                        <TableCell className="font-medium">{index + 1}</TableCell>
+                        <TableCell>
+                          <div className="space-y-1">
+                            <div className="font-medium text-sm">
+                              {question.question || <span className="text-red-500 italic">Thiếu câu hỏi</span>}
+                            </div>
+                            <div className="text-xs text-slate-500">
+                              {question.options?.length || 0} lựa chọn
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Select
+                            value={question.correctAnswer.toString()}
+                            onValueChange={(value) => handleQuestionUpdate(index, 'correctAnswer', parseInt(value))}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue>
+                                {question.correctAnswer === -1 ? 'Chưa chọn' : `Lựa chọn ${String.fromCharCode(65 + question.correctAnswer)}`}
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="-1">Chưa chọn</SelectItem>
+                              {question.options?.map((option, optIndex) => (
+                                <SelectItem key={optIndex} value={optIndex.toString()}>
+                                  {String.fromCharCode(65 + optIndex)}: {option.substring(0, 30)}...
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell>
+                          {question.hasWarning ? (
+                            <Badge variant="destructive" className="text-xs">
+                              <AlertTriangle className="h-3 w-3 mr-1" />
+                              Lỗi
+                            </Badge>
+                          ) : (
+                            <Badge variant="default" className="text-xs bg-green-600">
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              OK
+                            </Badge>
+                          )}
+                          {question.warningMessage && (
+                            <div className="text-xs text-red-600 mt-1">
+                              {question.warningMessage}
+                            </div>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+
+            {/* Warnings */}
+            {editingQuestions.some(q => q.hasWarning) && (
+              <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  Có {editingQuestions.filter(q => q.hasWarning).length} câu hỏi cần kiểm tra. Vui lòng chọn đáp án đúng cho các câu thiếu thông tin.
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (

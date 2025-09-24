@@ -71,7 +71,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50" style={{ marginTop: 0, paddingTop: 0 }}>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50 flex">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div 
@@ -83,7 +83,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       {/* Sidebar */}
       <div className={`
         fixed inset-y-0 left-0 z-50 w-64 bg-white/90 backdrop-blur-sm border-r border-slate-200/50
-        transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0
+        transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         <div className="flex flex-col h-full">
@@ -167,7 +167,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       </div>
 
       {/* Main content */}
-      <div className="lg:pl-64" style={{ marginTop: '-500px', paddingTop: '24px' }}>
+      <div className="flex-1 flex flex-col min-w-0">
         {/* Mobile header */}
         <div className="lg:hidden bg-white/90 backdrop-blur-sm border-b border-slate-200/50 px-4 py-3">
           <div className="flex items-center justify-between">
@@ -189,7 +189,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         </div>
 
         {/* Page content */}
-        <main className="p-6" style={{ marginTop: 0, paddingTop: '24px' }}>
+        <main className="flex-1 p-6 overflow-auto">
           {children}
         </main>
       </div>

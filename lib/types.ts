@@ -15,14 +15,18 @@ export interface Quiz {
   createdBy: string
   createdAt: string
   isActive: boolean
+  isDraft?: boolean // Draft status - cannot be taken by students
+  hasIncompleteQuestions?: boolean // Has questions with correctAnswer = -1
 }
 
 export interface Question {
   id: string
   question: string
   options: string[]
-  correctAnswer: number
+  correctAnswer: number // -1 = unknown/missing, 0-3 = A-D
   explanation?: string
+  hasWarning?: boolean // For import validation warnings
+  warningMessage?: string
 }
 
 export interface QuizAttempt {

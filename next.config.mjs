@@ -1,14 +1,20 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Enable strict mode for better development experience
+  reactStrictMode: true,
+  
+  // Don't ignore TypeScript and ESLint errors in production builds
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
+  
   images: {
     unoptimized: true,
   },
+  
   webpack: (config, { dev, isServer }) => {
     if (dev && !isServer) {
       config.watchOptions = {
@@ -18,8 +24,6 @@ const nextConfig = {
     }
     return config;
   },
-  // Suppress hydration warnings globally
-  reactStrictMode: false,
 };
 
 export default nextConfig;

@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ProtectedRoute } from "@/components/protected-route"
-import { QuizFileUploader } from "@/components/quiz-file-uploader"
+import { EnhancedQuizFileUploader } from "@/components/enhanced-quiz-file-uploader"
 import { QuizTemplateDownloader } from "@/components/quiz-template-downloader"
 import { QuizPreview } from "@/components/quiz-preview"
 import { QuickQuizCreator } from "@/components/quick-quiz-creator"
@@ -49,6 +49,13 @@ export default function CreateQuizPage() {
       return
     }
 
+    // Check for incomplete questions
+    const incompleteQuestions = quiz.questions.filter(q => q.correctAnswer === -1)
+    if (incompleteQuestions.length > 0 && quiz.isActive) {
+      setError(`Bài thi có ${incompleteQuestions.length} câu hỏi chưa có đáp án đúng. Vui lòng boả tích "Kích hoạt bài thi" để lưu nháp hoặc hoàn thành các câu hỏi.`)
+      return
+    }
+
     try {
       setLoading(true)
       setError("")
@@ -58,7 +65,9 @@ export default function CreateQuizPage() {
         description: quiz.description!,
         timeLimit: quiz.timeLimit!,
         isActive: quiz.isActive!,
-        questions: quiz.questions!
+        questions: quiz.questions!,
+        createdBy: user?.id || 'unknown',
+        createdAt: new Date().toISOString()
       })
 
       router.push("/admin/quizzes")
@@ -112,7 +121,14 @@ export default function CreateQuizPage() {
         )}
 
         {previewMode ? (
-          <QuizPreview quiz={quiz as Quiz} />
+          <QuizPreview 
+            questions={quiz.questions || []}
+            onRemoveQuestion={(index) => {
+              const updatedQuestions = [...(quiz.questions || [])]
+              updatedQuestions.splice(index, 1)
+              setQuiz(prev => ({ ...prev, questions: updatedQuestions }))
+            }}
+          />
         ) : (
           <Tabs defaultValue="basic" className="space-y-6">
             <TabsList>
@@ -225,7 +241,7 @@ export default function CreateQuizPage() {
                     <QuizTemplateDownloader />
                   </div>
                   
-                  <QuizFileUploader onQuestionsUpdate={handleQuestionsUpdate} />
+                  <EnhancedQuizFileUploader onQuestionsImported={handleQuestionsUpdate} />
                 </CardContent>
               </Card>
             </TabsContent>

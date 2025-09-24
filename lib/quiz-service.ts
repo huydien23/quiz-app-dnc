@@ -19,7 +19,7 @@ export class QuizService {
     return quizzes.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
   }
 
-  // Get all active quizzes
+  // Get all active quizzes (for students - exclude drafts and incomplete)
   static async getActiveQuizzes(): Promise<Quiz[]> {
     const quizzesRef = ref(database, "quizzes")
     const snapshot = await get(quizzesRef)
@@ -29,7 +29,8 @@ export class QuizService {
     const quizzes: Quiz[] = []
     snapshot.forEach((child) => {
       const quiz = { id: child.key, ...child.val() } as Quiz
-      if (quiz.isActive) {
+      // Only include active quizzes that are not drafts and don't have incomplete questions
+      if (quiz.isActive && !quiz.isDraft && !quiz.hasIncompleteQuestions) {
         quizzes.push(quiz)
       }
     })
@@ -48,17 +49,60 @@ export class QuizService {
   }
 
   // Create new quiz (admin only)
-  static async createQuiz(quiz: Omit<Quiz, "id">): Promise<string> {
+  static async createQuiz(quizData: Omit<Quiz, "id">): Promise<string> {
     const quizzesRef = ref(database, "quizzes")
     const newQuizRef = push(quizzesRef)
+    
+    // Check if quiz has incomplete questions
+    const hasIncompleteQuestions = quizData.questions?.some(q => q.correctAnswer === -1) || false
+    
+    // Prepare quiz with proper status
+    const quiz = {
+      ...quizData,
+      hasIncompleteQuestions,
+      // If quiz has incomplete questions, mark as draft and inactive
+      isDraft: hasIncompleteQuestions,
+      isActive: hasIncompleteQuestions ? false : (quizData.isActive ?? true),
+    }
+    
     await set(newQuizRef, quiz)
     return newQuizRef.key!
   }
 
   // Update quiz (admin only)
-  static async updateQuiz(id: string, quiz: Partial<Quiz>): Promise<void> {
+  static async updateQuiz(id: string, updates: Partial<Quiz>): Promise<void> {
     const quizRef = ref(database, `quizzes/${id}`)
-    await set(quizRef, quiz)
+    
+    // Get current quiz data first
+    const snapshot = await get(quizRef)
+    if (!snapshot.exists()) {
+      throw new Error('Quiz not found')
+    }
+    
+    const currentQuiz = snapshot.val() as Quiz
+    
+    // Merge updates with current data
+    const updatedQuiz = {
+      ...currentQuiz,
+      ...updates,
+      // Always preserve these fields if not explicitly updated
+      id: currentQuiz.id,
+      createdBy: currentQuiz.createdBy,
+      createdAt: currentQuiz.createdAt,
+    }
+    
+    // Check if quiz has incomplete questions
+    if (updatedQuiz.questions) {
+      updatedQuiz.hasIncompleteQuestions = updatedQuiz.questions.some(q => q.correctAnswer === -1)
+      
+      // If trying to activate a quiz with incomplete questions, set as draft
+      if (updates.isActive === true && updatedQuiz.hasIncompleteQuestions) {
+        updatedQuiz.isDraft = true
+        updatedQuiz.isActive = false
+      }
+    }
+    
+    await set(quizRef, updatedQuiz)
   }
 
   // Delete quiz (admin only)

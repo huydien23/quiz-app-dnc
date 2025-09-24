@@ -172,10 +172,23 @@ export default function AdminQuizzesPage() {
                       <Switch
                         checked={quiz.isActive}
                         onCheckedChange={(checked) => handleToggleActive(quiz.id, checked)}
+                        disabled={quiz.hasIncompleteQuestions}
                       />
-                      <Badge variant={quiz.isActive ? "default" : "secondary"}>
-                        {quiz.isActive ? "Hoạt động" : "Tạm dừng"}
-                      </Badge>
+                      <div className="flex flex-col gap-1">
+                        <Badge variant={quiz.isActive ? "default" : "secondary"}>
+                          {quiz.isActive ? "Hoạt động" : "Tạm dừng"}
+                        </Badge>
+                        {quiz.isDraft && (
+                          <Badge variant="outline" className="text-xs text-orange-600 border-orange-200">
+                            Nháp
+                          </Badge>
+                        )}
+                        {quiz.hasIncompleteQuestions && (
+                          <Badge variant="destructive" className="text-xs">
+                            Thiếu đáp án
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </CardHeader>
