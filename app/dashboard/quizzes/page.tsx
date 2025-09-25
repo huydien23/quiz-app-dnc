@@ -11,6 +11,7 @@ import {
   ArrowRight, Calendar, Users
 } from "lucide-react"
 import { QuizService } from "@/lib/quiz-service"
+import { AdminService } from "@/lib/admin-service"
 import { useAuth } from "@/hooks/use-auth"
 import type { Quiz } from "@/lib/types"
 import Link from "next/link"
@@ -28,6 +29,7 @@ export default function QuizzesPage() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
+  const [attemptCounts, setAttemptCounts] = useState<Record<string, number>>({})
 
   useEffect(() => {
     if (user) {
@@ -42,6 +44,13 @@ export default function QuizzesPage() {
       const activeQuizzes = allQuizzes.filter(quiz => quiz.isActive)
       setQuizzes(activeQuizzes)
       setFilteredQuizzes(activeQuizzes)
+
+      const allAttempts = await AdminService.getAllAttempts()
+      const counts = allAttempts.reduce((acc, a) => {
+        acc[a.quizId] = (acc[a.quizId] || 0) + 1
+        return acc
+      }, {} as Record<string, number>)
+      setAttemptCounts(counts)
     } catch (err) {
       console.error('Error loading quizzes:', err)
       error("Không thể tải danh sách bài thi")
@@ -189,7 +198,7 @@ export default function QuizzesPage() {
                     </div>
                     <div className="flex items-center gap-1">
                       <Users className="h-3 w-3" />
-                      <span>0 lượt làm</span>
+                      <span>{attemptCounts[quiz.id] || 0} lượt làm</span>
                     </div>
                   </div>
 

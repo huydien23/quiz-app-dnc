@@ -62,6 +62,7 @@ export function StudentDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard")
   const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null)
   const [showQuiz, setShowQuiz] = useState(false)
+  const [attemptCounts, setAttemptCounts] = useState<Record<string, number>>({})
 
   useEffect(() => {
     if (user) {
@@ -101,6 +102,13 @@ export function StudentDashboard() {
         new Set(myAttempts.map(attempt => attempt.quizId)).size,
         activeQuizzes.length
       )
+
+      // Build attempt counts by quiz for display
+      const attemptCountsMap = allAttempts.reduce((acc, attempt) => {
+        acc[attempt.quizId] = (acc[attempt.quizId] || 0) + 1
+        return acc
+      }, {} as Record<string, number>)
+      setAttemptCounts(attemptCountsMap)
 
       // Calculate rank (simplified)
       const userScores = allAttempts.reduce((acc, attempt) => {
@@ -489,11 +497,17 @@ export function StudentDashboard() {
                               </div>
                               <span className="font-medium">{quiz.questions?.length || 0} câu</span>
                             </div>
-                            <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2">
                               <div className="p-1.5 rounded-lg bg-cyan-100">
                                 <Clock className="h-4 w-4 text-cyan-600" />
                               </div>
                               <span className="font-medium">{quiz.timeLimit} phút</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="p-1.5 rounded-lg bg-slate-100">
+                                <Users className="h-4 w-4 text-slate-600" />
+                              </div>
+                              <span className="font-medium">{attemptCounts[quiz.id] || 0} lượt làm</span>
                             </div>
                           </div>
 

@@ -199,7 +199,7 @@ export default function QuizPage() {
     <ProtectedRoute>
       <div className="container mx-auto px-4 py-6 max-w-6xl">
         {/* Enhanced Sticky Header - Mobile Optimized */}
-        <div className="sticky top-0 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-800 text-white shadow-2xl z-10 rounded-b-2xl mb-4 md:mb-8">
+<div className="sticky top-0 bg-white/95 backdrop-blur border-b border-slate-200 text-slate-900 shadow-sm z-10 mb-4 md:mb-8">
           <div className="px-4 md:px-6 py-4 md:py-6">
             {/* Mobile Layout */}
             <div className="md:hidden">
@@ -210,7 +210,7 @@ export default function QuizPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h1 className="text-lg font-bold truncate">{quiz.title}</h1>
-                    <p className="text-blue-100 text-sm">
+<p className="text-slate-500 text-sm">
                       {examSession.selectedQuestions.length}/{quiz.questions?.length || 0} câu
                     </p>
                   </div>
@@ -223,17 +223,17 @@ export default function QuizPage() {
                       {formatTime(timeLeft)}
                     </span>
                   </div>
-                  <p className="text-blue-100 text-xs">Thời gian</p>
+<p className="text-slate-500 text-xs">Thời gian</p>
                 </div>
               </div>
               
               {/* Mobile Progress */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-blue-100 text-sm font-medium">Tiến độ</span>
-                  <span className="text-blue-100 text-sm font-medium">{Math.round(progress)}%</span>
+<span className="text-slate-600 text-sm font-medium">Tiến độ</span>
+<span className="text-slate-600 text-sm font-medium">{Math.round(progress)}%</span>
                 </div>
-                <div className="w-full bg-white/20 rounded-full h-2">
+<div className="w-full bg-slate-200 rounded-full h-2">
                   <div 
                     className="bg-gradient-to-r from-green-400 to-green-500 h-2 rounded-full transition-all duration-500 ease-out"
                     style={{ width: `${progress}%` }}
@@ -246,12 +246,12 @@ export default function QuizPage() {
             <div className="hidden md:block">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center space-x-4">
-                  <div className="p-3 rounded-xl bg-white/20 backdrop-blur-sm">
+<div className="p-3 rounded-xl bg-slate-100">
                     <BookOpen className="h-8 w-8" />
                   </div>
                   <div>
                     <h1 className="text-3xl font-bold">{quiz.title}</h1>
-                    <p className="text-blue-100 text-lg">
+<p className="text-slate-500 text-lg">
                       Đã chọn ngẫu nhiên {examSession.selectedQuestions.length} câu từ tổng số {quiz.questions?.length || 0} câu
                     </p>
                   </div>
@@ -266,7 +266,7 @@ export default function QuizPage() {
                         {formatTime(timeLeft)}
                       </span>
                     </div>
-                    <p className="text-blue-100 text-sm">Thời gian còn lại</p>
+<p className="text-slate-500 text-sm">Thời gian còn lại</p>
                   </div>
                   
                   {/* Progress */}
@@ -285,10 +285,10 @@ export default function QuizPage() {
               {/* Desktop Progress Bar */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-blue-100 font-medium">Tiến độ làm bài</span>
-                  <span className="text-blue-100 font-medium">{Math.round(progress)}%</span>
+<span className="text-slate-600 font-medium">Tiến độ làm bài</span>
+<span className="text-slate-600 font-medium">{Math.round(progress)}%</span>
                 </div>
-                <div className="w-full bg-white/20 rounded-full h-4">
+<div className="w-full bg-slate-200 rounded-full h-3">
                   <div 
                     className="bg-gradient-to-r from-green-400 to-green-500 h-4 rounded-full transition-all duration-500 ease-out shadow-lg"
                     style={{ width: `${progress}%` }}
@@ -299,9 +299,11 @@ export default function QuizPage() {
           </div>
         </div>
 
+        {/* Questions layout: Left content, Right navigation */}
+        <div className="md:grid md:grid-cols-12 md:gap-8">
         {/* Enhanced Question Navigation - Mobile Optimized */}
-        <div className="mb-6 md:mb-8">
-          <div className="bg-white rounded-2xl shadow-lg p-4 md:p-6 border border-slate-200">
+        <div className="mb-6 md:mb-0 md:col-span-4 lg:col-span-3 md:order-2">
+          <div className="bg-white rounded-2xl shadow-lg p-4 md:p-6 border border-slate-200 md:sticky md:top-24">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-base md:text-lg font-semibold text-slate-800">Điều hướng câu hỏi</h3>
               <div className="hidden md:flex items-center space-x-2 text-sm text-slate-600">
@@ -328,7 +330,7 @@ export default function QuizPage() {
               </div>
             </div>
             
-            <div className="grid grid-cols-8 md:grid-cols-10 gap-1 md:gap-2">
+            <div className="grid grid-cols-5 gap-2">
               {examSession.selectedQuestions.map((_, index) => (
                 <button
                   key={index}
@@ -336,16 +338,16 @@ export default function QuizPage() {
                     const element = document.getElementById(`question-${index}`)
                     element?.scrollIntoView({ behavior: 'smooth', block: 'start' })
                   }}
-                  className={`w-8 h-8 md:w-12 md:h-12 rounded-lg md:rounded-xl border-2 flex items-center justify-center text-xs md:text-sm font-bold transition-all duration-200 hover:scale-105 ${
+                  className={`w-8 h-8 md:w-8 md:h-8 rounded-md border-2 flex items-center justify-center text-xs font-bold transition-all duration-200 hover:scale-105 ${
                     examSession.answers[index] !== -1
                       ? 'bg-gradient-to-br from-green-400 to-green-500 border-green-500 text-white shadow-lg'
                       : 'bg-slate-50 border-slate-300 text-slate-600 hover:bg-slate-100 hover:border-slate-400'
                   }`}
                 >
-                  {examSession.answers[index] !== -1 ? (
-                    <CheckCircle className="h-3 w-3 md:h-5 md:w-5" />
+                    {examSession.answers[index] !== -1 ? (
+                    <CheckCircle className="h-4 w-4" />
                   ) : (
-                    <span className="text-xs md:text-sm">{index + 1}</span>
+                    <span className="text-xs">{index + 1}</span>
                   )}
                 </button>
               ))}
@@ -354,7 +356,7 @@ export default function QuizPage() {
         </div>
 
         {/* Enhanced Questions List - Mobile Optimized */}
-        <div className="space-y-6 md:space-y-8 mb-8">
+        <div className="space-y-6 md:space-y-8 mb-8 md:col-span-8 lg:col-span-9 md:order-1">
           {examSession.selectedQuestions.map((question, index) => (
             <Card key={index} id={`question-${index}`} className="scroll-mt-32 border-0 shadow-xl bg-gradient-to-br from-white to-slate-50">
               <CardHeader className="pb-4 md:pb-6">
@@ -428,9 +430,10 @@ export default function QuizPage() {
             </Card>
           ))}
         </div>
+        </div>
 
         {/* Enhanced Submit Section - Mobile Optimized */}
-        <div className="sticky bottom-0 bg-gradient-to-r from-slate-50 to-white shadow-2xl border-t border-slate-200 pt-4 md:pt-6">
+<div className="sticky bottom-0 bg-white/95 backdrop-blur border-t border-slate-200 shadow-sm pt-4 md:pt-6">
           <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-4 md:p-6">
             {/* Mobile Layout */}
             <div className="md:hidden">

@@ -7,18 +7,26 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ProtectedRoute } from "@/components/protected-route"
 import { QuizService } from "@/lib/quiz-service"
+import { AdminService } from "@/lib/admin-service"
 import type { Quiz } from "@/lib/types"
 import { Clock, BookOpen, Users, Play } from "lucide-react"
 
 export default function QuizzesPage() {
   const [quizzes, setQuizzes] = useState<Quiz[]>([])
   const [loading, setLoading] = useState(true)
+  const [attemptCounts, setAttemptCounts] = useState<Record<string, number>>({})
 
   useEffect(() => {
     const loadQuizzes = async () => {
       try {
         const activeQuizzes = await QuizService.getActiveQuizzes()
         setQuizzes(activeQuizzes)
+        const allAttempts = await AdminService.getAllAttempts()
+        const counts = allAttempts.reduce((acc, a) => {
+          acc[a.quizId] = (acc[a.quizId] || 0) + 1
+          return acc
+        }, {} as Record<string, number>)
+        setAttemptCounts(counts)
       } catch (error) {
         // Handle error silently
       } finally {
@@ -83,7 +91,7 @@ export default function QuizzesPage() {
                     </div>
                     <div className="flex items-center">
                       <Users className="h-4 w-4 mr-1" />
-                      Trắc nghiệm
+                      {attemptCounts[quiz.id] || 0} lượt làm
                     </div>
                   </div>
 
