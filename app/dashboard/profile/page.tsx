@@ -23,7 +23,7 @@ interface UserProfile {
   name: string
   email: string
   avatar?: string
-  joinDate: Date
+  joinDate: string
   totalAttempts: number
   averageScore: number
   bestScore: number
@@ -57,13 +57,14 @@ export default function ProfilePage() {
   const loadProfile = async () => {
     try {
       setLoading(true)
-      // Mock data - in real app, this would come from API
+      // Build profile from auth context + placeholders
       const mockProfile: UserProfile = {
         id: user?.id || '',
         name: user?.name || 'Học sinh',
         email: user?.email || '',
         avatar: '',
-        joinDate: new Date('2024-01-15'),
+        // Use actual createdAt from user record if available
+        joinDate: user?.createdAt || new Date().toISOString(),
         totalAttempts: 25,
         averageScore: 78,
         bestScore: 95,
@@ -177,6 +178,16 @@ export default function ProfilePage() {
     )
   }
 
+  const safeFormatDistanceToNow = (value: any) => {
+    try {
+      const d = new Date(value)
+      if (Number.isNaN(d.getTime())) return 'không rõ'
+      return formatDistanceToNow(d, { addSuffix: true, locale: vi })
+    } catch {
+      return 'không rõ'
+    }
+  }
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -226,7 +237,7 @@ export default function ProfilePage() {
                   <div className="text-sm text-slate-500 font-body mb-6">
                     <div className="flex items-center justify-center gap-1 mb-1">
                       <Calendar className="h-4 w-4" />
-                      <span>Tham gia {formatDistanceToNow(profile.joinDate, { addSuffix: true, locale: vi })}</span>
+                      <span>Tham gia {safeFormatDistanceToNow(profile.joinDate)}</span>
                     </div>
                   </div>
 
@@ -351,7 +362,7 @@ export default function ProfilePage() {
                     <div>
                       <Label className="text-sm font-medium text-slate-700 font-body">Ngày tham gia</Label>
                       <p className="text-slate-800 font-body mt-1">
-                        {formatDistanceToNow(profile.joinDate, { addSuffix: true, locale: vi })}
+                        {safeFormatDistanceToNow(profile.joinDate)}
                       </p>
                     </div>
                   </div>
