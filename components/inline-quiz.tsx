@@ -51,6 +51,12 @@ export function InlineQuiz({ quiz, onClose, onComplete }: InlineQuizProps) {
     setStartTime(Date.now())
   }
 
+  const stripOptionLabel = (raw: string, optionIndex: number): string => {
+    const label = String.fromCharCode(65 + optionIndex)
+    const regex = new RegExp(`^\\s*${label}\\s*[\u002E\uFF0E\)\:]?\\s*`, 'i')
+    return raw.replace(regex, '')
+  }
+
   const handleAnswerSelect = (answerIndex: number) => {
     const newAnswers = [...selectedAnswers]
     newAnswers[currentQuestion] = answerIndex
@@ -225,7 +231,7 @@ export function InlineQuiz({ quiz, onClose, onComplete }: InlineQuizProps) {
                 }`}
               >
                 <span className="font-medium mr-3">{String.fromCharCode(65 + index)}.</span>
-                {option}
+                {stripOptionLabel(option, index)}
               </button>
             ))}
           </div>

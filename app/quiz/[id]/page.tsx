@@ -10,7 +10,9 @@ import { Progress } from "@/components/ui/progress"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger, DrawerClose } from "@/components/ui/drawer"
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from "@/components/ui/drawer"
+import { Switch } from "@/components/ui/switch"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { ProtectedRoute } from "@/components/protected-route"
 import { QuizService } from "@/lib/quiz-service"
 import { useAuth } from "@/hooks/use-auth"
@@ -40,6 +42,10 @@ export default function QuizPage() {
   const [submitting, setSubmitting] = useState(false)
   const [activeQuestion, setActiveQuestion] = useState(0)
   const [protectUnload, setProtectUnload] = useState(true)
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [showAnswerStatus, setShowAnswerStatus] = useState(true)
+  const [showMiniHeader, setShowMiniHeader] = useState(false)
+  const [autoAdvance, setAutoAdvance] = useState(true)
 
   // Shuffle array utility
   const shuffleArray = <T,>(array: T[]): T[] => {
@@ -77,11 +83,29 @@ export default function QuizPage() {
         const quizData = await QuizService.getQuizById(quizId)
         if (quizData) {
           setQuiz(quizData)
-          setTimeLeft(quizData.timeLimit * 60) // Convert minutes to seconds
-          
-          // Create exam session with random questions
-          const session = createExamSession(quizData)
-          setExamSession(session)
+
+          // Try restore from localStorage
+          const key = `exam_session_${quizId}`
+          const stored = (typeof window !== 'undefined') ? localStorage.getItem(key) : null
+          if (stored) {
+            try {
+              const data = JSON.parse(stored) as { questionIndices: number[]; answers: number[]; startTime: number }
+              const selectedQuestions = data.questionIndices.map((i) => quizData.questions[i])
+              setExamSession({ selectedQuestions, questionIndices: data.questionIndices, answers: data.answers, startTime: data.startTime })
+              const elapsed = Math.floor((Date.now() - data.startTime) / 1000)
+              setTimeLeft(Math.max(0, quizData.timeLimit * 60 - elapsed))
+            } catch {
+              // fallback create new session
+              const session = createExamSession(quizData)
+              setExamSession(session)
+              setTimeLeft(quizData.timeLimit * 60)
+            }
+          } else {
+            // Create new session
+            const session = createExamSession(quizData)
+            setExamSession(session)
+            setTimeLeft(quizData.timeLimit * 60) // Convert minutes to seconds
+          }
         } else {
           router.push("/quizzes")
         }
@@ -110,13 +134,26 @@ export default function QuizPage() {
     
     const newAnswers = [...examSession.answers]
     newAnswers[questionIndex] = answerIndex
-    setExamSession({
+    const updated = {
       ...examSession,
       answers: newAnswers
-    })
+    }
+    setExamSession(updated)
+
+    // persist to storage quickly
+    try {
+      const key = `exam_session_${quizId}`
+      localStorage.setItem(key, JSON.stringify({ questionIndices: updated.questionIndices, answers: updated.answers, startTime: updated.startTime }))
+    } catch {}
+
+    // auto-advance to next question if enabled
+    if (autoAdvance) {
+      const nextId = `question-${questionIndex + 1}`
+      setTimeout(() => document.getElementById(nextId)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120)
+    }
   }
 
-  const handleSubmit = useCallback(async () => {
+  const doSubmit = useCallback(async () => {
     if (!quiz || !user || !examSession || submitting) return
 
     setSubmitting(true)
@@ -147,16 +184,26 @@ export default function QuizPage() {
         timeSpent,
       }
 
-      await QuizService.submitQuizAttempt(attempt)
+      const attemptId = await QuizService.submitQuizAttempt({ ...attempt, questionIndices: examSession.questionIndices })
+      // Clear persisted session when finished
+      try { localStorage.removeItem(`exam_session_${quizId}`) } catch {}
       // Allow page unload when navigating to result
       setProtectUnload(false)
-      router.push(`/quiz/${quizId}/result?score=${scorePercentage}&correct=${correctAnswers}&total=${examSession.selectedQuestions.length}`)
+      router.push(`/quiz/${quizId}/result?attempt=${attemptId}`)
     } catch (error) {
       console.error('Error submitting quiz:', error)
     } finally {
       setSubmitting(false)
     }
   }, [quiz, user, examSession, quizId, router, submitting])
+
+  const [confirmOpen, setConfirmOpen] = useState(false)
+
+  const handleSubmit = () => setConfirmOpen(true)
+  const confirmSubmit = () => {
+    setConfirmOpen(false)
+    doSubmit()
+  }
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60)
@@ -168,6 +215,13 @@ export default function QuizPage() {
     if (seconds > 300) return "text-green-600" // > 5 minutes
     if (seconds > 60) return "text-yellow-600"  // > 1 minute
     return "text-red-600" // < 1 minute
+  }
+
+  // Remove duplicated option label like "A.", "A)", etc. if present in raw text
+  const stripOptionLabel = (raw: string, optionIndex: number): string => {
+    const label = String.fromCharCode(65 + optionIndex)
+    const regex = new RegExp(`^\\s*${label}\\s*[\u002E\uFF0E\)\:]?\\s*`, 'i') // dot (fullwidth/half), ) or :
+    return raw.replace(regex, '')
   }
 
   // Warn before leaving if exam in progress
@@ -202,6 +256,13 @@ export default function QuizPage() {
     elements.forEach((el) => observer.observe(el))
     return () => observer.disconnect()
   }, [examSession])
+
+  // Mini header appearance on scroll (mobile)
+  useEffect(() => {
+    const onScroll = () => setShowMiniHeader(window.scrollY > 200)
+    window.addEventListener('scroll', onScroll)
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   if (loading) {
     return (
@@ -337,6 +398,26 @@ export default function QuizPage() {
           </div>
         </div>
 
+        {/* Mini top bar on mobile */}
+        {showMiniHeader && (
+          <div className="fixed top-0 left-0 right-0 z-20 md:hidden bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
+            <div className="px-4 py-2 flex items-center justify-between text-sm">
+              <div className="font-semibold truncate max-w-[50%]">{quiz.title}</div>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1 text-slate-700">
+                  <Target className="h-4 w-4" />
+                  <span>{answeredQuestions}/{examSession.selectedQuestions.length}</span>
+                </div>
+                <div className="flex items-center gap-1 text-slate-700">
+                  <Timer className="h-4 w-4" />
+                  <span>{formatTime(timeLeft)}</span>
+                </div>
+                <Button size="sm" variant="outline" className="btn-secondary" onClick={() => setDrawerOpen(true)}>Điều hướng</Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Questions layout: Left content, Right navigation */}
         <div className="md:grid md:grid-cols-12 md:gap-8">
         {/* Enhanced Question Navigation - Mobile Optimized */}
@@ -377,7 +458,7 @@ export default function QuizPage() {
                     element?.scrollIntoView({ behavior: 'smooth', block: 'start' })
                   }}
                   className={`w-8 h-8 md:w-8 md:h-8 rounded-md border-2 flex items-center justify-center text-xs font-bold transition-all duration-200 hover:scale-105 ${
-                    examSession.answers[index] !== -1
+                    (showAnswerStatus && examSession.answers[index] !== -1)
                       ? 'bg-gradient-to-br from-green-400 to-green-500 border-green-500 text-white shadow-lg'
                       : 'bg-slate-50 border-slate-300 text-slate-600 hover:bg-slate-100 hover:border-slate-400'
                   } ${activeQuestion === index ? 'ring-2 ring-blue-500' : ''}`}
@@ -440,10 +521,10 @@ className="space-y-4"
                   {question.options.map((option, optionIndex) => (
                     <div 
                       key={optionIndex} 
-className={`flex items-start space-x-3 md:space-x-4 p-4 rounded-lg md:rounded-xl border-2 transition-all duration-200 hover:shadow-md ${
+className={`flex items-start space-x-3 md:space-x-4 p-4 rounded-lg md:rounded-xl border-2 transition-all duration-200 ${
                         examSession.answers[index] === optionIndex
-                          ? 'bg-blue-50 border-blue-300 shadow-md'
-                          : 'bg-white border-slate-200 hover:border-slate-300'
+                          ? 'bg-white border-blue-500/60 ring-2 ring-blue-500/15 shadow-sm'
+                          : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                       }`}
                     >
                       <RadioGroupItem 
@@ -459,7 +540,7 @@ className="mt-1 w-6 h-6 md:w-5 md:h-5"
                           <span className="font-bold text-blue-600 text-base md:text-lg">
                             {String.fromCharCode(65 + optionIndex)}.
                           </span>
-                          <span className="text-sm md:text-base">{option}</span>
+                          <span className="text-sm md:text-base">{stripOptionLabel(option, optionIndex)}</span>
                         </div>
                       </Label>
                     </div>
@@ -499,18 +580,26 @@ className="mt-1 w-6 h-6 md:w-5 md:h-5"
               </div>
               
               <div className="flex items-center space-x-2">
-                {/* Mobile Question Navigator */}
-                <Drawer>
-                  <DrawerTrigger asChild>
-                    <Button variant="outline" className="btn-secondary flex-1 text-sm">
-                      Điều hướng
-                    </Button>
-                  </DrawerTrigger>
+                {/* Mobile Question Navigator (controlled) */}
+                <Button variant="outline" className="btn-secondary flex-1 text-sm" onClick={() => setDrawerOpen(true)}>
+                  Điều hướng
+                </Button>
+                <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
                   <DrawerContent>
                     <DrawerHeader>
                       <DrawerTitle>Điều hướng câu hỏi</DrawerTitle>
                     </DrawerHeader>
                     <div className="p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2 text-sm text-slate-700">
+                          <span>Hiện trạng thái</span>
+                          <Switch checked={showAnswerStatus} onCheckedChange={setShowAnswerStatus} />
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-slate-700">
+                          <span>Tự chuyển câu</span>
+                          <Switch checked={autoAdvance} onCheckedChange={setAutoAdvance} />
+                        </div>
+                      </div>
                       <div className="flex items-center justify-between text-sm text-slate-600 mb-3">
                         <span>Đã trả lời: {answeredQuestions}</span>
                         <span>Chưa trả lời: {examSession.selectedQuestions.length - answeredQuestions}</span>
@@ -524,7 +613,7 @@ className="mt-1 w-6 h-6 md:w-5 md:h-5"
                               element?.scrollIntoView({ behavior: 'smooth', block: 'start' })
                             }}
                             className={`w-10 h-10 rounded-md border-2 flex items-center justify-center text-sm font-bold transition-all duration-200 ${
-                              examSession.answers[index] !== -1
+                              (showAnswerStatus && examSession.answers[index] !== -1)
                                 ? 'bg-green-500 border-green-500 text-white'
                                 : 'bg-white border-slate-300 text-slate-700'
                             } ${activeQuestion === index ? 'ring-2 ring-blue-500' : ''}`}
@@ -607,6 +696,10 @@ className="mt-1 w-6 h-6 md:w-5 md:h-5"
                   </div>
                   <p className="text-sm text-slate-600">Thời gian còn lại</p>
                 </div>
+                <div className="flex items-center gap-2 ml-8">
+                  <span className="text-sm text-slate-600">Tự chuyển câu</span>
+                  <Switch checked={autoAdvance} onCheckedChange={setAutoAdvance} />
+                </div>
               </div>
               
               <div className="flex items-center space-x-4">
@@ -641,6 +734,27 @@ className="mt-1 w-6 h-6 md:w-5 md:h-5"
           </div>
         </div>
       </div>
+
+      {/* Confirm submit dialog */}
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xác nhận nộp bài?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn đã trả lời {answeredQuestions}/{examSession.selectedQuestions.length} câu.
+              {examSession.selectedQuestions.length - answeredQuestions > 0 && (
+                <>
+                  <br />Vẫn còn {examSession.selectedQuestions.length - answeredQuestions} câu chưa trả lời. Bạn có chắc chắn muốn nộp không?
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmSubmit}>Đồng ý nộp</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </ProtectedRoute>
   )
 }

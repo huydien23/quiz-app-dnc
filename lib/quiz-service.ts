@@ -119,6 +119,13 @@ export class QuizService {
     return newAttemptRef.key!
   }
 
+  static async getAttemptById(id: string): Promise<QuizAttempt | null> {
+    const attemptRef = ref(database, `attempts/${id}`)
+    const snapshot = await get(attemptRef)
+    if (!snapshot.exists()) return null
+    return { id, ...snapshot.val() } as QuizAttempt
+  }
+
   // Get user's quiz attempts
   static async getUserAttempts(userId: string): Promise<QuizAttempt[]> {
     const attemptsRef = ref(database, "attempts")
@@ -146,7 +153,8 @@ export class QuizService {
       const quiz = await this.getQuizById(attempt.quizId)
       if (quiz) {
         const correctAnswers = attempt.answers.reduce((count, answer, index) => {
-          return count + (answer === quiz.questions[index].correctAnswer ? 1 : 0)
+          const qIndex = attempt.questionIndices ? attempt.questionIndices[index] : index
+          return count + (answer === quiz.questions[qIndex].correctAnswer ? 1 : 0)
         }, 0)
 
         results.push({

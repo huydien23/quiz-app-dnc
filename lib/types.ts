@@ -34,6 +34,7 @@ export interface QuizAttempt {
   userId: string
   quizId: string
   answers: number[]
+  questionIndices?: number[] // mapping to original question indexes used for scoring/review
   score: number
   correctAnswers?: number
   totalQuestions?: number
