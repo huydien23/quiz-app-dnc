@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -10,6 +10,7 @@ import { Progress } from "@/components/ui/progress"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger, DrawerClose } from "@/components/ui/drawer"
 import { ProtectedRoute } from "@/components/protected-route"
 import { QuizService } from "@/lib/quiz-service"
 import { useAuth } from "@/hooks/use-auth"
@@ -37,6 +38,8 @@ export default function QuizPage() {
   const [timeLeft, setTimeLeft] = useState(0)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [activeQuestion, setActiveQuestion] = useState(0)
+  const [protectUnload, setProtectUnload] = useState(true)
 
   // Shuffle array utility
   const shuffleArray = <T,>(array: T[]): T[] => {
@@ -145,6 +148,8 @@ export default function QuizPage() {
       }
 
       await QuizService.submitQuizAttempt(attempt)
+      // Allow page unload when navigating to result
+      setProtectUnload(false)
       router.push(`/quiz/${quizId}/result?score=${scorePercentage}&correct=${correctAnswers}&total=${examSession.selectedQuestions.length}`)
     } catch (error) {
       console.error('Error submitting quiz:', error)
@@ -164,6 +169,39 @@ export default function QuizPage() {
     if (seconds > 60) return "text-yellow-600"  // > 1 minute
     return "text-red-600" // < 1 minute
   }
+
+  // Warn before leaving if exam in progress
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (!protectUnload) return
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [protectUnload])
+
+  // Track current question by IntersectionObserver (scroll spy)
+  useEffect(() => {
+    const elements = Array.from({ length: examSession?.selectedQuestions.length || 0 }, (_, i) => document.getElementById(`question-${i}`))
+      .filter(Boolean) as HTMLElement[]
+    if (elements.length === 0) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0]
+        if (visible) {
+          const id = visible.target.id
+          const idx = Number(id.split('-')[1])
+          if (!Number.isNaN(idx)) setActiveQuestion(idx)
+        }
+      },
+      { root: null, rootMargin: '-20% 0px -60% 0px', threshold: [0.1, 0.25, 0.5, 0.75] }
+    )
+    elements.forEach((el) => observer.observe(el))
+    return () => observer.disconnect()
+  }, [examSession])
 
   if (loading) {
     return (
@@ -302,7 +340,7 @@ export default function QuizPage() {
         {/* Questions layout: Left content, Right navigation */}
         <div className="md:grid md:grid-cols-12 md:gap-8">
         {/* Enhanced Question Navigation - Mobile Optimized */}
-        <div className="mb-6 md:mb-0 md:col-span-4 lg:col-span-3 md:order-2">
+<div className="hidden md:block md:mb-0 md:col-span-4 lg:col-span-3 md:order-2">
           <div className="bg-white rounded-2xl shadow-lg p-4 md:p-6 border border-slate-200 md:sticky md:top-24">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-base md:text-lg font-semibold text-slate-800">Điều hướng câu hỏi</h3>
@@ -342,7 +380,8 @@ export default function QuizPage() {
                     examSession.answers[index] !== -1
                       ? 'bg-gradient-to-br from-green-400 to-green-500 border-green-500 text-white shadow-lg'
                       : 'bg-slate-50 border-slate-300 text-slate-600 hover:bg-slate-100 hover:border-slate-400'
-                  }`}
+                  } ${activeQuestion === index ? 'ring-2 ring-blue-500' : ''}`}
+                  aria-current={activeQuestion === index ? 'true' : undefined}
                 >
                     {examSession.answers[index] !== -1 ? (
                     <CheckCircle className="h-4 w-4" />
@@ -396,12 +435,12 @@ export default function QuizPage() {
                 <RadioGroup
                   value={examSession.answers[index]?.toString() || ""}
                   onValueChange={(value) => handleAnswerChange(index, Number.parseInt(value))}
-                  className="space-y-3 md:space-y-4"
+className="space-y-4"
                 >
                   {question.options.map((option, optionIndex) => (
                     <div 
                       key={optionIndex} 
-                      className={`flex items-start space-x-3 md:space-x-4 p-3 md:p-4 rounded-lg md:rounded-xl border-2 transition-all duration-200 hover:shadow-md ${
+className={`flex items-start space-x-3 md:space-x-4 p-4 rounded-lg md:rounded-xl border-2 transition-all duration-200 hover:shadow-md ${
                         examSession.answers[index] === optionIndex
                           ? 'bg-blue-50 border-blue-300 shadow-md'
                           : 'bg-white border-slate-200 hover:border-slate-300'
@@ -410,7 +449,7 @@ export default function QuizPage() {
                       <RadioGroupItem 
                         value={optionIndex.toString()} 
                         id={`q${index}-option-${optionIndex}`} 
-                        className="mt-1 w-4 h-4 md:w-5 md:h-5" 
+className="mt-1 w-6 h-6 md:w-5 md:h-5"
                       />
                       <Label 
                         htmlFor={`q${index}-option-${optionIndex}`} 
@@ -460,6 +499,53 @@ export default function QuizPage() {
               </div>
               
               <div className="flex items-center space-x-2">
+                {/* Mobile Question Navigator */}
+                <Drawer>
+                  <DrawerTrigger asChild>
+                    <Button variant="outline" className="btn-secondary flex-1 text-sm">
+                      Điều hướng
+                    </Button>
+                  </DrawerTrigger>
+                  <DrawerContent>
+                    <DrawerHeader>
+                      <DrawerTitle>Điều hướng câu hỏi</DrawerTitle>
+                    </DrawerHeader>
+                    <div className="p-4">
+                      <div className="flex items-center justify-between text-sm text-slate-600 mb-3">
+                        <span>Đã trả lời: {answeredQuestions}</span>
+                        <span>Chưa trả lời: {examSession.selectedQuestions.length - answeredQuestions}</span>
+                      </div>
+                      <div className="grid grid-cols-6 gap-2">
+                        {examSession.selectedQuestions.map((_, index) => (
+                          <button
+                            key={index}
+                            onClick={() => {
+                              const element = document.getElementById(`question-${index}`)
+                              element?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                            }}
+                            className={`w-10 h-10 rounded-md border-2 flex items-center justify-center text-sm font-bold transition-all duration-200 ${
+                              examSession.answers[index] !== -1
+                                ? 'bg-green-500 border-green-500 text-white'
+                                : 'bg-white border-slate-300 text-slate-700'
+                            } ${activeQuestion === index ? 'ring-2 ring-blue-500' : ''}`}
+                            aria-current={activeQuestion === index ? 'true' : undefined}
+                          >
+                            {examSession.answers[index] !== -1 ? (
+                              <CheckCircle className="h-4 w-4" />
+                            ) : (
+                              <span>{index + 1}</span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="mt-4 flex justify-end">
+                        <DrawerClose asChild>
+                          <Button variant="outline" className="btn-secondary">Đóng</Button>
+                        </DrawerClose>
+                      </div>
+                    </div>
+                  </DrawerContent>
+                </Drawer>
                 <Button 
                   variant="outline"
                   onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
