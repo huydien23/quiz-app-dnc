@@ -18,7 +18,7 @@ import { useToast } from "@/components/toast-provider"
 import { formatDistanceToNow } from "date-fns"
 import { vi } from "date-fns/locale"
 import { DashboardLayout } from "@/components/dashboard-layout"
-
+import { InlineQuiz } from "@/components/inline-quiz"
 export default function QuizzesPage() {
   const { user } = useAuth()
   const { error } = useToast()
@@ -74,6 +74,16 @@ export default function QuizzesPage() {
       case 'medium': return 'Trung bình'
       case 'hard': return 'Khó'
       default: return 'Không xác định'
+    }
+  }
+
+  const safeFormatDistanceToNow = (value: any) => {
+    try {
+      const d = new Date(value)
+      if (Number.isNaN(d.getTime())) return 'không rõ'
+      return formatDistanceToNow(d, { addSuffix: true, locale: vi })
+    } catch {
+      return 'không rõ'
     }
   }
 
@@ -175,7 +185,7 @@ export default function QuizzesPage() {
                   <div className="flex items-center justify-between text-xs text-slate-500 font-body">
                     <div className="flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
-                      <span>Tạo {formatDistanceToNow(new Date(quiz.createdAt), { addSuffix: true, locale: vi })}</span>
+                      <span>Tạo {safeFormatDistanceToNow(quiz.createdAt)}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Users className="h-3 w-3" />

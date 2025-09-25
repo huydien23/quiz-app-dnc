@@ -35,9 +35,9 @@ export function DashboardSidebar({ className }: DashboardSidebarProps) {
     },
     {
       name: "Bài thi",
-      href: "/quizzes",
+      href: "/dashboard/quizzes",
       icon: BookOpen,
-      current: pathname === "/quizzes"
+      current: pathname.startsWith("/dashboard/quizzes")
     },
     {
       name: "Bảng xếp hạng",
