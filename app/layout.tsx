@@ -19,7 +19,35 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "QuizMaster - Luyện thi trắc nghiệm",
-  description: "Hệ thống luyện thi trắc nghiệm trực tuyến",
+  description: "Hệ thống luyện thi trắc nghiệm trực tuyến hiện đại và thông minh",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon-16x16.png",
+    apple: "/apple-touch-icon.png",
+  },
+  manifest: "/site.webmanifest",
+  metadataBase: new URL("https://quiz-app-dnc.vercel.app"),
+  openGraph: {
+    title: "QuizMaster - Luyện thi trắc nghiệm",
+    description: "Hệ thống luyện thi trắc nghiệm trực tuyến hiện đại",
+    url: "https://quiz-app-dnc.vercel.app",
+    siteName: "QuizMaster",
+    images: [
+      {
+        url: "/placeholder-logo.png",
+        width: 1200,
+        height: 630,
+      },
+    ],
+    locale: "vi_VN",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "QuizMaster - Luyện thi trắc nghiệm",
+    description: "Hệ thống luyện thi trắc nghiệm trực tuyến hiện đại",
+    images: ["/placeholder-logo.png"],
+  },
 }
 
 export default function RootLayout({

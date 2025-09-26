@@ -29,9 +29,15 @@ export const database = getDatabase(app)
 export const auth = getAuth(app)
 export const googleProvider = new GoogleAuthProvider()
 
-// Configure Google provider
+// Configure Google provider for better UX
 googleProvider.setCustomParameters({
-  prompt: 'select_account'
+  prompt: 'select_account',
+  access_type: 'offline',
+  approval_prompt: 'force'
 })
+
+// Add additional scopes if needed
+googleProvider.addScope('email')
+googleProvider.addScope('profile')
 
 export default app
