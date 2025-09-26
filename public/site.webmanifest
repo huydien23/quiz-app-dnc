@@ -1,0 +1,21 @@
+{
+  "name": "QuizMaster",
+  "short_name": "QuizMaster",
+  "description": "Hệ thống luyện thi trắc nghiệm trực tuyến",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/placeholder-logo.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    }
+  ]
+}
