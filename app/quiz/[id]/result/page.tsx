@@ -27,6 +27,8 @@ export default function QuizResultPage() {
   const [filter, setFilter] = useState<'all' | 'correct' | 'incorrect'>('all')
   const [showTopBtn, setShowTopBtn] = useState(false)
   const [mounted, setMounted] = useState(false)
+  // Hide review by default; user can reveal with a button
+  const [showReview, setShowReview] = useState(false)
 
   useEffect(() => { setMounted(true) }, [])
 
@@ -121,7 +123,7 @@ export default function QuizResultPage() {
               Làm lại
             </Button>
           </Link>
-          <Link href="/quizzes" className="flex-1">
+          <Link href={`/dashboard?tab=quizzes`} className="flex-1">
             <Button variant="outline" className="w-full bg-transparent">
               Bài thi khác
             </Button>
@@ -167,45 +169,56 @@ export default function QuizResultPage() {
           </CardContent>
         </Card>
 
-        {/* Review section */}
-        <Tabs value={filter} onValueChange={(v) => setFilter(v as any)} className="mb-6">
-          <TabsList>
-            <TabsTrigger value="all">Tất cả</TabsTrigger>
-            <TabsTrigger value="correct">Đúng</TabsTrigger>
-            <TabsTrigger value="incorrect">Sai</TabsTrigger>
-          </TabsList>
-          <TabsContent value="all" />
-          <TabsContent value="correct" />
-          <TabsContent value="incorrect" />
-        </Tabs>
-
-        <div className="space-y-4">
-          {filtered.map((item, idx) => (
-            <Card key={idx} className={`border-2 ${item.isCorrect ? 'border-green-300' : 'border-red-300'}`}>
-              <CardHeader>
-                <CardTitle className="text-base">
-                  Câu {item.index + 1}. {item.question}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {item.options.map((opt, oi) => {
-                    const label = String.fromCharCode(65 + oi)
-                    const isSel = oi === item.selected
-                    const isCor = oi === item.correct
-                    return (
-                      <div key={oi} className={`p-3 rounded-md border ${isCor ? 'bg-green-50 border-green-300' : isSel ? 'bg-red-50 border-red-300' : 'border-slate-200'}`}>
-                        <span className="font-semibold mr-2">{label}.</span>{opt}
-                        {isCor && <Badge className="ml-2" variant="secondary">Đáp án đúng</Badge>}
-                        {isSel && !isCor && <Badge className="ml-2" variant="destructive">Bạn đã chọn</Badge>}
-                      </div>
-                    )
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+        {/* Toggle show/hide review */}
+        <div className="flex justify-center mb-6">
+          <Button onClick={() => setShowReview((v) => !v)} variant={showReview ? 'outline' : 'default'}>
+            {showReview ? 'Ẩn phần xem lại' : 'Xem lại kết quả'}
+          </Button>
         </div>
+
+        {showReview && (
+          <>
+            {/* Review section */}
+            <Tabs value={filter} onValueChange={(v) => setFilter(v as any)} className="mb-6">
+              <TabsList>
+                <TabsTrigger value="all">Tất cả</TabsTrigger>
+                <TabsTrigger value="correct">Đúng</TabsTrigger>
+                <TabsTrigger value="incorrect">Sai</TabsTrigger>
+              </TabsList>
+              <TabsContent value="all" />
+              <TabsContent value="correct" />
+              <TabsContent value="incorrect" />
+            </Tabs>
+
+            <div className="space-y-4">
+              {filtered.map((item, idx) => (
+                <Card key={idx} className={`border-2 ${item.isCorrect ? 'border-green-300' : 'border-red-300'}`}>
+                  <CardHeader>
+                    <CardTitle className="text-base">
+                      Câu {item.index + 1}. {item.question}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {item.options.map((opt, oi) => {
+                        const label = String.fromCharCode(65 + oi)
+                        const isSel = oi === item.selected
+                        const isCor = oi === item.correct
+                        return (
+                          <div key={oi} className={`p-3 rounded-md border ${isCor ? 'bg-green-50 border-green-300' : isSel ? 'bg-red-50 border-red-300' : 'border-slate-200'}`}>
+                            <span className="font-semibold mr-2">{label}.</span>{opt}
+                            {isCor && <Badge className="ml-2" variant="secondary">Đáp án đúng</Badge>}
+                            {isSel && !isCor && <Badge className="ml-2" variant="destructive">Bạn đã chọn</Badge>}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </>
+        )}
 
         <div className="mt-8 hidden md:flex flex-col sm:flex-row gap-4">
           <Link href={`/quiz/${quizId}`} className="flex-1">
@@ -214,7 +227,7 @@ export default function QuizResultPage() {
               Làm lại
             </Button>
           </Link>
-          <Link href="/quizzes" className="flex-1">
+          <Link href={`/dashboard?tab=quizzes`} className="flex-1">
             <Button variant="outline" className="w-full bg-transparent">
               Bài thi khác
             </Button>

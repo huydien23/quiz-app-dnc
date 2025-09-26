@@ -22,6 +22,7 @@ import { useToast } from "@/components/toast-provider"
 import { formatDistanceToNow } from "date-fns"
 import { vi } from "date-fns/locale"
 import { InlineQuiz } from "@/components/inline-quiz"
+import { useSearchParams } from "next/navigation"
 
 interface StudentStats {
   totalAttempts: number
@@ -60,6 +61,7 @@ export function StudentDashboard() {
   const [recentActivity, setRecentActivity] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("dashboard")
+  const searchParams = useSearchParams()
   const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null)
   const [showQuiz, setShowQuiz] = useState(false)
   const [attemptCounts, setAttemptCounts] = useState<Record<string, number>>({})
@@ -69,6 +71,14 @@ export function StudentDashboard() {
       loadStudentData()
     }
   }, [user])
+
+  // Read initial tab from query (?tab=quizzes|dashboard|leaderboard)
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    if (tab === 'dashboard' || tab === 'quizzes' || tab === 'leaderboard') {
+      setActiveTab(tab)
+    }
+  }, [searchParams])
 
   const loadStudentData = async () => {
     try {
@@ -638,10 +648,9 @@ export function StudentDashboard() {
       </Tabs>
 
       {/* Inline Quiz */}
-      {showQuiz && selectedQuiz && (
+{showQuiz && selectedQuiz && (
         <div 
-          className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[9999]"
-          style={{ zIndex: 9999 }}
+          className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-40"
         >
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
             <div className="p-6">

@@ -35,6 +35,7 @@ export default function CreateQuizPage() {
     description: "",
     timeLimit: 60,
     isActive: true,
+    questionCount: 40,
     questions: []
   })
 
@@ -65,6 +66,7 @@ export default function CreateQuizPage() {
         description: quiz.description!,
         timeLimit: quiz.timeLimit!,
         isActive: quiz.isActive!,
+        questionCount: quiz.questionCount,
         questions: quiz.questions!,
         createdBy: user?.id || 'unknown',
         createdAt: new Date().toISOString()
@@ -182,6 +184,19 @@ export default function CreateQuizPage() {
                         min="1"
                         max="300"
                       />
+                    </div>
+                    <div>
+                      <Label htmlFor="questionCount">Số câu hỏi mỗi lần thi (random)</Label>
+                      <Input
+                        id="questionCount"
+                        type="number"
+                        value={quiz.questionCount || 40}
+                        onChange={(e) => setQuiz(prev => ({ ...prev, questionCount: parseInt(e.target.value) }))}
+                        className="mt-1"
+                        min="1"
+                        placeholder="VD: 20 hoặc 40"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">Hệ thống sẽ ngẫu nhiên chọn số câu này từ toàn bộ bộ đề mỗi lần làm.</p>
                     </div>
                     
                     <div className="flex items-center space-x-2">

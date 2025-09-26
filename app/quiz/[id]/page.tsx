@@ -19,7 +19,7 @@ import { useAuth } from "@/hooks/use-auth"
 import type { Quiz, QuizAttempt, Question } from "@/lib/types"
 import { Clock, AlertCircle, CheckCircle, Circle, BookOpen, Target, Trophy, Users, Timer, Play, Pause, RotateCcw } from "lucide-react"
 
-// Number of questions to show in exam
+// Default number of questions to show in exam if quiz.questionCount is not set
 const EXAM_QUESTION_COUNT = 40
 
 interface ExamSession {
@@ -59,7 +59,8 @@ export default function QuizPage() {
 
   // Create exam session with random questions
   const createExamSession = (quizData: Quiz): ExamSession => {
-    const questionCount = Math.min(EXAM_QUESTION_COUNT, quizData.questions.length)
+    const configuredCount = quizData.questionCount ?? EXAM_QUESTION_COUNT
+    const questionCount = Math.min(configuredCount, quizData.questions.length)
     
     // Create array of indices and shuffle them
     const indices = Array.from({ length: quizData.questions.length }, (_, i) => i)

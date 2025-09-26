@@ -17,6 +17,8 @@ export interface Quiz {
   isActive: boolean
   isDraft?: boolean // Draft status - cannot be taken by students
   hasIncompleteQuestions?: boolean // Has questions with correctAnswer = -1
+  // Optional: number of questions randomly selected each attempt
+  questionCount?: number
 }
 
 export interface Question {
