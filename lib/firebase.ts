@@ -1,4 +1,4 @@
-import { initializeApp } from "firebase/app"
+import { initializeApp, getApps } from "firebase/app"
 import { getDatabase } from "firebase/database"
 import { getAuth, GoogleAuthProvider } from "firebase/auth"
 
@@ -12,8 +12,17 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 }
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig)
+// Validate required config
+const requiredKeys = ['apiKey', 'authDomain', 'databaseURL', 'projectId', 'storageBucket', 'messagingSenderId', 'appId']
+const missingKeys = requiredKeys.filter(key => !firebaseConfig[key as keyof typeof firebaseConfig])
+
+if (missingKeys.length > 0) {
+  console.error('Missing Firebase configuration keys:', missingKeys)
+  throw new Error(`Missing Firebase configuration: ${missingKeys.join(', ')}`)
+}
+
+// Initialize Firebase (avoid duplicate initialization)
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
 
 // Initialize Firebase services
 export const database = getDatabase(app)
