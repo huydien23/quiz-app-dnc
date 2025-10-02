@@ -320,10 +320,10 @@ export function StudentDashboard() {
 
       {/* Tabs Navigation */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-          <TabsTrigger value="quizzes">Bài thi</TabsTrigger>
-          <TabsTrigger value="leaderboard">Bảng xếp hạng</TabsTrigger>
+<TabsList className="grid w-full grid-cols-3 sticky top-16 z-10 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70 border rounded-lg">
+          <TabsTrigger value="dashboard" className="py-3">Dashboard</TabsTrigger>
+          <TabsTrigger value="quizzes" className="py-3">Bài thi</TabsTrigger>
+          <TabsTrigger value="leaderboard" className="py-3">Bảng xếp hạng</TabsTrigger>
         </TabsList>
         
 
@@ -604,38 +604,43 @@ export function StudentDashboard() {
                   leaderboard.map((entry, index) => (
                     <div 
                       key={entry.userId} 
-                      className={`flex items-center justify-between p-4 rounded-lg transition-colors ${
+                      className={`p-3 rounded-lg transition-colors ${
                         entry.rank <= 3 
                           ? 'bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200' 
                           : 'bg-slate-50/50 hover:bg-slate-100/50'
                       }`}
                     >
-                      <div className="flex items-center gap-4">
-                        <div className={`w-10 h-10 rounded-full ${
-                          entry.rank === 1 ? 'bg-gradient-to-r from-yellow-400 to-yellow-600' :
-                          entry.rank === 2 ? 'bg-gradient-to-r from-gray-300 to-gray-500' :
-                          entry.rank === 3 ? 'bg-gradient-to-r from-amber-400 to-amber-600' :
-                          'bg-slate-100'
-                        } flex items-center justify-center text-white font-bold`}>
-                          {entry.rank}
+                      <div className="space-y-3">
+                        {/* User Info Row */}
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 rounded-full flex-shrink-0 ${
+                            entry.rank === 1 ? 'bg-gradient-to-r from-yellow-400 to-yellow-600' :
+                            entry.rank === 2 ? 'bg-gradient-to-r from-gray-300 to-gray-500' :
+                            entry.rank === 3 ? 'bg-gradient-to-r from-amber-400 to-amber-600' :
+                            'bg-slate-200'
+                          } flex items-center justify-center text-white text-sm font-bold`}>
+                            {entry.rank}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium text-slate-800 text-sm truncate">{entry.userName}</h4>
+                            <p className="text-xs text-slate-500 truncate">{entry.userEmail}</p>
+                          </div>
                         </div>
-                        <div className="flex-1">
-                          <h4 className="font-medium text-slate-800">{entry.userName}</h4>
-                          <p className="text-sm text-slate-600">{entry.userEmail}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-6 text-right">
-                        <div>
-                          <p className="text-sm font-medium text-slate-800">{entry.averageScore}%</p>
-                          <p className="text-xs text-slate-600">Điểm TB</p>
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-slate-800">{entry.totalQuizzes}</p>
-                          <p className="text-xs text-slate-600">Bài thi</p>
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-slate-800">{entry.bestScore}%</p>
-                          <p className="text-xs text-slate-600">Tốt nhất</p>
+                        
+                        {/* Stats Row */}
+                        <div className="flex justify-between text-center px-2">
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-slate-800">{entry.averageScore}%</p>
+                            <p className="text-xs text-slate-500">Điểm TB</p>
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-slate-800">{entry.totalQuizzes}</p>
+                            <p className="text-xs text-slate-500">Bài thi</p>
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-slate-800">{entry.bestScore}%</p>
+                            <p className="text-xs text-slate-500">Tốt nhất</p>
+                          </div>
                         </div>
                       </div>
                     </div>
