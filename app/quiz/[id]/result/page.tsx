@@ -108,144 +108,233 @@ export default function QuizResultPage() {
 
   return (
     <ProtectedRoute>
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="text-center mb-8">
-          <Trophy className="h-16 w-16 text-primary mx-auto mb-4" />
-          <h1 className="text-3xl font-bold text-foreground mb-2">Kết quả bài thi</h1>
-          <p className="text-muted-foreground">{quiz?.title}</p>
-        </div>
-
-        {/* Quick actions (mobile) */}
-        <div className="flex md:hidden gap-3 mb-4">
-          <Link href={`/quiz/${quizId}`} className="flex-1">
-            <Button variant="outline" className="w-full bg-transparent">
-              <RotateCcw className="h-4 w-4 mr-2" />
-              Làm lại
-            </Button>
-          </Link>
-          <Link href={`/dashboard?tab=quizzes`} className="flex-1">
-            <Button variant="outline" className="w-full bg-transparent">
-              Bài thi khác
-            </Button>
-          </Link>
-          <Link href="/dashboard" className="flex-1">
-            <Button className="w-full">
-              <Home className="h-4 w-4 mr-2" />
-              Dashboard
-            </Button>
-          </Link>
-        </div>
-
-        <Card className="mb-6">
-          <CardHeader className="text-center">
-            <CardTitle className={`text-4xl font-bold ${getResultColor()}`}>
-              {correctCount}/{total}
-            </CardTitle>
-            <CardDescription className="text-lg">
-              {percentage}% - {getResultMessage()}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Progress value={percentage} className="h-4 mb-4" />
-
-            <div className="grid grid-cols-2 gap-4 text-center">
-              <div className="flex flex-col items-center">
-                <CheckCircle className="h-8 w-8 text-green-600 mb-2" />
-                <span className="text-2xl font-bold text-green-600">{correctCount}</span>
-                <span className="text-sm text-muted-foreground">Đúng</span>
-              </div>
-              <div className="flex flex-col items-center">
-                <XCircle className="h-8 w-8 text-red-600 mb-2" />
-                <span className="text-2xl font-bold text-red-600">{total - correctCount}</span>
-                <span className="text-sm text-muted-foreground">Sai</span>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50 pb-24">
+        <div className="container mx-auto px-4 py-6 sm:py-8 max-w-4xl">
+          {/* Header with animated trophy */}
+          <div className="text-center mb-6 sm:mb-8 animate-in fade-in-50 duration-500">
+            <div className="inline-block relative mb-4">
+              <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full blur-xl opacity-50 animate-pulse"></div>
+              <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-yellow-500 to-orange-600 flex items-center justify-center shadow-2xl">
+                <Trophy className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
               </div>
             </div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 mb-2 font-heading">Kết quả bài thi</h1>
+            <p className="text-sm sm:text-base text-slate-600 font-body">{quiz?.title}</p>
+          </div>
 
-            <div className="mt-6 flex justify-center">
-              <Badge variant={percentage >= 80 ? "default" : percentage >= 60 ? "secondary" : "destructive"}>
-                {percentage >= 80 ? "Xuất sắc" : percentage >= 60 ? "Khá" : "Cần cải thiện"}
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
+          {/* Main Result Card - Redesigned */}
+          <Card className="mb-6 border-0 bg-white/90 backdrop-blur-sm shadow-2xl animate-in fade-in-50 duration-500 delay-100 overflow-hidden">
+            {/* Gradient top border */}
+            <div className={`h-2 ${
+              percentage >= 80 ? 'bg-gradient-to-r from-green-500 to-emerald-600' :
+              percentage >= 60 ? 'bg-gradient-to-r from-yellow-500 to-orange-600' :
+              'bg-gradient-to-r from-red-500 to-pink-600'
+            }`} />
+            
+            <CardHeader className="text-center pb-4">
+              {/* Big score display */}
+              <div className="mb-4">
+                <div className={`text-5xl sm:text-6xl font-bold ${getResultColor()} mb-2 font-heading`}>
+                  {correctCount}<span className="text-3xl sm:text-4xl text-slate-400">/</span>{total}
+                </div>
+                <div className={`text-2xl sm:text-3xl font-bold ${getResultColor()} mb-3`}>
+                  {percentage}%
+                </div>
+              </div>
+              
+              {/* Badge */}
+              <div className="flex justify-center mb-3">
+                <Badge className={`px-4 py-1.5 text-sm sm:text-base font-semibold ${
+                  percentage >= 80 ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white' :
+                  percentage >= 60 ? 'bg-gradient-to-r from-yellow-500 to-orange-600 text-white' :
+                  'bg-gradient-to-r from-red-500 to-pink-600 text-white'
+                }`}>
+                  {percentage >= 80 ? "🎉 Xuất sắc" : percentage >= 60 ? "👍 Khá tốt" : "💪 Cần cải thiện"}
+                </Badge>
+              </div>
+              
+              <CardDescription className="text-base sm:text-lg text-slate-700 font-medium">
+                {getResultMessage()}
+              </CardDescription>
+            </CardHeader>
 
-        {/* Toggle show/hide review */}
-        <div className="flex justify-center mb-6">
-          <Button onClick={() => setShowReview((v) => !v)} variant={showReview ? 'outline' : 'default'}>
-            {showReview ? 'Ẩn phần xem lại' : 'Xem lại kết quả'}
-          </Button>
-        </div>
+            <CardContent className="pb-6">
+              {/* Progress bar with gradient */}
+              <div className="mb-6">
+                <Progress value={percentage} className="h-3 sm:h-4" />
+              </div>
 
-        {showReview && (
-          <>
-            {/* Review section */}
-            <Tabs value={filter} onValueChange={(v) => setFilter(v as any)} className="mb-6">
-              <TabsList>
-                <TabsTrigger value="all">Tất cả</TabsTrigger>
-                <TabsTrigger value="correct">Đúng</TabsTrigger>
-                <TabsTrigger value="incorrect">Sai</TabsTrigger>
-              </TabsList>
-              <TabsContent value="all" />
-              <TabsContent value="correct" />
-              <TabsContent value="incorrect" />
-            </Tabs>
-
-            <div className="space-y-4">
-              {filtered.map((item, idx) => (
-                <Card key={idx} className={`border-2 ${item.isCorrect ? 'border-green-300' : 'border-red-300'}`}>
-                  <CardHeader>
-                    <CardTitle className="text-base">
-                      Câu {item.index + 1}. {item.question}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      {item.options.map((opt, oi) => {
-                        const label = String.fromCharCode(65 + oi)
-                        const isSel = oi === item.selected
-                        const isCor = oi === item.correct
-                        return (
-                          <div key={oi} className={`p-3 rounded-md border ${isCor ? 'bg-green-50 border-green-300' : isSel ? 'bg-red-50 border-red-300' : 'border-slate-200'}`}>
-                            <span className="font-semibold mr-2">{label}.</span>{opt}
-                            {isCor && <Badge className="ml-2" variant="secondary">Đáp án đúng</Badge>}
-                            {isSel && !isCor && <Badge className="ml-2" variant="destructive">Bạn đã chọn</Badge>}
-                          </div>
-                        )
-                      })}
+              {/* Stats Grid - Redesigned with gradients */}
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                {/* Correct answers */}
+                <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 p-4 sm:p-6 group hover:shadow-lg transition-all">
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-green-500/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                  <div className="relative flex flex-col items-center">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center mb-2 sm:mb-3 shadow-lg group-hover:scale-110 transition-transform">
+                      <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </>
-        )}
+                    <span className="text-2xl sm:text-3xl font-bold text-green-600 mb-1">{correctCount}</span>
+                    <span className="text-xs sm:text-sm text-slate-600 font-medium">Đúng</span>
+                  </div>
+                </div>
 
-        <div className="mt-8 hidden md:flex flex-col sm:flex-row gap-4">
-          <Link href={`/quiz/${quizId}`} className="flex-1">
-            <Button variant="outline" className="w-full bg-transparent">
-              <RotateCcw className="h-4 w-4 mr-2" />
-              Làm lại
+                {/* Wrong answers */}
+                <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-red-50 to-pink-50 border-2 border-red-200 p-4 sm:p-6 group hover:shadow-lg transition-all">
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-red-500/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                  <div className="relative flex flex-col items-center">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center mb-2 sm:mb-3 shadow-lg group-hover:scale-110 transition-transform">
+                      <XCircle className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                    </div>
+                    <span className="text-2xl sm:text-3xl font-bold text-red-600 mb-1">{total - correctCount}</span>
+                    <span className="text-xs sm:text-sm text-slate-600 font-medium">Sai</span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Quick actions - Redesigned */}
+          <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-6 animate-in fade-in-50 duration-500 delay-200">
+            <Link href={`/quiz/${quizId}`} className="flex-1">
+              <Button variant="outline" className="w-full h-11 sm:h-12 text-xs sm:text-base btn-secondary hover:shadow-lg transition-all">
+                <RotateCcw className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Làm lại</span>
+              </Button>
+            </Link>
+            <Link href={`/dashboard?tab=quizzes`} className="flex-1">
+              <Button variant="outline" className="w-full h-11 sm:h-12 text-xs sm:text-base btn-secondary hover:shadow-lg transition-all">
+                <Trophy className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Bài thi khác</span>
+              </Button>
+            </Link>
+            <Link href="/dashboard" className="flex-1">
+              <Button className="w-full h-11 sm:h-12 text-xs sm:text-base bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 shadow-lg hover:shadow-xl transition-all">
+                <Home className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Dashboard</span>
+              </Button>
+            </Link>
+          </div>
+
+          {/* Toggle show/hide review - Enhanced */}
+          <div className="flex justify-center mb-6 animate-in fade-in-50 duration-500 delay-300">
+            <Button 
+              onClick={() => setShowReview((v) => !v)} 
+              variant={showReview ? 'outline' : 'default'}
+              className="h-12 px-6 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
+            >
+              {showReview ? '✕ Ẩn phần xem lại' : '👁️ Xem lại kết quả'}
             </Button>
-          </Link>
-          <Link href={`/dashboard?tab=quizzes`} className="flex-1">
-            <Button variant="outline" className="w-full bg-transparent">
-              Bài thi khác
-            </Button>
-          </Link>
-          <Link href="/dashboard" className="flex-1">
-            <Button className="w-full">
-              <Home className="h-4 w-4 mr-2" />
-              Dashboard
-            </Button>
-          </Link>
+          </div>
+
+          {showReview && (
+            <div className="animate-in fade-in-50 duration-500">
+              {/* Review section tabs */}
+              <Tabs value={filter} onValueChange={(v) => setFilter(v as any)} className="mb-6">
+                <TabsList className="grid w-full grid-cols-3 bg-white/90 backdrop-blur-sm border rounded-lg p-1">
+                  <TabsTrigger value="all" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-600 data-[state=active]:text-white">
+                    Tất cả ({mapped.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="correct" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white">
+                    Đúng ({correctCount})
+                  </TabsTrigger>
+                  <TabsTrigger value="incorrect" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500 data-[state=active]:to-pink-600 data-[state=active]:text-white">
+                    Sai ({total - correctCount})
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="all" />
+                <TabsContent value="correct" />
+                <TabsContent value="incorrect" />
+              </Tabs>
+
+              {/* Questions list - Enhanced */}
+              <div className="space-y-4">
+                {filtered.map((item, idx) => (
+                  <Card 
+                    key={idx} 
+                    className={`border-0 shadow-xl overflow-hidden animate-in fade-in-50 duration-300 ${
+                      item.isCorrect 
+                        ? 'bg-gradient-to-br from-green-50 to-emerald-50' 
+                        : 'bg-gradient-to-br from-red-50 to-pink-50'
+                    }`}
+                    style={{ animationDelay: `${idx * 50}ms` }}
+                  >
+                    {/* Colored top border */}
+                    <div className={`h-1.5 ${item.isCorrect ? 'bg-gradient-to-r from-green-500 to-emerald-600' : 'bg-gradient-to-r from-red-500 to-pink-600'}`} />
+                    
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start gap-3">
+                        {/* Icon badge */}
+                        <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-md ${
+                          item.isCorrect 
+                            ? 'bg-gradient-to-br from-green-500 to-emerald-600' 
+                            : 'bg-gradient-to-br from-red-500 to-pink-600'
+                        }`}>
+                          {item.isCorrect 
+                            ? <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                            : <XCircle className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                          }
+                        </div>
+                        
+                        {/* Question */}
+                        <CardTitle className="text-sm sm:text-base text-slate-800 flex-1">
+                          <span className="font-bold text-slate-600">Câu {item.index + 1}.</span> {item.question}
+                        </CardTitle>
+                      </div>
+                    </CardHeader>
+
+                    <CardContent className="pb-4">
+                      <div className="space-y-2">
+                        {item.options.map((opt, oi) => {
+                          const label = String.fromCharCode(65 + oi)
+                          const isSel = oi === item.selected
+                          const isCor = oi === item.correct
+                          return (
+                            <div 
+                              key={oi} 
+                              className={`p-3 rounded-lg border-2 transition-all ${
+                                isCor 
+                                  ? 'bg-white border-green-400 shadow-md' 
+                                  : isSel 
+                                  ? 'bg-white border-red-400 shadow-md' 
+                                  : 'bg-white/50 border-slate-200 hover:border-slate-300'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="flex-1">
+                                  <span className={`font-bold mr-2 ${isCor ? 'text-green-600' : isSel ? 'text-red-600' : 'text-slate-600'}`}>
+                                    {label}.
+                                  </span>
+                                  <span className="text-sm sm:text-base text-slate-800">{opt}</span>
+                                </div>
+                                {isCor && (
+                                  <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 text-xs">
+                                    ✓ Đúng
+                                  </Badge>
+                                )}
+                                {isSel && !isCor && (
+                                  <Badge className="bg-gradient-to-r from-red-500 to-pink-600 text-white border-0 text-xs">
+                                    ✗ Đã chọn
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Scroll to top (mobile) */}
+      {/* Scroll to top - Enhanced */}
       {showTopBtn && (
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="fixed bottom-20 right-4 z-50 md:hidden rounded-full bg-blue-600 text-white p-3 shadow-lg"
+          className="fixed bottom-20 right-4 z-50 rounded-full bg-gradient-to-r from-blue-500 to-cyan-600 text-white p-3 shadow-2xl hover:shadow-3xl hover:scale-110 transition-all animate-bounce"
           aria-label="Lên đầu trang"
         >
           <ArrowUp className="h-5 w-5" />

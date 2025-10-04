@@ -125,91 +125,87 @@ export default function QuizzesPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-800 font-heading">Bài thi</h1>
-            <p className="text-slate-600 font-body">Khám phá và làm các bài thi có sẵn</p>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-slate-600 font-body">
-            <BookOpen className="h-4 w-4" />
-            <span>{filteredQuizzes.length} bài thi</span>
-          </div>
-        </div>
-
+      <div className="space-y-4 sm:space-y-6 pb-6">
         {/* Search and Filter */}
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 animate-in fade-in-50 duration-500 delay-100">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
               placeholder="Tìm kiếm bài thi..."
               value={searchTerm}
               onChange={(e) => handleSearch(e.target.value)}
-              className="pl-10"
+              className="pl-10 h-11 sm:h-12"
             />
           </div>
-          <Button variant="outline" className="btn-secondary">
-            <Filter className="h-4 w-4 mr-2" />
-            Lọc
+          <Button variant="outline" className="btn-secondary h-11 sm:h-12 flex-shrink-0">
+            <Filter className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Lọc</span>
           </Button>
         </div>
 
         {/* Quizzes Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredQuizzes.map((quiz) => (
-            <Card key={quiz.id} className="group hover:shadow-xl transition-all duration-300 border-0 bg-white/80 backdrop-blur-sm card-shadow-lg hover:-translate-y-1">
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  <div className="flex items-start justify-between">
-                    <h3 className="font-semibold text-slate-800 group-hover:text-blue-600 transition-colors line-clamp-2 font-heading">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
+          {filteredQuizzes.map((quiz, index) => (
+            <Card 
+              key={quiz.id} 
+              className="group hover:shadow-2xl transition-all duration-300 border-0 bg-white/90 backdrop-blur-sm shadow-lg hover:-translate-y-1 animate-in fade-in-50"
+              style={{ animationDelay: `${index * 50}ms` }}
+            >
+              <CardContent className="p-4 sm:p-6">
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="font-semibold text-sm sm:text-base text-slate-800 group-hover:text-blue-600 transition-colors line-clamp-2 font-heading flex-1">
                       {quiz.title}
                     </h3>
-                    <Badge className={getDifficultyColor('medium')}>
+                    <Badge className={`${getDifficultyColor('medium')} text-xs flex-shrink-0`}>
                       {getDifficultyText('medium')}
                     </Badge>
                   </div>
                   
                   {quiz.description && (
-                    <p className="text-sm text-slate-600 font-body line-clamp-2">
+                    <p className="text-xs sm:text-sm text-slate-600 font-body line-clamp-2">
                       {quiz.description}
                     </p>
                   )}
 
-                  <div className="flex items-center gap-4 text-sm text-slate-600 font-body">
-                    <div className="flex items-center gap-2">
-                      <div className="p-1.5 rounded-lg bg-blue-100">
-                        <BookOpen className="h-4 w-4 text-blue-600" />
+                  <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                    <div className="flex items-center gap-2 p-2 sm:p-2.5 rounded-lg bg-blue-50 border border-blue-100">
+                      <div className="p-1 sm:p-1.5 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex-shrink-0">
+                        <BookOpen className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                       </div>
-                      <span className="font-medium">{quiz.questions?.length || 0} câu</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-slate-600 font-medium">{quiz.questions?.length || 0} câu</p>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="p-1.5 rounded-lg bg-cyan-100">
-                        <Clock className="h-4 w-4 text-cyan-600" />
+                    <div className="flex items-center gap-2 p-2 sm:p-2.5 rounded-lg bg-cyan-50 border border-cyan-100">
+                      <div className="p-1 sm:p-1.5 rounded-lg bg-gradient-to-br from-cyan-500 to-cyan-600 flex-shrink-0">
+                        <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                       </div>
-                      <span className="font-medium">{quiz.timeLimit} phút</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-slate-600 font-medium">{quiz.timeLimit} phút</p>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between text-xs text-slate-500 font-body">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      <span>Tạo {safeFormatDistanceToNow(quiz.createdAt)}</span>
+                  <div className="flex items-center justify-between text-xs text-slate-500 font-body pt-2 border-t border-slate-100">
+                    <div className="flex items-center gap-1.5">
+                      <Calendar className="h-3 w-3 flex-shrink-0" />
+                      <span className="truncate">Tạo {safeFormatDistanceToNow(quiz.createdAt)}</span>
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
                       <Users className="h-3 w-3" />
-                      <span>{attemptCounts[quiz.id] || 0} lượt làm</span>
+                      <span className="font-medium">{attemptCounts[quiz.id] || 0}</span>
                     </div>
                   </div>
 
                   <div className="flex gap-2">
                     <Link href={`/quiz/${quiz.id}`} className="flex-1">
-                      <Button size="sm" className="w-full btn-primary">
-                        <Play className="h-4 w-4 mr-2" />
-                        Bắt đầu
+                      <Button size="sm" className="w-full btn-primary h-10 sm:h-11 group-hover:shadow-lg transition-all">
+                        <Play className="h-4 w-4 mr-1.5 sm:mr-2" />
+                        <span className="text-sm sm:text-base">Bắt đầu</span>
                       </Button>
                     </Link>
-                    <Button variant="outline" size="sm" className="btn-secondary">
+                    <Button variant="outline" size="sm" className="btn-secondary h-10 sm:h-11 w-10 sm:w-11 p-0 flex-shrink-0">
                       <Eye className="h-4 w-4" />
                     </Button>
                   </div>
@@ -221,14 +217,14 @@ export default function QuizzesPage() {
 
         {/* Empty State */}
         {filteredQuizzes.length === 0 && (
-          <div className="text-center py-12">
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-100 to-cyan-100 w-fit mx-auto mb-4">
-              <BookOpen className="h-12 w-12 text-blue-600" />
+          <div className="text-center py-12 mb-6 animate-in fade-in-50 duration-500">
+            <div className="p-4 sm:p-6 rounded-2xl bg-gradient-to-br from-blue-100 to-cyan-100 w-fit mx-auto mb-4 shadow-lg">
+              <BookOpen className="h-10 w-10 sm:h-12 sm:w-12 text-blue-600" />
             </div>
-            <h3 className="text-lg font-semibold text-slate-800 mb-2 font-heading">
+            <h3 className="text-base sm:text-lg font-semibold text-slate-800 mb-2 font-heading">
               {searchTerm ? 'Không tìm thấy bài thi' : 'Chưa có bài thi nào'}
             </h3>
-            <p className="text-slate-600 font-body">
+            <p className="text-sm sm:text-base text-slate-600 font-body px-4">
               {searchTerm ? 'Thử tìm kiếm với từ khóa khác' : 'Hãy quay lại sau để xem các bài thi mới'}
             </p>
           </div>

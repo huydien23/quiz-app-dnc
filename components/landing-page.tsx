@@ -88,13 +88,13 @@ export function LandingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Feature 1 */}
-            <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+            <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-soft hover:shadow-soft-xl card-hover group">
               <CardHeader>
-                <div className="p-3 rounded-2xl bg-blue-100 w-fit mb-4">
+                <div className="p-3 rounded-2xl bg-gradient-to-br from-blue-100 to-blue-50 w-fit mb-4 group-hover:scale-110 transition-transform duration-300">
                   <Brain className="h-8 w-8 text-blue-600" />
                 </div>
-                <CardTitle className="text-xl font-heading">AI Thông minh</CardTitle>
-                <CardDescription className="font-body">
+                <CardTitle className="text-xl font-heading mb-2">AI Thông minh</CardTitle>
+                <CardDescription className="font-body text-base">
                   Hệ thống AI phân tích điểm mạnh, yếu và đưa ra lộ trình học tập cá nhân hóa
                 </CardDescription>
               </CardHeader>

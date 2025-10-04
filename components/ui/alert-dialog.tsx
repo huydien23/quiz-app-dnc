@@ -54,7 +54,7 @@ function AlertDialogContent({
       <AlertDialogPrimitive.Content
         data-slot="alert-dialog-content"
         className={cn(
-'bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-1/2 left-1/2 z-[61] grid w-full max-w-[min(92vw,40rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl border p-6 shadow-2xl duration-200 sm:max-w-xl max-h-[85vh] overflow-auto',
+'bg-white data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-1/2 left-1/2 z-[61] grid w-full max-w-[min(92vw,40rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl border border-slate-200 p-6 shadow-2xl duration-200 sm:max-w-xl max-h-[85vh] overflow-auto',
           className,
         )}
         {...props}
