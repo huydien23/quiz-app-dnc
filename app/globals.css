@@ -262,6 +262,9 @@ h4, h5, h6 {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  line-height: 1.3;
+  padding-top: 0.1em;
+  padding-bottom: 0.15em;
 }
 
 /* Smooth animations */
@@ -333,4 +336,97 @@ h4, h5, h6 {
 }
 .has-bottom-nav {
   padding-bottom: calc(env(safe-area-inset-bottom) + 64px);
+}
+
+/* Enhanced Accessibility - Focus States */
+*:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: 0.25rem;
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Improved Interactive States */
+.interactive {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.interactive:hover {
+  transform: translateY(-2px);
+}
+
+.interactive:active {
+  transform: translateY(0);
+}
+
+/* Better Card Hover Effects */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Skeleton Loading States */
+.skeleton {
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+  background: linear-gradient(
+    90deg,
+    var(--muted) 0%,
+    color-mix(in srgb, var(--muted) 90%, white) 50%,
+    var(--muted) 100%
+  );
+  background-size: 200% 100%;
+}
+
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Touch-Friendly Mobile Buttons */
+@media (max-width: 768px) {
+  button, .btn {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.875rem 1.25rem;
+    font-size: 1rem;
+  }
+  
+  input, select, textarea {
+    min-height: 44px;
+    font-size: 16px; /* Prevents iOS zoom */
+  }
+}
+
+/* Smooth Page Transitions */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* Mobile Bottom Navigation Safe Area - Prevents content from being hidden by bottom nav */
+@layer utilities {
+  .safe-bottom-nav {
+    @apply pb-24 md:pb-8;
+  }
+  
+  .safe-bottom-nav-lg {
+    @apply pb-32 md:pb-8;
+  }
 }

@@ -65,21 +65,41 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50 px-4">
-      <div className="w-full max-w-md">
-        <div className="flex justify-center mb-8">
-          <div className="flex items-center space-x-3">
-            <div className="p-3 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white">
-              <BookOpen className="h-8 w-8" />
-            </div>
-            <span className="text-2xl font-bold text-gradient">QuizMaster</span>
-          </div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50 px-4 py-12">
+      <div className="w-full max-w-md animate-fade-in">
+        {/* Back to Home Button */}
+        <div className="flex justify-center mb-6">
+          <Link href="/">
+            <Button 
+              variant="ghost" 
+              className="text-slate-600 hover:text-blue-600 hover:bg-blue-50/50 transition-all duration-200"
+            >
+              <svg 
+                className="w-4 h-4 mr-2" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Quay về trang chủ
+            </Button>
+          </Link>
         </div>
 
-        <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center">Đăng nhập</CardTitle>
-            <CardDescription className="text-center">Nhập email và mật khẩu để truy cập tài khoản</CardDescription>
+        <div className="flex justify-center mb-10">
+          <Link href="/" className="flex items-center space-x-3 group">
+            <div className="p-3 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white group-hover:scale-110 transition-transform duration-300 shadow-lg">
+              <BookOpen className="h-8 w-8" />
+            </div>
+            <span className="text-3xl font-bold text-gradient">QuizMaster</span>
+          </Link>
+        </div>
+
+        <Card className="border-0 shadow-soft-xl bg-white/90 backdrop-blur-sm animate-slide-up">
+          <CardHeader className="space-y-3 pb-6">
+            <CardTitle className="text-3xl text-center font-heading">Đăng nhập</CardTitle>
+            <CardDescription className="text-center text-base">Nhập email và mật khẩu để truy cập tài khoản</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -89,8 +109,8 @@ export default function LoginPage() {
                 </Alert>
               )}
 
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+              <div className="space-y-3">
+                <Label htmlFor="email" className="text-base font-medium">Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -98,11 +118,12 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  className="h-12 text-base"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="password">Mật khẩu</Label>
+              <div className="space-y-3">
+                <Label htmlFor="password" className="text-base font-medium">Mật khẩu</Label>
                 <Input
                   id="password"
                   type="password"
@@ -110,11 +131,12 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  className="h-12 text-base"
                 />
               </div>
 
-              <Button type="submit" className="w-full btn-primary" disabled={loading}>
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              <Button type="submit" className="w-full btn-primary h-12 text-base font-semibold mt-2" disabled={loading}>
+                {loading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
                 Đăng nhập
               </Button>
             </form>
@@ -132,11 +154,11 @@ export default function LoginPage() {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full mt-4 bg-transparent"
+                className="w-full mt-4 h-12 text-base font-medium hover:bg-slate-50 transition-colors duration-200"
                 onClick={handleGoogleSignIn}
                 disabled={googleLoading}
               >
-                {googleLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {googleLoading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
                 <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                   <path
                     fill="currentColor"

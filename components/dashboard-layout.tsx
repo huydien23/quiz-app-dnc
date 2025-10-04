@@ -22,7 +22,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <DashboardHeader />
         </div>
         <main className="flex-1">
-          <div className="p-4 md:p-6 pb-20 safe-bottom md:pb-8">
+          <div className="p-4 md:p-6 pb-24 safe-bottom md:pb-8">
             {children}
           </div>
         </main>

@@ -131,155 +131,177 @@ export default function HistoryPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-800 font-heading">Lịch sử làm bài</h1>
-            <p className="text-slate-600 font-body">Theo dõi tiến độ và kết quả học tập của bạn</p>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-slate-600 font-body">
-            <BarChart3 className="h-4 w-4" />
-            <span>{attempts.length} lần làm bài</span>
-          </div>
-        </div>
-
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-slate-600 font-body">Tổng số lần làm</p>
-                  <p className="text-2xl font-bold text-slate-800 font-heading">{attempts.length}</p>
+      <div className="space-y-4 sm:space-y-6">
+        {/* Stats Overview - Mobile optimized */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+          <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-200 animate-fade-in">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div className="order-2 sm:order-1">
+                  <p className="text-xs sm:text-sm text-slate-600 font-body">Tổng số lần làm</p>
+                  <p className="text-xl sm:text-2xl font-bold text-slate-800 font-heading">{attempts.length}</p>
                 </div>
-                <div className="p-3 rounded-xl bg-blue-100">
-                  <BookOpen className="h-6 w-6 text-blue-600" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-md order-1 sm:order-2">
+                  <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-slate-600 font-body">Điểm trung bình</p>
-                  <p className="text-2xl font-bold text-slate-800 font-heading">{getAverageScore()}%</p>
+          <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-200 animate-fade-in" style={{ animationDelay: '50ms' }}>
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div className="order-2 sm:order-1">
+                  <p className="text-xs sm:text-sm text-slate-600 font-body">Điểm TB</p>
+                  <p className="text-xl sm:text-2xl font-bold text-slate-800 font-heading">{getAverageScore()}%</p>
                 </div>
-                <div className="p-3 rounded-xl bg-green-100">
-                  <Target className="h-6 w-6 text-green-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-slate-600 font-body">Điểm cao nhất</p>
-                  <p className="text-2xl font-bold text-slate-800 font-heading">{getBestScore()}%</p>
-                </div>
-                <div className="p-3 rounded-xl bg-purple-100">
-                  <Award className="h-6 w-6 text-purple-600" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-md order-1 sm:order-2">
+                  <Target className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-slate-600 font-body">Thời gian học</p>
-                  <p className="text-2xl font-bold text-slate-800 font-heading">{Math.round(getTotalTime() / 60)}h</p>
+          <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-200 animate-fade-in" style={{ animationDelay: '100ms' }}>
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div className="order-2 sm:order-1">
+                  <p className="text-xs sm:text-sm text-slate-600 font-body">Cao nhất</p>
+                  <p className="text-xl sm:text-2xl font-bold text-slate-800 font-heading">{getBestScore()}%</p>
                 </div>
-                <div className="p-3 rounded-xl bg-orange-100">
-                  <Clock className="h-6 w-6 text-orange-600" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center shadow-md order-1 sm:order-2">
+                  <Award className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-200 animate-fade-in" style={{ animationDelay: '150ms' }}>
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div className="order-2 sm:order-1">
+                  <p className="text-xs sm:text-sm text-slate-600 font-body">Học tập</p>
+                  <p className="text-xl sm:text-2xl font-bold text-slate-800 font-heading">{Math.round(getTotalTime() / 60)}h</p>
+                </div>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-md order-1 sm:order-2">
+                  <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Filter */}
-        <div className="flex gap-2">
+        {/* Filter - Mobile optimized */}
+        <div className="flex flex-wrap gap-2">
           <Button
             variant={filter === "all" ? "default" : "outline"}
             size="sm"
             onClick={() => setFilter("all")}
-            className={filter === "all" ? "btn-primary" : "btn-secondary"}
+            className={`${filter === "all" ? "btn-primary" : "btn-secondary"} h-9 sm:h-10 text-xs sm:text-sm`}
           >
-            Tất cả
+            <Filter className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1.5" />
+            <span className="hidden xs:inline">Tất cả</span>
           </Button>
           <Button
             variant={filter === "recent" ? "default" : "outline"}
             size="sm"
             onClick={() => setFilter("recent")}
-            className={filter === "recent" ? "btn-primary" : "btn-secondary"}
+            className={`${filter === "recent" ? "btn-primary" : "btn-secondary"} h-9 sm:h-10 text-xs sm:text-sm`}
           >
-            Gần đây
+            <Clock className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1.5" />
+            <span>Gần đây</span>
           </Button>
           <Button
             variant={filter === "high-score" ? "default" : "outline"}
             size="sm"
             onClick={() => setFilter("high-score")}
-            className={filter === "high-score" ? "btn-primary" : "btn-secondary"}
+            className={`${filter === "high-score" ? "btn-primary" : "btn-secondary"} h-9 sm:h-10 text-xs sm:text-sm`}
           >
-            Điểm cao
+            <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1.5" />
+            <span>Điểm cao</span>
           </Button>
           <Button
             variant={filter === "low-score" ? "default" : "outline"}
             size="sm"
             onClick={() => setFilter("low-score")}
-            className={filter === "low-score" ? "btn-primary" : "btn-secondary"}
+            className={`${filter === "low-score" ? "btn-primary" : "btn-secondary"} h-9 sm:h-10 text-xs sm:text-sm`}
           >
-            Cần cải thiện
+            <Target className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1.5" />
+            <span className="hidden xs:inline">Cần cải thiện</span>
+            <span className="xs:hidden">Cải thiện</span>
           </Button>
         </div>
 
         {/* History List */}
         <div className="space-y-4">
           {filteredAttempts.map((attempt) => (
-            <Card key={attempt.id} className="border-0 bg-white/80 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="font-semibold text-slate-800 font-heading">
+            <Card key={attempt.id} className="border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 animate-fade-in" style={{ animationDelay: `${attempts.indexOf(attempt) * 50}ms` }}>
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start sm:items-center gap-2 sm:gap-3 mb-3">
+                      <h3 className="font-semibold text-base sm:text-lg text-slate-800 font-heading flex-1 min-w-0">
                         {getQuizTitle(attempt.quizId)}
                       </h3>
-                      <Badge variant={getScoreBadgeVariant(attempt.score || 0)}>
+                      <Badge variant={getScoreBadgeVariant(attempt.score || 0)} className="flex-shrink-0 text-sm font-bold">
                         {attempt.score}%
                       </Badge>
                     </div>
-                    <div className="flex items-center gap-4 text-sm text-slate-600 font-body">
-                      <div className="flex items-center gap-1">
-                        <Calendar className="h-4 w-4" />
+                    
+                    {/* Mobile: Stack vertically */}
+                    <div className="flex flex-col sm:hidden gap-2 text-sm text-slate-600 font-body">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                          <Calendar className="h-4 w-4 text-blue-600" />
+                        </div>
+                        <span className="text-xs">{format(new Date(attempt.completedAt), 'dd/MM/yyyy HH:mm', { locale: vi })}</span>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center flex-shrink-0">
+                            <Clock className="h-4 w-4 text-orange-600" />
+                          </div>
+                          <span className="text-xs">{Math.round((attempt.timeSpent || 0) / 60)} phút</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                          </div>
+                          <span className="text-xs">{attempt.correctAnswers || 0}/{attempt.totalQuestions || 0} câu</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Desktop: Horizontal */}
+                    <div className="hidden sm:flex items-center gap-4 text-sm text-slate-600 font-body">
+                      <div className="flex items-center gap-1.5">
+                        <Calendar className="h-4 w-4 text-blue-600" />
                         <span>{format(new Date(attempt.completedAt), 'dd/MM/yyyy HH:mm', { locale: vi })}</span>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-4 w-4" />
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="h-4 w-4 text-orange-600" />
                         <span>{Math.round((attempt.timeSpent || 0) / 60)} phút</span>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <CheckCircle className="h-4 w-4" />
+                      <div className="flex items-center gap-1.5">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
                         <span>{attempt.correctAnswers || 0}/{attempt.totalQuestions || 0} câu đúng</span>
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Link href={`/quiz/${attempt.quizId}/result`}>
-                      <Button variant="outline" size="sm" className="btn-secondary">
-                        <Eye className="h-4 w-4 mr-2" />
-                        Xem kết quả
+                  
+                  {/* Buttons */}
+                  <div className="flex items-center gap-2 sm:flex-shrink-0">
+                    <Link href={`/quiz/${attempt.quizId}/result`} className="flex-1 sm:flex-initial">
+                      <Button variant="outline" size="sm" className="btn-secondary w-full sm:w-auto h-10">
+                        <Eye className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Xem kết quả</span>
                       </Button>
                     </Link>
-                    <Link href={`/quiz/${attempt.quizId}`}>
-                      <Button size="sm" className="btn-primary">
-                        <Play className="h-4 w-4 mr-2" />
-                        Làm lại
+                    <Link href={`/quiz/${attempt.quizId}`} className="flex-1 sm:flex-initial">
+                      <Button size="sm" className="btn-primary w-full sm:w-auto h-10">
+                        <Play className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Làm lại</span>
+                        <span className="sm:hidden">Làm lại</span>
                       </Button>
                     </Link>
                   </div>

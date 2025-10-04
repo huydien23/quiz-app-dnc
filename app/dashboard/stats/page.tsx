@@ -18,6 +18,10 @@ import { useToast } from "@/components/toast-provider"
 import { formatDistanceToNow } from "date-fns"
 import { vi } from "date-fns/locale"
 import { DashboardLayout } from "@/components/dashboard-layout"
+import { cn } from "@/lib/utils"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useRouter } from "next/navigation"
+import { User } from "lucide-react"
 
 interface StatsData {
   totalAttempts: number
@@ -37,6 +41,13 @@ interface StatsData {
 export default function StatsPage() {
   const { user } = useAuth()
   const { error } = useToast()
+  const router = useRouter()
+  
+  const handleTabChange = (value: string) => {
+    if (value === 'info') {
+      router.push('/dashboard/profile?tab=info')
+    }
+  }
   
   const [stats, setStats] = useState<StatsData>({
     totalAttempts: 0,
@@ -205,129 +216,171 @@ export default function StatsPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-800 font-heading">Thống kê học tập</h1>
-            <p className="text-slate-600 font-body">Phân tích chi tiết về tiến độ học tập của bạn</p>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant={timeRange === "all" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setTimeRange("all")}
-              className={timeRange === "all" ? "btn-primary" : "btn-secondary"}
+      <div className="pb-24">
+        {/* Tabs Navigation */}
+        <Tabs value="stats" onValueChange={handleTabChange} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 bg-white border border-slate-200 p-1 rounded-lg shadow-sm h-11">
+            <TabsTrigger 
+              value="info"
+              className="rounded-md flex items-center justify-center gap-1.5 sm:gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all"
             >
-              Tất cả
-            </Button>
-            <Button
-              variant={timeRange === "week" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setTimeRange("week")}
-              className={timeRange === "week" ? "btn-primary" : "btn-secondary"}
+              <User className="h-4 w-4 flex-shrink-0" />
+              <span className="hidden sm:inline text-sm font-medium">Thông tin</span>
+              <span className="sm:hidden text-sm font-medium">Hồ sơ</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="stats"
+              className="rounded-md flex items-center justify-center gap-1.5 sm:gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all"
             >
-              Tuần
-            </Button>
-            <Button
-              variant={timeRange === "month" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setTimeRange("month")}
-              className={timeRange === "month" ? "btn-primary" : "btn-secondary"}
-            >
-              Tháng
-            </Button>
-            <Button
-              variant={timeRange === "year" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setTimeRange("year")}
-              className={timeRange === "year" ? "btn-primary" : "btn-secondary"}
-            >
-              Năm
-            </Button>
-          </div>
+              <BarChart3 className="h-4 w-4 flex-shrink-0" />
+              <span className="text-sm font-medium">Thống kê</span>
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="stats" className="mt-4 sm:mt-6 space-y-4 sm:space-y-6">
+        {/* Time Range Filters - Compact mobile */}
+        <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-1">
+          <Button
+            variant={timeRange === "all" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setTimeRange("all")}
+            className={cn(
+              "flex-1 sm:flex-none text-xs sm:text-sm h-8 sm:h-9 px-3 sm:px-4",
+              timeRange === "all" 
+                ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white border-0 shadow-md" 
+                : "bg-white border-slate-200 text-slate-600"
+            )}
+          >
+            Tất cả
+          </Button>
+          <Button
+            variant={timeRange === "week" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setTimeRange("week")}
+            className={cn(
+              "flex-1 sm:flex-none text-xs sm:text-sm h-8 sm:h-9 px-3 sm:px-4",
+              timeRange === "week" 
+                ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white border-0 shadow-md" 
+                : "bg-white border-slate-200 text-slate-600"
+            )}
+          >
+            7 ngày
+          </Button>
+          <Button
+            variant={timeRange === "month" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setTimeRange("month")}
+            className={cn(
+              "flex-1 sm:flex-none text-xs sm:text-sm h-8 sm:h-9 px-3 sm:px-4",
+              timeRange === "month" 
+                ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white border-0 shadow-md" 
+                : "bg-white border-slate-200 text-slate-600"
+            )}
+          >
+            30 ngày
+          </Button>
+          <Button
+            variant={timeRange === "year" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setTimeRange("year")}
+            className={cn(
+              "flex-1 sm:flex-none text-xs sm:text-sm h-8 sm:h-9 px-3 sm:px-4",
+              timeRange === "year" 
+                ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white border-0 shadow-md" 
+                : "bg-white border-slate-200 text-slate-600"
+            )}
+          >
+            1 năm
+          </Button>
         </div>
 
-        {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-slate-600 font-body">Tổng số lần làm</p>
-                  <p className="text-3xl font-bold text-slate-800 font-heading">{stats.totalAttempts}</p>
+        {/* Key Metrics - 2x2 Grid on mobile, horizontal layout */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-shadow">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0 shadow-md">
+                  <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                 </div>
-                <div className="p-3 rounded-xl bg-blue-100">
-                  <BookOpen className="h-6 w-6 text-blue-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-slate-600 font-body">Điểm trung bình</p>
-                  <p className="text-3xl font-bold text-slate-800 font-heading">{stats.averageScore}%</p>
-                </div>
-                <div className="p-3 rounded-xl bg-green-100">
-                  <Target className="h-6 w-6 text-green-600" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] sm:text-xs text-slate-600 font-body truncate">Tổng lần làm</p>
+                  <p className="text-lg sm:text-2xl font-bold text-slate-800 font-heading">{stats.totalAttempts}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-slate-600 font-body">Điểm cao nhất</p>
-                  <p className="text-3xl font-bold text-slate-800 font-heading">{stats.bestScore}%</p>
+          <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-shadow">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center flex-shrink-0 shadow-md">
+                  <Target className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                 </div>
-                <div className="p-3 rounded-xl bg-purple-100">
-                  <Award className="h-6 w-6 text-purple-600" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] sm:text-xs text-slate-600 font-body truncate">Điểm TB</p>
+                  <p className="text-lg sm:text-2xl font-bold text-slate-800 font-heading">{stats.averageScore}%</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-slate-600 font-body">Thời gian học</p>
-                  <p className="text-3xl font-bold text-slate-800 font-heading">{Math.round(stats.totalTimeSpent / 60)}h</p>
+          <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-shadow">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center flex-shrink-0 shadow-md">
+                  <Award className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                 </div>
-                <div className="p-3 rounded-xl bg-orange-100">
-                  <Clock className="h-6 w-6 text-orange-600" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] sm:text-xs text-slate-600 font-body truncate">Cao nhất</p>
+                  <p className="text-lg sm:text-2xl font-bold text-slate-800 font-heading">{stats.bestScore}%</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-shadow">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center flex-shrink-0 shadow-md">
+                  <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] sm:text-xs text-slate-600 font-body truncate">Thời gian</p>
+                  <p className="text-lg sm:text-2xl font-bold text-slate-800 font-heading">{Math.round(stats.totalTimeSpent / 60)}h</p>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Progress and Trends */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Weekly Progress */}
-          <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
-            <CardHeader>
-              <CardTitle className="text-xl font-bold text-slate-800 font-heading">Tiến độ tuần</CardTitle>
-              <CardDescription className="text-slate-600 font-body">Điểm trung bình theo ngày trong tuần</CardDescription>
+        {/* Progress and Trends - Mobile optimized */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          {/* Weekly Progress - Compact mobile */}
+          <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg">
+            <CardHeader className="pb-3 sm:pb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+                  <Calendar className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-base sm:text-lg font-bold text-slate-800 font-heading">Tiến độ tuần</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm text-slate-600 font-body">Điểm TB theo ngày</CardDescription>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-2.5 sm:space-y-3">
                 {stats.weeklyProgress.map((score, index) => {
                   const days = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']
                   return (
-                    <div key={index} className="flex items-center gap-4">
-                      <div className="w-8 text-sm font-medium text-slate-600 font-body">
+                    <div key={index} className="flex items-center gap-2 sm:gap-3">
+                      <div className="w-6 sm:w-8 text-xs sm:text-sm font-medium text-slate-600 font-body flex-shrink-0">
                         {days[index]}
                       </div>
                       <div className="flex-1">
-                        <Progress value={score} className="h-2" />
+                        <Progress value={score} className="h-1.5 sm:h-2" />
                       </div>
-                      <div className="w-12 text-sm font-medium text-slate-800 font-body">
+                      <div className="w-10 sm:w-12 text-xs sm:text-sm font-medium text-slate-800 font-body text-right">
                         {score}%
                       </div>
                     </div>
@@ -337,26 +390,33 @@ export default function StatsPage() {
             </CardContent>
           </Card>
 
-          {/* Improvement */}
-          <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
-            <CardHeader>
-              <CardTitle className="text-xl font-bold text-slate-800 font-heading">Cải thiện</CardTitle>
-              <CardDescription className="text-slate-600 font-body">Xu hướng học tập gần đây</CardDescription>
+          {/* Improvement - Compact mobile */}
+          <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg">
+            <CardHeader className="pb-3 sm:pb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
+                  <TrendingUp className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-base sm:text-lg font-bold text-slate-800 font-heading">Cải thiện</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm text-slate-600 font-body">Xu hướng gần đây</CardDescription>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
-                <div className="text-center">
-                  <div className={`text-4xl font-bold ${getTrendColor(stats.recentTrend)} font-heading`}>
+              <div className="space-y-4 sm:space-y-6">
+                <div className="text-center py-2">
+                  <div className={`text-3xl sm:text-4xl font-bold ${getTrendColor(stats.recentTrend)} font-heading`}>
                     {stats.improvement > 0 ? '+' : ''}{stats.improvement}%
                   </div>
-                  <p className="text-slate-600 font-body mt-2">
+                  <p className="text-xs sm:text-sm text-slate-600 font-body mt-1.5 sm:mt-2">
                     {stats.improvement > 0 ? 'Đang cải thiện' : stats.improvement < 0 ? 'Cần cố gắng' : 'Ổn định'}
                   </p>
                 </div>
                 
-                <div className="flex items-center justify-center gap-2">
+                <div className="flex items-center justify-center gap-2 py-2 px-3 bg-slate-50 rounded-lg">
                   {getTrendIcon(stats.recentTrend)}
-                  <span className="text-sm text-slate-600 font-body">
+                  <span className="text-xs sm:text-sm text-slate-600 font-body">
                     Xu hướng {stats.recentTrend === 'up' ? 'tăng' : stats.recentTrend === 'down' ? 'giảm' : 'ổn định'}
                   </span>
                 </div>
@@ -365,71 +425,83 @@ export default function StatsPage() {
           </Card>
         </div>
 
-        {/* Detailed Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
-            <CardHeader>
-              <CardTitle className="text-xl font-bold text-slate-800 font-heading">Thống kê chi tiết</CardTitle>
+        {/* Detailed Stats - Mobile optimized */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+          <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg">
+            <CardHeader className="pb-3 sm:pb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center">
+                  <BarChart3 className="h-4 w-4 text-white" />
+                </div>
+                <CardTitle className="text-base sm:text-lg font-bold text-slate-800 font-heading">Chi tiết</CardTitle>
+              </div>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-slate-600 font-body">Bài thi đã hoàn thành</span>
-                <span className="font-semibold text-slate-800 font-heading">{stats.quizzesCompleted}</span>
+            <CardContent className="space-y-3 sm:space-y-4">
+              <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                <span className="text-xs sm:text-sm text-slate-600 font-body">Bài đã hoàn thành</span>
+                <span className="text-sm sm:text-base font-semibold text-slate-800 font-heading">{stats.quizzesCompleted}</span>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-slate-600 font-body">Điểm thấp nhất</span>
-                <span className="font-semibold text-slate-800 font-heading">{stats.worstScore}%</span>
+              <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                <span className="text-xs sm:text-sm text-slate-600 font-body">Điểm thấp nhất</span>
+                <span className="text-sm sm:text-base font-semibold text-slate-800 font-heading">{stats.worstScore}%</span>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-slate-600 font-body">Thời gian trung bình/bài</span>
-                <span className="font-semibold text-slate-800 font-heading">
+              <div className="flex justify-between items-center py-2">
+                <span className="text-xs sm:text-sm text-slate-600 font-body">TB thời gian/bài</span>
+                <span className="text-sm sm:text-base font-semibold text-slate-800 font-heading">
                   {stats.totalAttempts > 0 ? Math.round(stats.totalTimeSpent / stats.totalAttempts / 60) : 0} phút
                 </span>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
-            <CardHeader>
-              <CardTitle className="text-xl font-bold text-slate-800 font-heading">Thành tích</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-yellow-100">
-                  <Star className="h-5 w-5 text-yellow-600" />
+          <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg">
+            <CardHeader className="pb-3 sm:pb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center">
+                  <Trophy className="h-4 w-4 text-white" />
                 </div>
-                <div>
-                  <p className="font-medium text-slate-800 font-heading">Học viên tích cực</p>
-                  <p className="text-sm text-slate-600 font-body">{stats.totalAttempts} lần làm bài</p>
+                <CardTitle className="text-base sm:text-lg font-bold text-slate-800 font-heading">Thành tích</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-xl bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-100">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center flex-shrink-0">
+                  <Star className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs sm:text-sm font-medium text-slate-800 font-heading">Học viên tích cực</p>
+                  <p className="text-[10px] sm:text-xs text-slate-600 font-body truncate">{stats.totalAttempts} lần làm bài</p>
                 </div>
               </div>
               
               {stats.bestScore >= 90 && (
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-green-100">
-                    <Trophy className="h-5 w-5 text-green-600" />
+                <div className="flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 border border-green-100">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center flex-shrink-0">
+                    <Trophy className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                   </div>
-                  <div>
-                    <p className="font-medium text-slate-800 font-heading">Xuất sắc</p>
-                    <p className="text-sm text-slate-600 font-body">Điểm cao nhất {stats.bestScore}%</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-medium text-slate-800 font-heading">Xuất sắc</p>
+                    <p className="text-[10px] sm:text-xs text-slate-600 font-body truncate">Cao nhất {stats.bestScore}%</p>
                   </div>
                 </div>
               )}
               
               {stats.averageScore >= 80 && (
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-blue-100">
-                    <Award className="h-5 w-5 text-blue-600" />
+                <div className="flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-xl bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-100">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
+                    <Award className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                   </div>
-                  <div>
-                    <p className="font-medium text-slate-800 font-heading">Học tập tốt</p>
-                    <p className="text-sm text-slate-600 font-body">Điểm TB {stats.averageScore}%</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-medium text-slate-800 font-heading">Học tập tốt</p>
+                    <p className="text-[10px] sm:text-xs text-slate-600 font-body truncate">Điểm TB {stats.averageScore}%</p>
                   </div>
                 </div>
               )}
             </CardContent>
           </Card>
         </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </DashboardLayout>
   )

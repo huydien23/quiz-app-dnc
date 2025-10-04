@@ -226,28 +226,34 @@ export function StudentDashboard() {
     color: string
     trend?: number
   }) => (
-    <Card className="relative overflow-hidden group hover:shadow-xl transition-all duration-300 border-0 bg-white/80 backdrop-blur-sm card-shadow-lg hover:-translate-y-1">
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
-            <p className="text-sm font-medium text-slate-600 mb-1 font-body">{title}</p>
-            <p className="text-3xl font-bold text-slate-800 mb-1 font-heading">{value}</p>
-            {subtitle && (
-              <p className="text-xs text-slate-500 font-body">{subtitle}</p>
-            )}
+    <Card className="relative overflow-hidden group hover:shadow-xl transition-all duration-300 border-0 bg-white/90 backdrop-blur-sm shadow-lg hover:-translate-y-1">
+      <CardContent className="p-3 sm:p-4">
+        <div className="flex items-center gap-3">
+          {/* Icon với gradient background */}
+          <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl ${color} flex items-center justify-center flex-shrink-0 shadow-md group-hover:scale-110 transition-transform duration-300`}>
+            <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
+          </div>
+          
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            <p className="text-xs sm:text-sm font-medium text-slate-600 font-body mb-0.5">{title}</p>
+            <div className="flex items-baseline gap-2">
+              <p className="text-xl sm:text-2xl font-bold text-slate-800 font-heading">{value}</p>
+              {subtitle && (
+                <p className="text-xs text-slate-500 font-body truncate">{subtitle}</p>
+              )}
+            </div>
             {trend !== undefined && (
-              <div className={`flex items-center text-xs mt-2 ${trend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                <TrendingUp className="h-3 w-3 mr-1" />
-                <span className="font-medium">{trend > 0 ? '+' : ''}{trend.toFixed(1)} điểm gần đây</span>
+              <div className={`flex items-center text-xs mt-1 ${trend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <TrendingUp className={`h-3 w-3 mr-1 ${trend < 0 ? 'rotate-180' : ''}`} />
+                <span className="font-medium">{trend > 0 ? '+' : ''}{trend.toFixed(1)}</span>
               </div>
             )}
           </div>
-          <div className={`p-4 rounded-2xl ${color} group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
-            <Icon className="h-8 w-8" />
-          </div>
         </div>
       </CardContent>
-      <div className={`absolute bottom-0 left-0 right-0 h-1 ${color.replace('bg-', 'bg-').replace('/10', '')} opacity-60`} />
+      {/* Colored bottom border */}
+      <div className={`absolute bottom-0 left-0 right-0 h-1 ${color.replace('bg-gradient-to-br', 'bg-gradient-to-r')} opacity-80`} />
     </Card>
   )
 
@@ -286,186 +292,282 @@ export function StudentDashboard() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Progress Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="space-y-4 sm:space-y-6 pb-6">
+      {/* Progress Stats - 2x2 Grid Mobile, 4 cols Desktop */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 animate-in fade-in-50 duration-500">
         <StatCard
-          title="Bài thi đã làm"
+          title="Bài thi"
           value={stats.totalAttempts}
-          subtitle={`${stats.quizzesCompleted} bài khác nhau`}
+          subtitle={`${stats.quizzesCompleted} khác nhau`}
           icon={BookOpen}
           color="bg-gradient-to-br from-blue-500 to-blue-600 text-white"
         />
         <StatCard
-          title="Điểm trung bình"
+          title="Điểm TB"
           value={`${stats.averageScore}%`}
           icon={Target}
-          color="bg-gradient-to-br from-green-500 to-green-600 text-white"
+          color="bg-gradient-to-br from-green-500 to-emerald-600 text-white"
           trend={stats.recentImprovement}
         />
         <StatCard
-          title="Điểm cao nhất"
+          title="Cao nhất"
           value={`${stats.bestScore}%`}
           icon={Award}
-          color="bg-gradient-to-br from-purple-500 to-purple-600 text-white"
+          color="bg-gradient-to-br from-purple-500 to-pink-600 text-white"
         />
         <StatCard
           title="Xếp hạng"
           value={stats.rank > 0 ? `#${stats.rank}` : 'N/A'}
-          subtitle={`trong ${stats.totalStudents} học sinh`}
+          subtitle={stats.rank > 0 ? `/${stats.totalStudents}` : ''}
           icon={Trophy}
-          color="bg-gradient-to-br from-orange-500 to-orange-600 text-white"
+          color="bg-gradient-to-br from-orange-500 to-amber-600 text-white"
         />
       </div>
 
       {/* Tabs Navigation */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-<TabsList className="grid w-full grid-cols-3 sticky top-16 z-10 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70 border rounded-lg">
-          <TabsTrigger value="dashboard" className="py-3">Dashboard</TabsTrigger>
-          <TabsTrigger value="quizzes" className="py-3">Bài thi</TabsTrigger>
-          <TabsTrigger value="leaderboard" className="py-3">Bảng xếp hạng</TabsTrigger>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6 animate-in fade-in-50 duration-500 delay-100">
+        <TabsList className="grid w-full grid-cols-3 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70 border rounded-lg h-12 sm:h-auto p-1">
+          <TabsTrigger value="dashboard" className="py-2 sm:py-3 text-xs sm:text-sm">
+            <BookOpen className="h-4 w-4 mr-1.5 sm:mr-2" />
+            <span className="hidden sm:inline">Dashboard</span>
+          </TabsTrigger>
+          <TabsTrigger value="quizzes" className="py-2 sm:py-3 text-xs sm:text-sm">
+            <Play className="h-4 w-4 mr-1.5 sm:mr-2" />
+            <span className="hidden sm:inline">Bài thi</span>
+          </TabsTrigger>
+          <TabsTrigger value="leaderboard" className="py-2 sm:py-3 text-xs sm:text-sm">
+            <Trophy className="h-4 w-4 mr-1.5 sm:mr-2" />
+            <span className="hidden sm:inline">Xếp hạng</span>
+          </TabsTrigger>
         </TabsList>
         
 
         {/* Dashboard Tab */}
-        <TabsContent value="dashboard" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Recent Activity & Progress */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Recent Performance */}
-              <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-xl font-bold text-slate-800 font-heading">Kết quả gần đây</CardTitle>
-                  <CardDescription className="text-slate-600 font-body">5 lần làm bài mới nhất</CardDescription>
+        <TabsContent value="dashboard" className="space-y-4 sm:space-y-6 mb-6">
+          {/* Mobile: Vertical Stack, Desktop: Original Grid */}
+          <div className="space-y-4 sm:space-y-6 lg:grid lg:grid-cols-3 lg:gap-8 lg:space-y-0">
+            
+            {/* Quick Actions - Priority #1 on Mobile */}
+            <div className="lg:order-2 lg:col-span-1 animate-in fade-in-50 duration-500 delay-100">
+              <Card className="border-0 bg-gradient-to-br from-cyan-500 to-blue-600 text-white shadow-xl">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center flex-shrink-0">
+                      <Zap className="h-5 w-5 text-white" />
+                    </div>
+                    <CardTitle className="text-lg font-bold text-white font-heading">Thao tác nhanh</CardTitle>
+                  </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {userAttempts.slice(0, 5).map((attempt) => {
+                <CardContent className="space-y-2 pb-4">
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start h-11 bg-white/10 hover:bg-white/20 border-white/30 text-white hover:text-white backdrop-blur-sm transition-all"
+                    onClick={() => setActiveTab("quizzes")}
+                  >
+                    <BookOpen className="h-4 w-4 mr-3" />
+                    <span className="text-sm font-medium">Xem tất cả bài thi</span>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start h-11 bg-white/10 hover:bg-white/20 border-white/30 text-white hover:text-white backdrop-blur-sm transition-all"
+                    onClick={() => setActiveTab("leaderboard")}
+                  >
+                    <Trophy className="h-4 w-4 mr-3" />
+                    <span className="text-sm font-medium">Bảng xếp hạng</span>
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Main Content Column */}
+            <div className="lg:order-1 lg:col-span-2 space-y-4 sm:space-y-6">
+              {/* Recent Performance - Compact Mobile Version */}
+              <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl animate-in fade-in-50 duration-500 delay-200">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center flex-shrink-0 shadow-lg">
+                        <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <CardTitle className="text-base sm:text-lg font-bold text-slate-800 font-heading">Kết quả gần đây</CardTitle>
+                        <CardDescription className="text-xs text-slate-600 font-body hidden sm:block">5 lần làm bài mới nhất</CardDescription>
+                      </div>
+                    </div>
+                    <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-0 text-xs">
+                      {userAttempts.length > 0 ? `${Math.min(userAttempts.length, 5)}` : '0'}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="pb-4">
+                  <div className="space-y-2 sm:space-y-3">
+                    {userAttempts.slice(0, 3).map((attempt, index) => {
                       const quiz = availableQuizzes.find(q => q.id === attempt.quizId)
                       return (
-                        <div key={attempt.id} className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <p className="font-medium text-sm line-clamp-1">
-                              {quiz?.title || 'Bài thi không tồn tại'}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {formatDistanceToNow(new Date(attempt.completedAt), { addSuffix: true, locale: vi })}
-                            </p>
+                        <div 
+                          key={attempt.id} 
+                          className="flex items-center justify-between gap-3 p-2.5 sm:p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors animate-in fade-in-50 duration-300"
+                          style={{ animationDelay: `${index * 50}ms` }}
+                        >
+                          <div className="flex-1 min-w-0 flex items-center gap-2.5">
+                            <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex-shrink-0 flex items-center justify-center ${
+                              (attempt.score || 0) >= 80 ? 'bg-gradient-to-br from-green-500 to-emerald-600' :
+                              (attempt.score || 0) >= 60 ? 'bg-gradient-to-br from-yellow-500 to-orange-600' :
+                              'bg-gradient-to-br from-red-500 to-pink-600'
+                            }`}>
+                              <span className="text-white text-xs sm:text-sm font-bold">{attempt.score}%</span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-xs sm:text-sm line-clamp-1 text-slate-800">
+                                {quiz?.title || 'Bài thi không tồn tại'}
+                              </p>
+                              <div className="flex items-center gap-1.5 mt-0.5">
+                                <Clock className="h-3 w-3 text-slate-400 flex-shrink-0" />
+                                <p className="text-xs text-slate-500 truncate">
+                                  {formatDistanceToNow(new Date(attempt.completedAt), { addSuffix: true, locale: vi })}
+                                </p>
+                              </div>
+                            </div>
                           </div>
-                          <Badge variant={getScoreBadgeVariant(attempt.score || 0)}>
-                            {attempt.score}%
-                          </Badge>
+                          <ArrowRight className="h-4 w-4 text-slate-400 flex-shrink-0" />
                         </div>
                       )
                     })}
                     
                     {userAttempts.length === 0 && (
-                      <div className="text-center py-8">
-                        <div className="p-3 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 w-fit mx-auto mb-3">
-                          <Clock className="h-8 w-8 text-slate-600" />
+                      <div className="text-center py-6 sm:py-8">
+                        <div className="p-3 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 w-fit mx-auto mb-2">
+                          <Clock className="h-6 w-6 sm:h-8 sm:w-8 text-slate-600" />
                         </div>
-                        <p className="text-sm text-slate-600 font-body">Chưa có kết quả nào</p>
+                        <p className="text-xs sm:text-sm text-slate-600 font-body">Chưa có kết quả nào</p>
                       </div>
+                    )}
+                    
+                    {userAttempts.length > 3 && (
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        className="w-full text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                        onClick={() => setActiveTab("quizzes")}
+                      >
+                        Xem tất cả {userAttempts.length} kết quả
+                        <ArrowRight className="h-3 w-3 ml-1" />
+                      </Button>
                     )}
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Progress Overview */}
-              <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-xl font-bold text-slate-800 font-heading">Tiến độ học tập</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div>
-                    <div className="flex justify-between text-sm mb-3 font-body">
-                      <span className="text-slate-600">Bài thi đã hoàn thành</span>
-                      <span className="font-semibold text-slate-800">{stats.quizzesCompleted}/{availableQuizzes.length}</span>
+              {/* Progress Overview - Compact */}
+              <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl animate-in fade-in-50 duration-500 delay-300">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center flex-shrink-0 shadow-lg">
+                      <Target className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                     </div>
-                    <Progress 
-                      value={availableQuizzes.length > 0 ? Math.min((stats.quizzesCompleted / availableQuizzes.length) * 100, 100) : 0} 
-                      className="h-3" 
-                    />
+                    <CardTitle className="text-base sm:text-lg font-bold text-slate-800 font-heading">Tiến độ học tập</CardTitle>
                   </div>
-                  
-                  <div>
-                    <div className="flex justify-between text-sm mb-3 font-body">
-                      <span className="text-slate-600">Điểm trung bình</span>
-                      <span className={`font-semibold ${getScoreColor(stats.averageScore)}`}>{stats.averageScore}%</span>
+                </CardHeader>
+                <CardContent className="space-y-4 pb-4">
+                  {/* Progress Bars */}
+                  <div className="space-y-3">
+                    <div>
+                      <div className="flex justify-between text-xs sm:text-sm mb-2 font-body">
+                        <span className="text-slate-600">Bài thi đã hoàn thành</span>
+                        <span className="font-semibold text-slate-800">{stats.quizzesCompleted}/{availableQuizzes.length}</span>
+                      </div>
+                      <Progress 
+                        value={availableQuizzes.length > 0 ? Math.min((stats.quizzesCompleted / availableQuizzes.length) * 100, 100) : 0} 
+                        className="h-2.5" 
+                      />
                     </div>
-                    <Progress value={stats.averageScore} className="h-3" />
+                    
+                    <div>
+                      <div className="flex justify-between text-xs sm:text-sm mb-2 font-body">
+                        <span className="text-slate-600">Điểm trung bình</span>
+                        <span className={`font-semibold ${getScoreColor(stats.averageScore)}`}>{stats.averageScore}%</span>
+                      </div>
+                      <Progress value={stats.averageScore} className="h-2.5" />
+                    </div>
                   </div>
 
+                  {/* Rank Badge */}
                   {stats.rank > 0 && (
-                    <div className="text-center pt-6 border-t border-slate-200">
-                      <div className="flex items-center justify-center gap-2 text-sm font-body">
-                        <div className="p-1.5 rounded-lg bg-orange-100">
-                          <Trophy className="h-4 w-4 text-orange-600" />
+                    <div className="pt-3 border-t border-slate-200">
+                      <div className="flex items-center justify-center gap-2 p-2.5 rounded-lg bg-gradient-to-r from-orange-50 to-yellow-50">
+                        <div className="p-1.5 rounded-lg bg-gradient-to-br from-orange-500 to-yellow-600">
+                          <Trophy className="h-3.5 w-3.5 text-white" />
                         </div>
-                        <span className="text-slate-600">Bạn đang xếp hạng <span className="font-semibold text-orange-600">#{stats.rank}</span> trong lớp</span>
+                        <span className="text-xs sm:text-sm text-slate-700 font-medium">
+                          Xếp hạng <span className="font-bold text-orange-600">#{stats.rank}</span> / {stats.totalStudents}
+                        </span>
                       </div>
                     </div>
                   )}
                 </CardContent>
               </Card>
-            </div>
 
-            {/* Quick Actions */}
-            <div className="space-y-6">
-              <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-xl font-bold text-slate-800 font-heading">Thao tác nhanh</CardTitle>
+              {/* Recent Activity - Compact Mobile */}
+              <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl mb-6 animate-in fade-in-50 duration-500 delay-400">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center flex-shrink-0 shadow-lg">
+                        <Users className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                      </div>
+                      <CardTitle className="text-base sm:text-lg font-bold text-slate-800 font-heading">Hoạt động lớp</CardTitle>
+                    </div>
+                    <Badge variant="secondary" className="bg-purple-100 text-purple-700 border-0 text-xs">
+                      Mới
+                    </Badge>
+                  </div>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start btn-secondary"
-                    onClick={() => setActiveTab("quizzes")}
-                  >
-                    <BookOpen className="h-4 w-4 mr-3" />
-                    Xem tất cả bài thi
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start btn-secondary"
-                    onClick={() => setActiveTab("leaderboard")}
-                  >
-                    <Trophy className="h-4 w-4 mr-3" />
-                    Bảng xếp hạng
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Recent Activity */}
-              <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-xl font-bold text-slate-800 font-heading">Hoạt động gần đây</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {recentActivity.slice(0, 5).map((activity, index) => (
-                      <div key={index} className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <p className="font-medium text-sm line-clamp-1">
-                            {activity.userName} hoàn thành {activity.quizTitle}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {formatDistanceToNow(new Date(activity.completedAt), { addSuffix: true, locale: vi })}
-                          </p>
+                <CardContent className="pb-4">
+                  <div className="space-y-2 sm:space-y-3">
+                    {recentActivity.slice(0, 3).map((activity, index) => (
+                      <div 
+                        key={index} 
+                        className="flex items-center gap-2.5 p-2.5 sm:p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors animate-in fade-in-50 duration-300"
+                        style={{ animationDelay: `${index * 50}ms` }}
+                      >
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center flex-shrink-0">
+                          <span className="text-white text-xs font-bold">
+                            {activity.userName.substring(0, 1).toUpperCase()}
+                          </span>
                         </div>
-                        <Badge variant={getScoreBadgeVariant(activity.score)}>
-                          {activity.score}%
-                        </Badge>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-xs sm:text-sm line-clamp-1 text-slate-800">
+                            <span className="text-purple-600">{activity.userName.split(' ')[0]}</span> đạt {activity.score}%
+                          </p>
+                          <p className="text-xs text-slate-500 truncate">{activity.quizTitle}</p>
+                        </div>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <Clock className="h-3 w-3 text-slate-400" />
+                          <span className="text-xs text-slate-500 hidden sm:inline">
+                            {formatDistanceToNow(new Date(activity.completedAt), { addSuffix: true, locale: vi }).replace('khoảng ', '')}
+                          </span>
+                        </div>
                       </div>
                     ))}
                     
                     {recentActivity.length === 0 && (
-                      <div className="text-center py-8">
-                        <div className="p-3 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 w-fit mx-auto mb-3">
-                          <Users className="h-8 w-8 text-slate-600" />
+                      <div className="text-center py-6 sm:py-8">
+                        <div className="p-3 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 w-fit mx-auto mb-2">
+                          <Users className="h-6 w-6 sm:h-8 sm:w-8 text-slate-600" />
                         </div>
-                        <p className="text-sm text-slate-600 font-body">Chưa có hoạt động nào</p>
+                        <p className="text-xs sm:text-sm text-slate-600 font-body">Chưa có hoạt động nào</p>
                       </div>
+                    )}
+                    
+                    {recentActivity.length > 3 && (
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        className="w-full text-xs text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                      >
+                        Xem thêm hoạt động
+                        <ArrowRight className="h-3 w-3 ml-1" />
+                      </Button>
                     )}
                   </div>
                 </CardContent>
@@ -475,14 +577,21 @@ export function StudentDashboard() {
         </TabsContent>
 
         {/* Quizzes Tab */}
-        <TabsContent value="quizzes" className="space-y-6">
+        <TabsContent value="quizzes" className="space-y-6 mb-6">
           <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold text-slate-800 font-heading">Bài thi có sẵn</CardTitle>
-              <CardDescription className="text-slate-600 font-body">Những bài thi bạn có thể làm ngay</CardDescription>
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center flex-shrink-0 shadow-lg">
+                  <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl sm:text-2xl font-bold text-slate-800 font-heading">Bài thi có sẵn</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm text-slate-600 font-body">Những bài thi bạn có thể làm ngay</CardDescription>
+                </div>
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <CardContent className="pb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {availableQuizzes.map((quiz) => {
                   const attempt = userAttempts.find(a => a.quizId === quiz.id)
                   const status = attempt ? 'completed' : 'available'
@@ -584,17 +693,21 @@ export function StudentDashboard() {
         </TabsContent>
 
         {/* Leaderboard Tab */}
-        <TabsContent value="leaderboard" className="space-y-6">
+        <TabsContent value="leaderboard" className="space-y-6 mb-6">
           <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Trophy className="h-6 w-6 text-yellow-600" />
-                Bảng xếp hạng
-              </CardTitle>
-              <CardDescription>Top người dùng xuất sắc nhất</CardDescription>
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-600 flex items-center justify-center flex-shrink-0 shadow-lg">
+                  <Trophy className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl sm:text-2xl font-bold text-slate-800 font-heading">Bảng xếp hạng</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm text-slate-600 font-body">Top người dùng xuất sắc nhất</CardDescription>
+                </div>
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
+            <CardContent className="pb-6">
+              <div className="space-y-3 sm:space-y-4">
                 {leaderboard.length === 0 ? (
                   <div className="text-center py-8 text-slate-500">
                     <Trophy className="h-12 w-12 mx-auto mb-4 text-slate-300" />

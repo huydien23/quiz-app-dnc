@@ -7,16 +7,18 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { 
   User, Mail, Calendar, Award, Target, 
   BookOpen, Clock, Trophy, Star, Edit,
-  Save, X, Camera, Shield, Bell
+  Save, X, Camera, Shield, Bell, BarChart3
 } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { useToast } from "@/components/toast-provider"
 import { formatDistanceToNow } from "date-fns"
 import { vi } from "date-fns/locale"
 import { DashboardLayout } from "@/components/dashboard-layout"
+import { useRouter, useSearchParams } from "next/navigation"
 
 interface UserProfile {
   id: string
@@ -39,6 +41,9 @@ interface UserProfile {
 export default function ProfilePage() {
   const { user } = useAuth()
   const { success, error } = useToast()
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const activeTab = searchParams.get('tab') || 'info'
   
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
@@ -47,6 +52,14 @@ export default function ProfilePage() {
     name: '',
     email: ''
   })
+
+  const handleTabChange = (value: string) => {
+    if (value === 'stats') {
+      router.push('/dashboard/stats')
+    } else {
+      router.push('/dashboard/profile?tab=info')
+    }
+  }
 
   useEffect(() => {
     if (user) {
@@ -190,22 +203,29 @@ export default function ProfilePage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-800 font-heading">Hồ sơ cá nhân</h1>
-            <p className="text-slate-600 font-body">Quản lý thông tin và cài đặt cá nhân</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge className="bg-green-100 text-green-800">
-              <Shield className="h-3 w-3 mr-1" />
-              Tài khoản xác thực
-            </Badge>
-          </div>
-        </div>
+      <div className="pb-24">
+        {/* Tabs Navigation */}
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 bg-white border border-slate-200 p-1 rounded-lg shadow-sm h-11">
+            <TabsTrigger 
+              value="info"
+              className="rounded-md flex items-center justify-center gap-1.5 sm:gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all"
+            >
+              <User className="h-4 w-4 flex-shrink-0" />
+              <span className="hidden sm:inline text-sm font-medium">Thông tin</span>
+              <span className="sm:hidden text-sm font-medium">Hồ sơ</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="stats"
+              className="rounded-md flex items-center justify-center gap-1.5 sm:gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all"
+            >
+              <BarChart3 className="h-4 w-4 flex-shrink-0" />
+              <span className="text-sm font-medium">Thống kê</span>
+            </TabsTrigger>
+          </TabsList>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <TabsContent value="info" className="mt-4 sm:mt-6 space-y-4 sm:space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Profile Overview */}
           <div className="lg:col-span-1">
             <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
@@ -242,42 +262,59 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-600 font-body">Xếp hạng</span>
-                      <Badge className="bg-orange-100 text-orange-800">
+                    <div className="flex justify-between items-center p-3 rounded-lg bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200">
+                      <div className="flex items-center gap-2">
+                        <Trophy className="h-4 w-4 text-orange-600" />
+                        <span className="text-sm font-medium text-slate-700 font-body">Xếp hạng</span>
+                      </div>
+                      <Badge className="bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold px-3 py-1">
                         #{profile.rank}
                       </Badge>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-600 font-body">Tổng lần làm</span>
-                      <span className="font-semibold text-slate-800 font-heading">{profile.totalAttempts}</span>
+                    <div className="flex justify-between items-center p-3 rounded-lg bg-slate-50 border border-slate-200">
+                      <div className="flex items-center gap-2">
+                        <BookOpen className="h-4 w-4 text-blue-600" />
+                        <span className="text-sm font-medium text-slate-700 font-body">Tổng lần làm</span>
+                      </div>
+                      <span className="font-bold text-slate-800 font-heading text-lg">{profile.totalAttempts}</span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-600 font-body">Điểm TB</span>
-                      <span className="font-semibold text-slate-800 font-heading">{profile.averageScore}%</span>
+                    <div className="flex justify-between items-center p-3 rounded-lg bg-slate-50 border border-slate-200">
+                      <div className="flex items-center gap-2">
+                        <Target className="h-4 w-4 text-green-600" />
+                        <span className="text-sm font-medium text-slate-700 font-body">Điểm TB</span>
+                      </div>
+                      <span className="font-bold text-green-600 font-heading text-lg">{profile.averageScore}%</span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-600 font-body">Điểm cao nhất</span>
-                      <span className="font-semibold text-slate-800 font-heading">{profile.bestScore}%</span>
+                    <div className="flex justify-between items-center p-3 rounded-lg bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-200">
+                      <div className="flex items-center gap-2">
+                        <Award className="h-4 w-4 text-purple-600" />
+                        <span className="text-sm font-medium text-slate-700 font-body">Cao nhất</span>
+                      </div>
+                      <span className="font-bold text-purple-600 font-heading text-lg">{profile.bestScore}%</span>
                     </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Achievements */}
+            {/* Achievements - Mobile optimized */}
             <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl mt-6">
-              <CardHeader>
-                <CardTitle className="text-lg font-bold text-slate-800 font-heading">Thành tích</CardTitle>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base sm:text-lg font-bold text-slate-800 font-heading flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center">
+                    <Trophy className="h-4 w-4 text-white" />
+                  </div>
+                  Thành tích
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3">
                   {profile.achievements.map((achievement, index) => (
-                    <div key={index} className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-yellow-100">
-                        <Trophy className="h-4 w-4 text-yellow-600" />
+                    <div key={index} className="flex items-start sm:items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg bg-yellow-50 hover:bg-yellow-100 transition-colors">
+                      <div className="p-1.5 sm:p-2 rounded-lg bg-yellow-100 flex-shrink-0">
+                        <Trophy className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-yellow-600" />
                       </div>
-                      <span className="text-sm text-slate-700 font-body">{achievement}</span>
+                      <span className="text-xs sm:text-sm text-slate-700 font-body leading-relaxed">{achievement}</span>
                     </div>
                   ))}
                 </div>
@@ -288,20 +325,25 @@ export default function ProfilePage() {
           {/* Profile Details */}
           <div className="lg:col-span-2">
             <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle className="text-xl font-bold text-slate-800 font-heading">Thông tin cá nhân</CardTitle>
-                  <CardDescription className="text-slate-600 font-body">Cập nhật thông tin của bạn</CardDescription>
+              <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4">
+                <div className="flex-1">
+                  <CardTitle className="text-lg sm:text-xl font-bold text-slate-800 font-heading flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+                      <User className="h-4 w-4 text-white" />
+                    </div>
+                    Thông tin cá nhân
+                  </CardTitle>
+                  <CardDescription className="text-xs sm:text-sm text-slate-600 font-body mt-1">Cập nhật thông tin của bạn</CardDescription>
                 </div>
                 {!editing && (
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={handleEdit}
-                    className="btn-secondary"
+                    className="btn-secondary h-9 sm:h-10 self-start sm:self-auto"
                   >
-                    <Edit className="h-4 w-4 mr-2" />
-                    Chỉnh sửa
+                    <Edit className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Chỉnh sửa</span>
                   </Button>
                 )}
               </CardHeader>
@@ -370,47 +412,52 @@ export default function ProfilePage() {
               </CardContent>
             </Card>
 
-            {/* Preferences */}
-            <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl mt-6">
-              <CardHeader>
-                <CardTitle className="text-xl font-bold text-slate-800 font-heading">Cài đặt</CardTitle>
-                <CardDescription className="text-slate-600 font-body">Tùy chỉnh trải nghiệm của bạn</CardDescription>
+            {/* Preferences - Mobile optimized */}
+            <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl mt-6 mb-6">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg sm:text-xl font-bold text-slate-800 font-heading flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center">
+                    <Shield className="h-4 w-4 text-white" />
+                  </div>
+                  Cài đặt
+                </CardTitle>
+                <CardDescription className="text-xs sm:text-sm text-slate-600 font-body">Tùy chỉnh trải nghiệm của bạn</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-blue-100">
-                        <Bell className="h-5 w-5 text-blue-600" />
+              <CardContent className="pb-6">
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors">
+                    <div className="flex items-start sm:items-center gap-3 flex-1">
+                      <div className="p-2 sm:p-2.5 rounded-lg bg-blue-100 flex-shrink-0">
+                        <Bell className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
                       </div>
-                      <div>
-                        <p className="font-medium text-slate-800 font-heading">Thông báo</p>
-                        <p className="text-sm text-slate-600 font-body">Nhận thông báo về hoạt động học tập</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm sm:text-base text-slate-800 font-heading">Thông báo</p>
+                        <p className="text-xs sm:text-sm text-slate-600 font-body mt-0.5">Nhận thông báo về hoạt động học tập</p>
                       </div>
                     </div>
                     <Button
                       variant={profile.preferences.notifications ? "default" : "outline"}
                       size="sm"
-                      className={profile.preferences.notifications ? "btn-primary" : "btn-secondary"}
+                      className={`${profile.preferences.notifications ? "btn-primary" : "btn-secondary"} h-9 sm:h-10 px-4 sm:px-6 flex-shrink-0 self-end sm:self-auto`}
                     >
                       {profile.preferences.notifications ? 'Bật' : 'Tắt'}
                     </Button>
                   </div>
                   
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-green-100">
-                        <Mail className="h-5 w-5 text-green-600" />
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors">
+                    <div className="flex items-start sm:items-center gap-3 flex-1">
+                      <div className="p-2 sm:p-2.5 rounded-lg bg-green-100 flex-shrink-0">
+                        <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
                       </div>
-                      <div>
-                        <p className="font-medium text-slate-800 font-heading">Email cập nhật</p>
-                        <p className="text-sm text-slate-600 font-body">Nhận email về tiến độ học tập</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm sm:text-base text-slate-800 font-heading">Email cập nhật</p>
+                        <p className="text-xs sm:text-sm text-slate-600 font-body mt-0.5">Nhận email về tiến độ học tập</p>
                       </div>
                     </div>
                     <Button
                       variant={profile.preferences.emailUpdates ? "default" : "outline"}
                       size="sm"
-                      className={profile.preferences.emailUpdates ? "btn-primary" : "btn-secondary"}
+                      className={`${profile.preferences.emailUpdates ? "btn-primary" : "btn-secondary"} h-9 sm:h-10 px-4 sm:px-6 flex-shrink-0 self-end sm:self-auto`}
                     >
                       {profile.preferences.emailUpdates ? 'Bật' : 'Tắt'}
                     </Button>
@@ -420,6 +467,8 @@ export default function ProfilePage() {
             </Card>
           </div>
         </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </DashboardLayout>
   )

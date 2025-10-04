@@ -5,20 +5,15 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/hooks/use-auth"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { ClientOnly } from "@/components/client-only"
 import { BookOpen, User, LogOut, Settings, Trophy, History, Shield, Menu, ChevronDown } from "lucide-react"
 
 export function Navbar() {
   const { user, logout, refreshUser } = useAuth()
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [mounted, setMounted] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
   const mobileMenuRef = useRef<HTMLDivElement>(null)
-
-  // Prevent hydration mismatch
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -42,37 +37,16 @@ export function Navbar() {
     setIsUserMenuOpen(false)
   }
 
-  // Prevent hydration mismatch
-  if (!mounted) {
-    return (
-      <nav className="border-b bg-card">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <Link href="/" className="flex items-center space-x-2">
-                <BookOpen className="h-8 w-8 text-primary" />
-                <span className="text-xl font-bold text-foreground">QuizMaster</span>
-              </Link>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="h-8 w-16 bg-muted animate-pulse rounded"></div>
-            </div>
-          </div>
-        </div>
-      </nav>
-    )
-  }
-
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b bg-white/80 backdrop-blur-md shadow-sm" suppressHydrationWarning>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" suppressHydrationWarning>
-        <div className="flex justify-between h-16" suppressHydrationWarning>
-          <div className="flex items-center">
-            <Link href="/" className="flex items-center space-x-3 group">
-              <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white group-hover:scale-105 transition-transform duration-200">
-                <BookOpen className="h-6 w-6" />
+    <nav className="fixed top-0 left-0 right-0 z-50 border-b bg-white/80 backdrop-blur-md shadow-sm">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16 gap-2">
+          <div className="flex items-center min-w-0">
+            <Link href="/" className="flex items-center gap-2 sm:gap-3 group">
+              <div className="p-1.5 sm:p-2 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white group-hover:scale-105 transition-transform duration-200">
+                <BookOpen className="h-5 w-5 sm:h-6 sm:w-6" />
               </div>
-              <span className="text-xl font-bold text-gradient">QuizMaster</span>
+              <span className="text-lg sm:text-xl font-bold text-gradient truncate">QuizMaster</span>
             </Link>
           </div>
 
@@ -95,9 +69,14 @@ export function Navbar() {
             </Link>
           </div>
 
-          <div className="flex items-center space-x-4">
-            {user ? (
-              <>
+          <div className="flex items-center gap-2 sm:gap-4">
+            <ClientOnly 
+              fallback={
+                <div className="h-9 w-20 bg-muted/20 animate-pulse rounded"></div>
+              }
+            >
+              {user ? (
+                <>
                 {/* Desktop Navigation */}
                 <div className="hidden md:flex items-center space-x-2">
                   <Link href="/quizzes">
@@ -252,20 +231,28 @@ export function Navbar() {
                   )}
                 </div>
               </>
-            ) : (
-              <div className="flex items-center space-x-3">
-                <Link href="/login">
-                  <Button variant="ghost" className="text-slate-600 hover:text-blue-600 hover:bg-blue-50/50">
-                    Đăng nhập
-                  </Button>
-                </Link>
-                <Link href="/register">
-                  <Button className="btn-primary">
-                    Đăng ký
-                  </Button>
-                </Link>
-              </div>
-            )}
+              ) : (
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <Link href="/login">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      className="text-slate-600 hover:text-blue-600 hover:bg-blue-50/50 text-sm sm:text-base px-3 sm:px-4"
+                    >
+                      Đăng nhập
+                    </Button>
+                  </Link>
+                  <Link href="/register">
+                    <Button 
+                      size="sm"
+                      className="btn-primary text-sm sm:text-base px-3 sm:px-4"
+                    >
+                      Đăng ký
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </ClientOnly>
           </div>
         </div>
       </div>

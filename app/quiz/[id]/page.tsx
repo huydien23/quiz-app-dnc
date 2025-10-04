@@ -297,45 +297,44 @@ export default function QuizPage() {
 
   return (
     <ProtectedRoute>
-      <div className="container mx-auto px-4 py-6 max-w-6xl">
+      <div className="container mx-auto px-4 py-6 pb-32 md:pb-6 max-w-6xl">
         {/* Enhanced Sticky Header - Mobile Optimized */}
-<div className="sticky top-0 bg-white/95 backdrop-blur border-b border-slate-200 text-slate-900 shadow-sm z-10 mb-4 md:mb-8">
-          <div className="px-4 md:px-6 py-4 md:py-6">
-            {/* Mobile Layout */}
+<div className="sticky top-0 bg-white/98 backdrop-blur-md border-b border-slate-200 text-slate-900 shadow-soft z-20 mb-4 md:mb-8 safe-top">
+          <div className="px-3 md:px-6 py-3 md:py-6">
+            {/* Mobile Layout - Compact */}
             <div className="md:hidden">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
-                    <BookOpen className="h-6 w-6" />
+              <div className="flex items-center justify-between gap-3 mb-3">
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <div className="p-1.5 rounded-lg bg-gradient-to-br from-blue-100 to-blue-50 flex-shrink-0">
+                    <BookOpen className="h-5 w-5 text-blue-600" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h1 className="text-lg font-bold truncate">{quiz.title}</h1>
-<p className="text-slate-500 text-sm">
-                      {examSession.selectedQuestions.length}/{quiz.questions?.length || 0} câu
+                    <h1 className="text-base font-bold truncate">{quiz.title}</h1>
+<p className="text-slate-500 text-xs">
+                      {examSession.selectedQuestions.length} câu
                     </p>
                   </div>
                 </div>
                 
-                <div className="text-right">
-                  <div className="flex items-center space-x-1 mb-1">
-                    <Timer className="h-4 w-4" />
-                    <span className={`text-xl font-bold ${getTimeColor(timeLeft).replace('text-', 'text-')}`}>
+                <div className="text-right flex-shrink-0">
+                  <div className="flex items-center gap-1.5">
+                    <Timer className="h-4 w-4 text-slate-600" />
+                    <span className={`text-lg font-bold ${getTimeColor(timeLeft)}`}>
                       {formatTime(timeLeft)}
                     </span>
                   </div>
-<p className="text-slate-500 text-xs">Thời gian</p>
                 </div>
               </div>
               
-              {/* Mobile Progress */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-<span className="text-slate-600 text-sm font-medium">Tiến độ</span>
-<span className="text-slate-600 text-sm font-medium">{Math.round(progress)}%</span>
+              {/* Mobile Progress - Simplified */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-xs">
+<span className="text-slate-600 font-medium">Đã làm: {answeredQuestions}/{examSession.selectedQuestions.length}</span>
+<span className="text-slate-600 font-semibold">{Math.round(progress)}%</span>
                 </div>
-<div className="w-full bg-slate-200 rounded-full h-2">
+<div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
                   <div 
-                    className="bg-gradient-to-r from-green-400 to-green-500 h-2 rounded-full transition-all duration-500 ease-out"
+                    className="bg-gradient-to-r from-green-500 to-emerald-500 h-full rounded-full transition-all duration-500 ease-out"
                     style={{ width: `${progress}%` }}
                   ></div>
                 </div>
@@ -421,36 +420,31 @@ export default function QuizPage() {
 
         {/* Questions layout: Left content, Right navigation */}
         <div className="md:grid md:grid-cols-12 md:gap-8">
-        {/* Enhanced Question Navigation - Mobile Optimized */}
+        {/* Enhanced Question Navigation - Compact and accessible */}
 <div className="hidden md:block md:mb-0 md:col-span-4 lg:col-span-3 md:order-2">
-          <div className="bg-white rounded-2xl shadow-lg p-4 md:p-6 border border-slate-200 md:sticky md:top-24">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base md:text-lg font-semibold text-slate-800">Điều hướng câu hỏi</h3>
-              <div className="hidden md:flex items-center space-x-2 text-sm text-slate-600">
-                <div className="flex items-center space-x-1">
-                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                  <span>Đã trả lời</span>
+          <div className="bg-white rounded-2xl shadow-soft-xl p-5 border border-slate-200 md:sticky md:top-24 transition-all duration-200">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                  <span className="text-white text-sm font-bold">#</span>
                 </div>
-                <div className="flex items-center space-x-1">
-                  <div className="w-3 h-3 rounded-full bg-slate-300"></div>
-                  <span>Chưa trả lời</span>
-                </div>
+                Điều hướng
+              </h3>
+            </div>
+            
+            {/* Compact Legend */}
+            <div className="flex items-center gap-4 mb-4 px-2 py-2 bg-slate-50 rounded-lg text-xs">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-green-400 to-green-500"></div>
+                <span className="text-slate-600 font-medium">Đã trả lời</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
+                <span className="text-slate-600 font-medium">Chưa trả lời</span>
               </div>
             </div>
             
-            {/* Mobile Legend */}
-            <div className="md:hidden flex items-center justify-center space-x-4 mb-4 text-xs text-slate-600">
-              <div className="flex items-center space-x-1">
-                <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                <span>Đã trả lời</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <div className="w-2 h-2 rounded-full bg-slate-300"></div>
-                <span>Chưa trả lời</span>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-5 gap-2">
+            <div className="grid grid-cols-5 gap-2.5">
               {examSession.selectedQuestions.map((_, index) => (
                 <button
                   key={index}
@@ -458,20 +452,35 @@ export default function QuizPage() {
                     const element = document.getElementById(`question-${index}`)
                     element?.scrollIntoView({ behavior: 'smooth', block: 'start' })
                   }}
-                  className={`w-8 h-8 md:w-8 md:h-8 rounded-md border-2 flex items-center justify-center text-xs font-bold transition-all duration-200 hover:scale-105 ${
+                  className={`w-full aspect-square rounded-xl border-2 flex items-center justify-center font-bold transition-all duration-200 hover:scale-110 active:scale-95 ${
                     (showAnswerStatus && examSession.answers[index] !== -1)
-                      ? 'bg-gradient-to-br from-green-400 to-green-500 border-green-500 text-white shadow-lg'
-                      : 'bg-slate-50 border-slate-300 text-slate-600 hover:bg-slate-100 hover:border-slate-400'
-                  } ${activeQuestion === index ? 'ring-2 ring-blue-500' : ''}`}
+                      ? 'bg-gradient-to-br from-green-400 to-green-500 border-green-500 text-white shadow-md hover:shadow-lg'
+                      : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400 hover:shadow-md'
+                  } ${activeQuestion === index ? 'ring-3 ring-blue-500 ring-offset-2 scale-105' : ''}`}
                   aria-current={activeQuestion === index ? 'true' : undefined}
+                  aria-label={`Câu hỏi ${index + 1}${examSession.answers[index] !== -1 ? ' - Đã trả lời' : ''}`}
                 >
                     {examSession.answers[index] !== -1 ? (
-                    <CheckCircle className="h-4 w-4" />
+                    <CheckCircle className="h-5 w-5" />
                   ) : (
-                    <span className="text-xs">{index + 1}</span>
+                    <span className="text-sm">{index + 1}</span>
                   )}
                 </button>
               ))}
+            </div>
+            
+            {/* Progress indicator */}
+            <div className="mt-5 pt-4 border-t border-slate-200">
+              <div className="flex items-center justify-between text-xs text-slate-600 mb-2">
+                <span>Tiến độ</span>
+                <span className="font-bold">{Math.round((answeredQuestions / examSession.selectedQuestions.length) * 100)}%</span>
+              </div>
+              <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                <div 
+                  className="bg-gradient-to-r from-green-400 to-green-500 h-full rounded-full transition-all duration-500 ease-out"
+                  style={{ width: `${(answeredQuestions / examSession.selectedQuestions.length) * 100}%` }}
+                ></div>
+              </div>
             </div>
           </div>
         </div>
@@ -479,35 +488,35 @@ export default function QuizPage() {
         {/* Enhanced Questions List - Mobile Optimized */}
         <div className="space-y-6 md:space-y-8 mb-8 md:col-span-8 lg:col-span-9 md:order-1">
           {examSession.selectedQuestions.map((question, index) => (
-            <Card key={index} id={`question-${index}`} className="scroll-mt-32 border-0 shadow-xl bg-gradient-to-br from-white to-slate-50">
-              <CardHeader className="pb-4 md:pb-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start space-x-3 md:space-x-4">
+            <Card key={index} id={`question-${index}`} className="scroll-mt-28 border-0 shadow-soft-xl bg-white animate-slide-up" style={{ animationDelay: `${index * 50}ms` }}>
+              <CardHeader className="pb-3 md:pb-6">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3 md:gap-4 flex-1 min-w-0">
                     <div className="flex-shrink-0">
-                      <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center font-bold text-base md:text-lg">
+                      <div className="w-11 h-11 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center font-bold text-base md:text-lg shadow-lg">
                         {index + 1}
                       </div>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <CardTitle className="text-lg md:text-xl leading-relaxed text-slate-800 mb-2">
+                      <CardTitle className="text-base md:text-xl leading-relaxed text-slate-900 mb-2 font-heading">
                         {question.question}
                       </CardTitle>
-                      <div className="flex items-center space-x-2 text-xs md:text-sm text-slate-600">
-                        <BookOpen className="h-3 w-3 md:h-4 md:w-4" />
-                        <span>Câu hỏi trắc nghiệm</span>
+                      <div className="flex items-center gap-2 text-xs md:text-sm text-slate-600">
+                        <BookOpen className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                        <span>Trắc nghiệm</span>
                         {examSession.answers[index] !== -1 && (
                           <>
                             <span>•</span>
-                            <span className="text-green-600 font-medium">Đã trả lời</span>
+                            <span className="text-green-600 font-semibold">Đã chọn</span>
                           </>
                         )}
                       </div>
                     </div>
                   </div>
                   {examSession.answers[index] !== -1 && (
-                    <div className="flex-shrink-0">
-                      <div className="p-1.5 md:p-2 rounded-full bg-green-100">
-                        <CheckCircle className="h-4 w-4 md:h-6 md:w-6 text-green-600" />
+                    <div className="flex-shrink-0 animate-scale-in">
+                      <div className="p-2 rounded-full bg-gradient-to-br from-green-100 to-green-50">
+                        <CheckCircle className="h-5 w-5 md:h-6 md:w-6 text-green-600" />
                       </div>
                     </div>
                   )}
@@ -517,31 +526,33 @@ export default function QuizPage() {
                 <RadioGroup
                   value={examSession.answers[index]?.toString() || ""}
                   onValueChange={(value) => handleAnswerChange(index, Number.parseInt(value))}
-className="space-y-4"
+className="space-y-3"
                 >
                   {question.options.map((option, optionIndex) => (
                     <div 
                       key={optionIndex} 
-className={`flex items-start space-x-3 md:space-x-4 p-4 rounded-lg md:rounded-xl border-2 transition-all duration-200 ${
+className={`flex items-start gap-3 md:gap-4 p-4 md:p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer group ${
                         examSession.answers[index] === optionIndex
-                          ? 'bg-white border-blue-500/60 ring-2 ring-blue-500/15 shadow-sm'
-                          : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                          ? 'bg-blue-50 border-blue-500 ring-2 ring-blue-500/20 shadow-md'
+                          : 'bg-white border-slate-200 hover:border-blue-300 hover:bg-blue-50/50 active:bg-blue-50'
                       }`}
                     >
                       <RadioGroupItem 
                         value={optionIndex.toString()} 
                         id={`q${index}-option-${optionIndex}`} 
-className="mt-1 w-6 h-6 md:w-5 md:h-5"
+className="mt-0.5 w-5 h-5 flex-shrink-0"
                       />
                       <Label 
                         htmlFor={`q${index}-option-${optionIndex}`} 
-                        className="flex-1 cursor-pointer leading-relaxed text-slate-700"
+                        className="flex-1 cursor-pointer leading-relaxed text-slate-800 font-body"
                       >
-                        <div className="flex items-start space-x-2 md:space-x-3">
-                          <span className="font-bold text-blue-600 text-base md:text-lg">
+                        <div className="flex items-start gap-2">
+                          <span className={`font-bold text-base md:text-lg flex-shrink-0 ${
+                            examSession.answers[index] === optionIndex ? 'text-blue-600' : 'text-slate-400 group-hover:text-blue-500'
+                          }`}>
                             {String.fromCharCode(65 + optionIndex)}.
                           </span>
-                          <span className="text-sm md:text-base">{stripOptionLabel(option, optionIndex)}</span>
+                          <span className="text-base leading-relaxed">{stripOptionLabel(option, optionIndex)}</span>
                         </div>
                       </Label>
                     </div>
@@ -556,34 +567,53 @@ className="mt-1 w-6 h-6 md:w-5 md:h-5"
         {/* Enhanced Submit Section - Mobile Optimized */}
 <div className="sticky bottom-0 bg-white/95 backdrop-blur border-t border-slate-200 shadow-sm pt-4 md:pt-6">
           <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-4 md:p-6">
-            {/* Mobile Layout */}
+            {/* Mobile Layout - Enhanced visual design */}
             <div className="md:hidden">
-              <div className="flex items-center justify-between mb-4">
-                <div className="text-center">
-                  <div className="flex items-center justify-center space-x-1 mb-1">
+              <div className="grid grid-cols-3 gap-3 mb-4">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-3 text-center border border-blue-200">
+                  <div className="flex items-center justify-center mb-1">
                     <Target className="h-4 w-4 text-blue-600" />
-                    <span className="text-lg font-bold text-slate-800">
-                      {answeredQuestions}/{examSession.selectedQuestions.length}
-                    </span>
                   </div>
-                  <p className="text-xs text-slate-600">Đã trả lời</p>
+                  <div className="text-xl font-bold text-blue-700">{answeredQuestions}/{examSession.selectedQuestions.length}</div>
+                  <div className="text-xs text-blue-700 mt-1 font-medium">Đã trả lời</div>
                 </div>
                 
-                <div className="text-center">
-                  <div className="flex items-center justify-center space-x-1 mb-1">
-                    <Timer className="h-4 w-4 text-green-600" />
-                    <span className="text-lg font-bold text-slate-800">
-                      {formatTime(timeLeft)}
-                    </span>
+                <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-3 text-center border border-orange-200">
+                  <div className="flex items-center justify-center mb-1">
+                    <AlertCircle className="h-4 w-4 text-orange-600" />
                   </div>
-                  <p className="text-xs text-slate-600">Thời gian</p>
+                  <div className="text-xl font-bold text-orange-700">
+                    {examSession.selectedQuestions.length - answeredQuestions}
+                  </div>
+                  <div className="text-xs text-orange-700 mt-1 font-medium">Chưa làm</div>
+                </div>
+                
+                <div className={`bg-gradient-to-br rounded-xl p-3 text-center border ${
+                  timeLeft < 60 
+                    ? 'from-red-50 to-red-100 border-red-200' 
+                    : 'from-green-50 to-green-100 border-green-200'
+                }`}>
+                  <div className="flex items-center justify-center mb-1">
+                    <Timer className={`h-4 w-4 ${timeLeft < 60 ? 'text-red-600' : 'text-green-600'}`} />
+                  </div>
+                  <div className={`text-xl font-bold ${timeLeft < 60 ? 'text-red-700' : 'text-green-700'}`}>
+                    {formatTime(timeLeft)}
+                  </div>
+                  <div className={`text-xs mt-1 font-medium ${timeLeft < 60 ? 'text-red-700' : 'text-green-700'}`}>
+                    Còn lại
+                  </div>
                 </div>
               </div>
               
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center gap-2">
                 {/* Mobile Question Navigator (controlled) */}
-                <Button variant="outline" className="btn-secondary flex-1 text-sm" onClick={() => setDrawerOpen(true)}>
-                  Điều hướng
+                <Button variant="outline" className="btn-secondary flex-1 h-12" onClick={() => setDrawerOpen(true)}>
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-lg bg-blue-100 flex items-center justify-center">
+                      <span className="text-blue-600 text-xs font-bold">#</span>
+                    </div>
+                    <span className="text-base font-medium">Điều hướng</span>
+                  </div>
                 </Button>
                 <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
                   <DrawerContent>
@@ -639,25 +669,25 @@ className="mt-1 w-6 h-6 md:w-5 md:h-5"
                 <Button 
                   variant="outline"
                   onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                  className="btn-secondary flex-1 text-sm"
+                  className="btn-secondary h-12 px-4"
+                  aria-label="Lên đầu trang"
                 >
-                  <RotateCcw className="h-3 w-3 mr-1" />
-                  Lên đầu
+                  <RotateCcw className="h-4 w-4" />
                 </Button>
                 
                 <Button 
                   onClick={handleSubmit}
                   disabled={submitting}
-                  className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 flex-1 text-sm font-semibold"
+                  className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 flex-1 h-12 text-base font-semibold group"
                 >
                   {submitting ? (
                     <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                       Đang nộp...
                     </>
                   ) : (
                     <>
-                      <Trophy className="h-4 w-4 mr-2" />
+                      <Trophy className="h-5 w-5 mr-2 group-hover:scale-110 transition-transform" />
                       Nộp bài
                     </>
                   )}
@@ -665,49 +695,62 @@ className="mt-1 w-6 h-6 md:w-5 md:h-5"
               </div>
             </div>
             
-            {/* Desktop Layout */}
-            <div className="hidden md:flex items-center justify-between">
-              <div className="flex items-center space-x-8">
-                <div className="text-center">
+            {/* Desktop Layout - Enhanced spacing and hierarchy */}
+            <div className="hidden md:flex items-center justify-between gap-6">
+              <div className="flex items-center gap-6 lg:gap-8">
+                <div className="text-center group">
                   <div className="flex items-center justify-center space-x-2 mb-1">
-                    <Target className="h-5 w-5 text-blue-600" />
-                    <span className="text-2xl font-bold text-slate-800">
+                    <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center group-hover:bg-blue-100 transition-colors">
+                      <Target className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <span className="text-2xl lg:text-3xl font-bold text-slate-800">
                       {answeredQuestions}/{examSession.selectedQuestions.length}
                     </span>
                   </div>
-                  <p className="text-sm text-slate-600">Câu đã trả lời</p>
+                  <p className="text-sm text-slate-600 font-medium">Câu đã trả lời</p>
                 </div>
                 
-                <div className="text-center">
+                <div className="h-12 w-px bg-slate-200"></div>
+                
+                <div className="text-center group">
                   <div className="flex items-center justify-center space-x-2 mb-1">
-                    <AlertCircle className="h-5 w-5 text-orange-500" />
-                    <span className="text-2xl font-bold text-slate-800">
+                    <div className="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center group-hover:bg-orange-100 transition-colors">
+                      <AlertCircle className="h-5 w-5 text-orange-500" />
+                    </div>
+                    <span className="text-2xl lg:text-3xl font-bold text-slate-800">
                       {examSession.selectedQuestions.length - answeredQuestions}
                     </span>
                   </div>
-                  <p className="text-sm text-slate-600">Câu chưa trả lời</p>
+                  <p className="text-sm text-slate-600 font-medium">Câu chưa trả lời</p>
                 </div>
                 
-                <div className="text-center">
+                <div className="h-12 w-px bg-slate-200"></div>
+                
+                <div className="text-center group">
                   <div className="flex items-center justify-center space-x-2 mb-1">
-                    <Timer className="h-5 w-5 text-green-600" />
-                    <span className="text-2xl font-bold text-slate-800">
+                    <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center group-hover:bg-green-100 transition-colors">
+                      <Timer className="h-5 w-5 text-green-600" />
+                    </div>
+                    <span className={`text-2xl lg:text-3xl font-bold ${timeLeft < 60 ? 'text-red-600' : 'text-slate-800'}`}>
                       {formatTime(timeLeft)}
                     </span>
                   </div>
-                  <p className="text-sm text-slate-600">Thời gian còn lại</p>
+                  <p className="text-sm text-slate-600 font-medium">Thời gian còn lại</p>
                 </div>
-                <div className="flex items-center gap-2 ml-8">
-                  <span className="text-sm text-slate-600">Tự chuyển câu</span>
+                
+                <div className="h-12 w-px bg-slate-200 hidden lg:block"></div>
+                
+                <div className="hidden lg:flex items-center gap-3 px-4 py-2 rounded-xl bg-slate-50 border border-slate-200">
+                  <span className="text-sm text-slate-700 font-medium">Tự chuyển câu</span>
                   <Switch checked={autoAdvance} onCheckedChange={setAutoAdvance} />
                 </div>
               </div>
               
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center gap-3">
                 <Button 
                   variant="outline"
                   onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                  className="btn-secondary"
+                  className="btn-secondary h-12 px-5"
                 >
                   <RotateCcw className="h-4 w-4 mr-2" />
                   Lên đầu
@@ -716,7 +759,7 @@ className="mt-1 w-6 h-6 md:w-5 md:h-5"
                 <Button 
                   onClick={handleSubmit}
                   disabled={submitting}
-                  className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-8 py-3 text-lg font-semibold"
+                  className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-8 h-12 text-base font-semibold group"
                 >
                   {submitting ? (
                     <>
@@ -725,7 +768,7 @@ className="mt-1 w-6 h-6 md:w-5 md:h-5"
                     </>
                   ) : (
                     <>
-                      <Trophy className="h-5 w-5 mr-3" />
+                      <Trophy className="h-5 w-5 mr-3 group-hover:scale-110 transition-transform" />
                       Nộp bài thi
                     </>
                   )}
@@ -736,23 +779,65 @@ className="mt-1 w-6 h-6 md:w-5 md:h-5"
         </div>
       </div>
 
-      {/* Confirm submit dialog */}
+      {/* Confirm submit dialog - Enhanced with solid background */}
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Xác nhận nộp bài?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Bạn đã trả lời {answeredQuestions}/{examSession.selectedQuestions.length} câu.
-              {examSession.selectedQuestions.length - answeredQuestions > 0 && (
-                <>
-                  <br />Vẫn còn {examSession.selectedQuestions.length - answeredQuestions} câu chưa trả lời. Bạn có chắc chắn muốn nộp không?
-                </>
-              )}
+        <AlertDialogContent className="max-w-md bg-white">
+          <AlertDialogHeader className="space-y-3">
+            <div className="flex items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center shadow-lg">
+                <AlertCircle className="h-8 w-8 text-white" />
+              </div>
+            </div>
+            <AlertDialogTitle className="text-center text-xl sm:text-2xl font-bold text-slate-800">
+              Xác nhận nộp bài?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-center text-base leading-relaxed">
+              <div className="space-y-4">
+                {/* Stats Display */}
+                <div className="flex items-center justify-center gap-3 sm:gap-6">
+                  <div className="flex-1 text-center p-3 sm:p-4 rounded-xl bg-green-50 border-2 border-green-200">
+                    <div className="text-2xl sm:text-3xl font-bold text-green-600">{answeredQuestions}</div>
+                    <div className="text-xs sm:text-sm text-slate-700 font-medium mt-1">Đã trả lời</div>
+                  </div>
+                  <div className="text-2xl text-slate-300 font-bold">/</div>
+                  <div className="flex-1 text-center p-3 sm:p-4 rounded-xl bg-slate-50 border-2 border-slate-200">
+                    <div className="text-2xl sm:text-3xl font-bold text-slate-800">{examSession.selectedQuestions.length}</div>
+                    <div className="text-xs sm:text-sm text-slate-700 font-medium mt-1">Tổng câu</div>
+                  </div>
+                </div>
+                
+                {/* Warning Message */}
+                {examSession.selectedQuestions.length - answeredQuestions > 0 && (
+                  <div className="bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-300 rounded-xl p-4 text-left shadow-inner">
+                    <div className="flex items-start gap-3">
+                      <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <AlertCircle className="h-4 w-4 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm sm:text-base text-orange-900 font-semibold mb-1">
+                          Lưu ý:
+                        </p>
+                        <p className="text-sm sm:text-base text-orange-800">
+                          Vẫn còn <span className="font-bold text-lg text-orange-600">{examSession.selectedQuestions.length - answeredQuestions} câu</span> chưa trả lời. Bạn có chắc chắn muốn nộp không?
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Hủy</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmSubmit}>Đồng ý nộp</AlertDialogAction>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-3 mt-2">
+            <AlertDialogCancel className="w-full sm:w-auto h-12 text-base font-semibold border-2 hover:bg-slate-50">
+              Hủy
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmSubmit} 
+              className="w-full sm:w-auto h-12 text-base font-semibold bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg hover:shadow-xl transition-all"
+            >
+              <Trophy className="h-5 w-5 mr-2" />
+              Đồng ý nộp
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
