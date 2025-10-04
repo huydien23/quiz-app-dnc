@@ -262,6 +262,9 @@ h4, h5, h6 {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  line-height: 1.3;
+  padding-top: 0.1em;
+  padding-bottom: 0.15em;
 }
 
 /* Smooth animations */
