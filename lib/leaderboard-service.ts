@@ -175,4 +175,147 @@ export class LeaderboardService {
       return []
     }
   }
+
+  // Get leaderboard for a specific quiz
+  static async getQuizLeaderboard(quizId: string, limit: number = 50): Promise<{
+    rank: number
+    userId: string
+    userName: string
+    userEmail: string
+    score: number
+    finalScore: number
+    correctAnswers: number
+    totalQuestions: number
+    timeSpent: number
+    completedAt: string
+  }[]> {
+    try {
+      const [attemptsSnapshot, usersSnapshot, quizzesSnapshot] = await Promise.all([
+        get(ref(database, "attempts")),
+        get(ref(database, "users")),
+        get(ref(database, "quizzes"))
+      ])
+
+      if (!attemptsSnapshot.exists() || !usersSnapshot.exists()) {
+        return []
+      }
+
+      const users: User[] = []
+      usersSnapshot.forEach((child) => {
+        users.push({ id: child.key!, ...child.val() } as User)
+      })
+
+      // Get quiz to know pointsPerQuestion
+      let pointsPerQuestion = 0.25 // Default: 0.25 points per question (40 questions = 10 points)
+      if (quizzesSnapshot.exists()) {
+        quizzesSnapshot.forEach((child) => {
+          if (child.key === quizId) {
+            const quiz = child.val()
+            pointsPerQuestion = quiz.pointsPerQuestion || 0.25
+          }
+        })
+      }
+
+      const attempts: QuizAttempt[] = []
+      attemptsSnapshot.forEach((child) => {
+        const attempt = { id: child.key!, ...child.val() } as QuizAttempt
+        if (attempt.quizId === quizId) {
+          attempts.push(attempt)
+        }
+      })
+
+      // Group by user and get their best attempt
+      const userBestAttempts = new Map<string, QuizAttempt>()
+      
+      attempts.forEach(attempt => {
+        const existing = userBestAttempts.get(attempt.userId)
+        if (!existing || (attempt.score || 0) > (existing.score || 0)) {
+          userBestAttempts.set(attempt.userId, attempt)
+        }
+      })
+
+      // Create leaderboard entries
+      const leaderboard = Array.from(userBestAttempts.values())
+        .map(attempt => {
+          const user = users.find(u => u.id === attempt.userId)
+          const correctAnswers = attempt.correctAnswers || 0
+          const totalQuestions = attempt.totalQuestions || 0
+          const finalScore = correctAnswers * pointsPerQuestion
+          
+          return {
+            rank: 0, // Will be set after sorting
+            userId: attempt.userId,
+            userName: user?.name || 'Unknown User',
+            userEmail: user?.email || '',
+            score: attempt.score || 0,
+            finalScore: Math.round(finalScore * 100) / 100, // Round to 2 decimal places
+            correctAnswers,
+            totalQuestions,
+            timeSpent: attempt.timeSpent || 0,
+            completedAt: attempt.completedAt
+          }
+        })
+        .sort((a, b) => {
+          // Sort by score (descending), then by time (ascending - faster is better)
+          if (b.score !== a.score) {
+            return b.score - a.score
+          }
+          return a.timeSpent - b.timeSpent
+        })
+        .slice(0, limit)
+
+      // Set ranks
+      leaderboard.forEach((entry, index) => {
+        entry.rank = index + 1
+      })
+
+      return leaderboard
+    } catch (error) {
+      console.error('Error getting quiz leaderboard:', error)
+      return []
+    }
+  }
+
+  // Get user's rank in a specific quiz
+  static async getUserRankInQuiz(quizId: string, userId: string): Promise<{
+    rank: number
+    totalParticipants: number
+    percentile: number
+    userScore: number
+    userFinalScore: number
+    topScore: number
+    topFinalScore: number
+  } | null> {
+    try {
+      const leaderboard = await this.getQuizLeaderboard(quizId, 1000)
+      
+      if (leaderboard.length === 0) {
+        return null
+      }
+
+      const userEntry = leaderboard.find(entry => entry.userId === userId)
+      
+      if (!userEntry) {
+        return null
+      }
+
+      const totalParticipants = leaderboard.length
+      const percentile = Math.round(((totalParticipants - userEntry.rank + 1) / totalParticipants) * 100)
+      const topScore = leaderboard[0]?.score || 0
+      const topFinalScore = leaderboard[0]?.finalScore || 0
+
+      return {
+        rank: userEntry.rank,
+        totalParticipants,
+        percentile,
+        userScore: userEntry.score,
+        userFinalScore: userEntry.finalScore,
+        topScore,
+        topFinalScore
+      }
+    } catch (error) {
+      console.error('Error getting user rank in quiz:', error)
+      return null
+    }
+  }
 }

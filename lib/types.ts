@@ -19,6 +19,8 @@ export interface Quiz {
   hasIncompleteQuestions?: boolean // Has questions with correctAnswer = -1
   // Optional: number of questions randomly selected each attempt
   questionCount?: number
+  // Points per question (default 0.25 for 40 questions = 10 points)
+  pointsPerQuestion?: number
 }
 
 export interface Question {

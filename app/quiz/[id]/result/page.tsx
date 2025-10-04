@@ -8,16 +8,20 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { ProtectedRoute } from "@/components/protected-route"
 import { QuizService } from "@/lib/quiz-service"
+import { LeaderboardService } from "@/lib/leaderboard-service"
 import type { Quiz, QuizAttempt } from "@/lib/types"
-import { Trophy, CheckCircle, XCircle, RotateCcw, Home, ArrowUp } from "lucide-react"
+import { Trophy, CheckCircle, XCircle, RotateCcw, Home, ArrowUp, Crown, Medal, Award, Users } from "lucide-react"
+import { useAuth } from "@/hooks/use-auth"
 
 export const dynamic = 'force-dynamic'
 
 export default function QuizResultPage() {
   const params = useParams()
   const searchParams = useSearchParams()
+  const { user } = useAuth()
   const quizId = params.id as string
   const attemptId = searchParams.get("attempt") || ""
 
@@ -29,6 +33,11 @@ export default function QuizResultPage() {
   const [mounted, setMounted] = useState(false)
   // Hide review by default; user can reveal with a button
   const [showReview, setShowReview] = useState(false)
+  
+  // Leaderboard data
+  const [quizLeaderboard, setQuizLeaderboard] = useState<any[]>([])
+  const [userRankInfo, setUserRankInfo] = useState<any>(null)
+  const [leaderboardLoading, setLeaderboardLoading] = useState(true)
 
   useEffect(() => { setMounted(true) }, [])
 
@@ -47,6 +56,40 @@ export default function QuizResultPage() {
     }
     load()
   }, [quizId, attemptId])
+
+  // Load leaderboard data
+  useEffect(() => {
+    const loadLeaderboard = async () => {
+      if (!user || !quizId) {
+        console.log('❌ Missing user or quizId:', { user: !!user, quizId })
+        return
+      }
+      
+      try {
+        setLeaderboardLoading(true)
+        console.log('📊 Loading leaderboard for quiz:', quizId)
+        const [leaderboard, rankInfo] = await Promise.all([
+          LeaderboardService.getQuizLeaderboard(quizId, 50),
+          LeaderboardService.getUserRankInQuiz(quizId, user.id)
+        ])
+        console.log('✅ Leaderboard loaded:', { 
+          leaderboardCount: leaderboard.length, 
+          rankInfo,
+          sampleEntry: leaderboard[0]
+        })
+        setQuizLeaderboard(leaderboard)
+        setUserRankInfo(rankInfo)
+      } catch (error) {
+        console.error('❌ Error loading leaderboard:', error)
+      } finally {
+        setLeaderboardLoading(false)
+      }
+    }
+    
+    if (user && quizId) {
+      loadLeaderboard()
+    }
+  }, [quizId, user])
 
   // show scroll-to-top on mobile after some scroll
   useEffect(() => {
@@ -137,8 +180,11 @@ export default function QuizResultPage() {
                 <div className={`text-5xl sm:text-6xl font-bold ${getResultColor()} mb-2 font-heading`}>
                   {correctCount}<span className="text-3xl sm:text-4xl text-slate-400">/</span>{total}
                 </div>
-                <div className={`text-2xl sm:text-3xl font-bold ${getResultColor()} mb-3`}>
+                <div className={`text-2xl sm:text-3xl font-bold ${getResultColor()} mb-1`}>
                   {percentage}%
+                </div>
+                <div className={`text-xl sm:text-2xl font-semibold text-slate-600`}>
+                  {(correctCount * 0.25).toFixed(2)}<span className="text-slate-400">/</span>10 điểm
                 </div>
               </div>
               
@@ -201,12 +247,17 @@ export default function QuizResultPage() {
                 <span className="hidden sm:inline">Làm lại</span>
               </Button>
             </Link>
-            <Link href={`/dashboard?tab=quizzes`} className="flex-1">
-              <Button variant="outline" className="w-full h-11 sm:h-12 text-xs sm:text-base btn-secondary hover:shadow-lg transition-all">
-                <Trophy className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Bài thi khác</span>
-              </Button>
-            </Link>
+            <Button 
+              onClick={() => {
+                const leaderboardSection = document.getElementById('quiz-leaderboard')
+                leaderboardSection?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+              }}
+              variant="outline" 
+              className="w-full h-11 sm:h-12 text-xs sm:text-base btn-secondary hover:shadow-lg transition-all"
+            >
+              <Trophy className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Xếp hạng</span>
+            </Button>
             <Link href="/dashboard" className="flex-1">
               <Button className="w-full h-11 sm:h-12 text-xs sm:text-base bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 shadow-lg hover:shadow-xl transition-all">
                 <Home className="h-4 w-4 sm:mr-2" />
@@ -214,6 +265,202 @@ export default function QuizResultPage() {
               </Button>
             </Link>
           </div>
+
+          {/* Quiz Leaderboard Section */}
+          <Card id="quiz-leaderboard" className="border-0 bg-white shadow-xl mb-6 animate-in fade-in-50 duration-500 delay-300 scroll-mt-4">
+            <CardHeader className="pb-4 border-b border-slate-100">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center shadow-lg">
+                    <Trophy className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg sm:text-xl">Xếp hạng bài thi này</CardTitle>
+                    <CardDescription className="text-xs sm:text-sm">So sánh điểm với người dùng khác</CardDescription>
+                  </div>
+                </div>
+                {!leaderboardLoading && (
+                  <Badge variant="outline" className="text-xs font-semibold">
+                    <Users className="h-3 w-3 mr-1" />
+                    {quizLeaderboard.length}
+                  </Badge>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6">{leaderboardLoading ? (
+                  <div className="text-center py-8">
+                    <Trophy className="h-12 w-12 animate-pulse text-yellow-500 mx-auto mb-4" />
+                    <p className="text-slate-600">Đang tải bảng xếp hạng...</p>
+                  </div>
+                ) : quizLeaderboard.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Users className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+                    <p className="text-slate-600 font-medium">Chưa có người dùng nào hoàn thành bài thi này</p>
+                    <p className="text-slate-500 text-sm mt-2">Hãy là người đầu tiên xuất hiện trên bảng xếp hạng!</p>
+                  </div>
+                ) : (
+                  <>
+                {/* User's rank info */}
+                {userRankInfo && (
+                  <div className="mb-4 p-4 rounded-xl bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                          #{userRankInfo.rank}
+                        </div>
+                        <div>
+                          <p className="text-sm text-slate-600">Xếp hạng của bạn</p>
+                          <p className="text-xs text-slate-500">Cao hơn {userRankInfo.percentile}% người dùng</p>
+                        </div>
+                      </div>
+                      <div className="text-right flex flex-col items-end gap-1">
+                        <Badge className="bg-blue-600 text-white text-base px-3 py-1.5">
+                          {userRankInfo.userScore}%
+                        </Badge>
+                        <p className="text-xs font-semibold text-blue-600 whitespace-nowrap">
+                          {userRankInfo.userFinalScore} điểm
+                        </p>
+                      </div>
+                    </div>
+                    <Progress value={userRankInfo.percentile} className="h-2 bg-blue-100" />
+                  </div>
+                )}
+
+                {/* Top 3 compact podium */}
+                {quizLeaderboard.length >= 3 && (
+                  <div className="mb-4">
+                    <p className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                      <Trophy className="h-4 w-4 text-yellow-500" />
+                      Top 3
+                    </p>
+                    <div className="space-y-2">
+                      {quizLeaderboard.slice(0, 3).map((entry, index) => {
+                        const getRankColor = (rank: number) => {
+                          if (rank === 1) return 'from-yellow-400 to-yellow-600'
+                          if (rank === 2) return 'from-gray-300 to-gray-500'
+                          return 'from-amber-400 to-amber-600'
+                        }
+                        
+                        const getRankIcon = (rank: number) => {
+                          if (rank === 1) return <Crown className="h-4 w-4 text-white" />
+                          if (rank === 2) return <Medal className="h-4 w-4 text-white" />
+                          return <Award className="h-4 w-4 text-white" />
+                        }
+
+                        const isCurrentUser = entry.userId === user?.id
+
+                        return (
+                          <div 
+                            key={entry.userId}
+                            className={`flex items-center justify-between p-3 rounded-lg transition-all ${
+                              isCurrentUser 
+                                ? 'bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-300 shadow-md' 
+                                : index === 0 
+                                  ? 'bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200'
+                                  : 'bg-slate-50 border border-slate-200'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                              <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${getRankColor(entry.rank)} flex items-center justify-center shadow-md flex-shrink-0`}>
+                                {getRankIcon(entry.rank)}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className={`text-sm font-semibold truncate ${isCurrentUser ? 'text-blue-700' : 'text-slate-800'}`}>
+                                  {entry.userName} {isCurrentUser && '(Bạn)'}
+                                </p>
+                                <p className="text-xs text-slate-600">
+                                  {Math.floor(entry.timeSpent / 60)}:{(entry.timeSpent % 60).toString().padStart(2, '0')}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="text-right flex flex-col items-end gap-1">
+                              <Badge className={`text-sm font-bold ${isCurrentUser ? 'bg-blue-600' : 'bg-slate-700'} text-white px-3 py-1`}>
+                                {entry.score}%
+                              </Badge>
+                              <p className="text-xs font-semibold text-slate-600 whitespace-nowrap">
+                                {entry.finalScore} điểm
+                              </p>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* View full leaderboard button */}
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button variant="outline" className="w-full h-11 border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all">
+                      <Users className="h-4 w-4 mr-2" />
+                      Xem bảng xếp hạng đầy đủ
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="bottom" className="h-[85vh] sm:h-[90vh] bg-white">
+                    <SheetHeader className="mb-4">
+                      <SheetTitle className="flex items-center gap-2 text-xl">
+                        <Trophy className="h-5 w-5 text-yellow-500" />
+                        Bảng xếp hạng đầy đủ
+                      </SheetTitle>
+                      <SheetDescription>
+                        Top {quizLeaderboard.length} người dùng xuất sắc nhất
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="overflow-y-auto h-[calc(100%-80px)] pr-2">
+                      <div className="space-y-2">
+                        {quizLeaderboard.map((entry) => {
+                          const isCurrentUser = entry.userId === user?.id
+                          const isTop3 = entry.rank <= 3
+
+                          return (
+                            <div
+                              key={entry.userId}
+                              className={`flex items-center justify-between p-3 rounded-lg transition-all ${
+                                isCurrentUser
+                                  ? 'bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-300 shadow-md'
+                                  : isTop3
+                                    ? 'bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200'
+                                    : 'bg-slate-50 hover:bg-slate-100'
+                              }`}
+                            >
+                              <div className="flex items-center gap-3 flex-1 min-w-0">
+                                <div className={`w-10 h-10 rounded-full ${
+                                  entry.rank === 1 ? 'bg-gradient-to-br from-yellow-400 to-yellow-600' :
+                                  entry.rank === 2 ? 'bg-gradient-to-br from-gray-300 to-gray-500' :
+                                  entry.rank === 3 ? 'bg-gradient-to-br from-amber-400 to-amber-600' :
+                                  'bg-slate-300'
+                                } flex items-center justify-center text-white font-bold text-sm shadow-md flex-shrink-0`}>
+                                  {entry.rank}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className={`text-sm font-semibold truncate ${isCurrentUser ? 'text-blue-700' : 'text-slate-800'}`}>
+                                    {entry.userName} {isCurrentUser && '(Bạn)'}
+                                  </p>
+                                  <p className="text-xs text-slate-600 truncate">{entry.userEmail}</p>
+                                  <p className="text-xs text-slate-500">
+                                    ⏱️ {Math.floor(entry.timeSpent / 60)}:{(entry.timeSpent % 60).toString().padStart(2, '0')}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="text-right flex flex-col items-end gap-1">
+                                <Badge className={`text-sm font-bold ${isCurrentUser ? 'bg-blue-600' : isTop3 ? 'bg-yellow-600' : 'bg-slate-600'} text-white px-3 py-1`}>
+                                  {entry.score}%
+                                </Badge>
+                                <p className="text-xs font-semibold text-slate-600 whitespace-nowrap">
+                                  {entry.finalScore} điểm
+                                </p>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  </SheetContent>
+                </Sheet>
+                </>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Toggle show/hide review - Enhanced */}
           <div className="flex justify-center mb-6 animate-in fade-in-50 duration-500 delay-300">
