@@ -82,19 +82,41 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md">
-        <div className="flex justify-center mb-8">
-          <div className="flex items-center space-x-2">
-            <BookOpen className="h-10 w-10 text-primary" />
-            <span className="text-2xl font-bold text-foreground">QuizMaster</span>
-          </div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50 px-4 py-12">
+      <div className="w-full max-w-md animate-fade-in">
+        {/* Back to Home Button */}
+        <div className="flex justify-center mb-6">
+          <Link href="/">
+            <Button 
+              variant="ghost" 
+              className="text-slate-600 hover:text-blue-600 hover:bg-blue-50/50 transition-all duration-200"
+            >
+              <svg 
+                className="w-4 h-4 mr-2" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Quay về trang chủ
+            </Button>
+          </Link>
         </div>
 
-        <Card>
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center">Đăng ký</CardTitle>
-            <CardDescription className="text-center">Tạo tài khoản mới để bắt đầu luyện thi</CardDescription>
+        <div className="flex justify-center mb-10">
+          <Link href="/" className="flex items-center space-x-3 group">
+            <div className="p-3 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white group-hover:scale-110 transition-transform duration-300 shadow-lg">
+              <BookOpen className="h-8 w-8" />
+            </div>
+            <span className="text-3xl font-bold text-gradient">QuizMaster</span>
+          </Link>
+        </div>
+
+        <Card className="border-0 shadow-soft-xl bg-white/90 backdrop-blur-sm animate-slide-up">
+          <CardHeader className="space-y-3 pb-6">
+            <CardTitle className="text-3xl text-center font-heading">Đăng ký</CardTitle>
+            <CardDescription className="text-center text-base">Tạo tài khoản mới để bắt đầu luyện thi</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
