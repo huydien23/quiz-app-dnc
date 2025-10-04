@@ -4,6 +4,7 @@ import React from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { ScrollToTop } from "@/components/scroll-to-top"
 import { 
   BookOpen, Clock, Award, TrendingUp, Play, Eye, 
   Target, Calendar, Star, Trophy, CheckCircle,
@@ -15,6 +16,9 @@ import Link from "next/link"
 export function LandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50">
+      {/* Scroll to Top Button */}
+      <ScrollToTop />
+      
       {/* Navbar Spacer */}
       <div className="h-20"></div>
       
@@ -295,7 +299,7 @@ export function LandingPage() {
                 Cảm ơn bạn đã quan tâm!
               </h3>
               <p className="text-slate-600 font-body max-w-2xl mx-auto">
-                QuizMaster là dự án tốt nghiệp của tôi, được phát triển với mong muốn 
+                QuizMaster là dự án Portfolio của tôi, được phát triển với mong muốn 
                 tạo ra công cụ hữu ích cho việc luyện thi trắc nghiệm. Mọi góp ý và 
                 phản hồi đều rất được hoan nghênh!
               </p>
