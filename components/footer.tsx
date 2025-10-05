@@ -90,7 +90,7 @@ export function Footer() {
         <div className="border-t border-slate-200 mt-10 pt-6">
           <div className="flex flex-col md:flex-row justify-between items-center text-sm">
             <div className="text-slate-500 mb-3 md:mb-0">
-              © 2024 QuizMaster. Tất cả quyền được bảo lưu.
+              © 2025 QuizMaster. Tất cả quyền được bảo lưu.
             </div>
             <div className="text-slate-600">
               <span className="mr-2">💻</span>

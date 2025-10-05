@@ -6,6 +6,7 @@ import { AuthProvider } from "@/hooks/use-auth"
 import { ToastProvider } from "@/components/toast-provider"
 import { Navbar } from "@/components/navbar"
 import { ErrorBoundary } from "@/components/error-boundary"
+import { SuppressHydrationWarning } from "@/components/suppress-hydration-warning"
 import { Suspense } from "react"
 import "./globals.css"
 
@@ -57,7 +58,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi" suppressHydrationWarning>
+      <head>
+        <script src="/suppress-warnings.js" />
+      </head>
       <body className={`${inter.variable} font-sans`} suppressHydrationWarning>
+        <SuppressHydrationWarning />
         <Suspense fallback={<div>Loading...</div>}>
           <ErrorBoundary>
             <AuthProvider>

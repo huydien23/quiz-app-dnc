@@ -3,6 +3,12 @@ const nextConfig = {
   // Enable strict mode for better development experience
   reactStrictMode: true,
 
+  // Suppress hydration warnings from browser extensions
+  onDemandEntries: {
+    maxInactiveAge: 25 * 1000,
+    pagesBufferLength: 2,
+  },
+
   // Don't ignore TypeScript and ESLint errors in production builds
   eslint: {
     ignoreDuringBuilds: false,

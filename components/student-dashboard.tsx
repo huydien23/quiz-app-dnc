@@ -171,8 +171,6 @@ export function StudentDashboard() {
       setRecentQuizzes(recentQuizzesWithStatus)
 
       // Set leaderboard and activity data
-      console.log('Leaderboard data:', leaderboardData)
-      console.log('Activity data:', activityData)
       setLeaderboard(leaderboardData)
       setRecentActivity(activityData)
 

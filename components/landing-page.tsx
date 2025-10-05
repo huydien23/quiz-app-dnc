@@ -182,7 +182,7 @@ export function LandingPage() {
               </h2>
               <p className="text-lg text-slate-600 font-body mb-6">
                 Tôi là <strong>Nguyễn Huy Điền</strong>, sinh viên năm cuối ngành Công nghệ thông tin 
-                tại Đại học Nam Cần Thơ. Chuyên về phát triển web fullstack với 
+                tại Đại học Nam Cần Thơ. Chuyên về phát triển Web Fullstack với 
                 niềm đam mê tạo ra những sản phẩm công nghệ hữu ích cho cộng đồng.
               </p>
               <div className="space-y-4">
@@ -269,7 +269,7 @@ export function LandingPage() {
                 <h3 className="font-bold text-lg mb-2">Facebook</h3>
                 <p className="text-slate-600 mb-4">Nguyễn Huy Điền</p>
                 <Button variant="outline" size="sm" asChild>
-                  <a href="https://www.facebook.com/profile.php?id=100015449474747" target="_blank" rel="noopener noreferrer">
+                  <a href="https://www.facebook.com/huydien203/" target="_blank" rel="noopener noreferrer">
                     Kết bạn
                   </a>
                 </Button>

@@ -61,22 +61,15 @@ export default function QuizResultPage() {
   useEffect(() => {
     const loadLeaderboard = async () => {
       if (!user || !quizId) {
-        console.log('❌ Missing user or quizId:', { user: !!user, quizId })
         return
       }
       
       try {
         setLeaderboardLoading(true)
-        console.log('📊 Loading leaderboard for quiz:', quizId)
         const [leaderboard, rankInfo] = await Promise.all([
           LeaderboardService.getQuizLeaderboard(quizId, 50),
           LeaderboardService.getUserRankInQuiz(quizId, user.id)
         ])
-        console.log('✅ Leaderboard loaded:', { 
-          leaderboardCount: leaderboard.length, 
-          rankInfo,
-          sampleEntry: leaderboard[0]
-        })
         setQuizLeaderboard(leaderboard)
         setUserRankInfo(rankInfo)
       } catch (error) {
