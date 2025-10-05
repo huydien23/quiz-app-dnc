@@ -31,9 +31,7 @@ export const googleProvider = new GoogleAuthProvider()
 
 // Configure Google provider for better UX
 googleProvider.setCustomParameters({
-  prompt: 'select_account',
-  access_type: 'offline',
-  approval_prompt: 'force'
+  prompt: 'select_account'
 })
 
 // Add additional scopes if needed
