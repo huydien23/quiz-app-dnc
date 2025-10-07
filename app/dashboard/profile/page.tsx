@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { 
   User, Mail, Calendar, Award, Target, 
   BookOpen, Clock, Trophy, Star, Edit,
-  Save, X, Camera, Shield, Bell, BarChart3
+  Save, X, Camera, Shield, Bell, BarChart3, LogOut
 } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { useToast } from "@/components/toast-provider"
@@ -39,7 +39,7 @@ interface UserProfile {
 }
 
 export default function ProfilePage() {
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
   const { success, error } = useToast()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -58,6 +58,17 @@ export default function ProfilePage() {
       router.push('/dashboard/stats')
     } else {
       router.push('/dashboard/profile?tab=info')
+    }
+  }
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+      success("Đã đăng xuất thành công")
+      router.push("/")
+    } catch (err) {
+      console.error('Error logging out:', err)
+      error("Không thể đăng xuất")
     }
   }
 
@@ -467,6 +478,23 @@ export default function ProfilePage() {
             </Card>
           </div>
         </div>
+
+        {/* Logout Button - Mobile friendly */}
+        <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl mt-6">
+          <CardContent className="p-4 sm:p-6">
+            <Button
+              onClick={handleLogout}
+              variant="outline"
+              className="w-full h-12 sm:h-14 border-red-200 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 font-semibold rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
+            >
+              <LogOut className="h-5 w-5 mr-2" />
+              <span className="text-base">Đăng xuất tài khoản</span>
+            </Button>
+            <p className="text-xs text-center text-slate-500 mt-3 font-body">
+              Bạn sẽ cần đăng nhập lại để tiếp tục sử dụng
+            </p>
+          </CardContent>
+        </Card>
           </TabsContent>
         </Tabs>
       </div>

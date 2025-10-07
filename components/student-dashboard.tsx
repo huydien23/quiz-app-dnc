@@ -22,7 +22,7 @@ import { useToast } from "@/components/toast-provider"
 import { formatDistanceToNow } from "date-fns"
 import { vi } from "date-fns/locale"
 import { InlineQuiz } from "@/components/inline-quiz"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
 
 interface StudentStats {
   totalAttempts: number
@@ -43,6 +43,7 @@ interface RecentQuiz {
 export function StudentDashboard() {
   const { user } = useAuth()
   const { success, error } = useToast()
+  const router = useRouter()
   
   const [stats, setStats] = useState<StudentStats>({
     totalAttempts: 0,
@@ -200,8 +201,8 @@ export function StudentDashboard() {
   }
 
   const handleViewResult = (quizId: string) => {
-    // Navigate to result page
-    window.location.href = `/quiz/${quizId}/result`
+    // Navigate to result page using Next.js router
+    router.push(`/quiz/${quizId}/result`)
   }
 
   const handleQuizComplete = (score: number, timeSpent: number) => {
