@@ -28,14 +28,17 @@ export default function EditQuizPage() {
   useEffect(() => {
     const load = async () => {
       try {
+        console.log("Loading quiz with ID:", quizId)
         const q = await QuizService.getQuizById(quizId)
+        console.log("Loaded quiz:", q)
         if (!q) {
           setError("Không tìm thấy bài thi")
           return
         }
         setQuiz(q)
-      } catch {
-        setError("Không thể tải bài thi")
+      } catch (err) {
+        console.error("Error loading quiz:", err)
+        setError("Không thể tải bài thi: " + (err as Error).message)
       } finally {
         setLoading(false)
       }

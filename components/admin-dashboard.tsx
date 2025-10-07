@@ -130,6 +130,15 @@ export function AdminDashboard() {
 
   useEffect(() => {
     loadDashboardData()
+    
+    // Timeout fallback for debugging
+    const timeout = setTimeout(() => {
+      if (loading) {
+        console.error("Loading timeout - data still loading after 10s")
+      }
+    }, 10000)
+    
+    return () => clearTimeout(timeout)
   }, [])
 
   useEffect(() => {
@@ -401,6 +410,7 @@ export function AdminDashboard() {
   const loadDashboardData = async () => {
     try {
       setLoading(true)
+      console.log("Loading dashboard data...")
       
       // Load REAL data from Firebase
       const [quizzesData, usersData, attemptsData] = await Promise.all([
@@ -408,6 +418,8 @@ export function AdminDashboard() {
         AdminService.getAllUsers(),
         AdminService.getAllAttempts()
       ])
+      
+      console.log("Loaded data:", { quizzesData, usersData, attemptsData })
       
       setAllQuizzes(quizzesData)
       setAllUsers(usersData)
@@ -517,7 +529,8 @@ export function AdminDashboard() {
       )
 
     } catch (err) {
-      error("Không thể tải dữ liệu dashboard")
+      console.error("Error loading dashboard data:", err)
+      error("Không thể tải dữ liệu dashboard: " + (err as Error).message)
     } finally {
       setLoading(false)
     }
