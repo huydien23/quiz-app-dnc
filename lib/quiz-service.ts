@@ -111,7 +111,7 @@ export class QuizService {
     await remove(quizRef)
   }
 
-  // Submit quiz attempt
+  // Gửi lần thử quiz
   static async submitQuizAttempt(attempt: Omit<QuizAttempt, "id">): Promise<string> {
     const attemptsRef = ref(database, "attempts")
     const newAttemptRef = push(attemptsRef)
@@ -126,7 +126,7 @@ export class QuizService {
     return { id, ...snapshot.val() } as QuizAttempt
   }
 
-  // Get user's quiz attempts
+  // Lấy các lần thử quiz của người dùng
   static async getUserAttempts(userId: string): Promise<QuizAttempt[]> {
     const attemptsRef = ref(database, "attempts")
     const snapshot = await get(attemptsRef)
@@ -144,7 +144,7 @@ export class QuizService {
     return attempts.sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())
   }
 
-  // Get quiz results for user
+  // Lấy kết quả quiz của người dùng
   static async getQuizResults(userId: string): Promise<QuizResult[]> {
     const attempts = await this.getUserAttempts(userId)
     const results: QuizResult[] = []

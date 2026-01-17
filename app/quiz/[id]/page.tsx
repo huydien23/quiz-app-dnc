@@ -162,10 +162,9 @@ export default function QuizPage() {
     try {
       const timeSpent = Math.floor((Date.now() - examSession.startTime) / 1000)
       
-      // Calculate score based on original quiz questions
+      // Tính điểm dựa trên các câu hỏi trắc nghiệm
       const correctAnswers = examSession.answers.reduce((total, answer, examQuestionIndex) => {
-        if (answer === -1) return total // Unanswered
-        
+        if (answer === -1) return total 
         const originalQuestionIndex = examSession.questionIndices[examQuestionIndex]
         const originalQuestion = quiz.questions[originalQuestionIndex]
         
@@ -186,9 +185,8 @@ export default function QuizPage() {
       }
 
       const attemptId = await QuizService.submitQuizAttempt({ ...attempt, questionIndices: examSession.questionIndices })
-      // Clear persisted session when finished
       try { localStorage.removeItem(`exam_session_${quizId}`) } catch {}
-      // Allow page unload when navigating to result
+      // Cho phép tải trang khi điều hướng đến kết quả
       setProtectUnload(false)
       router.push(`/quiz/${quizId}/result?attempt=${attemptId}`)
     } catch (error) {
