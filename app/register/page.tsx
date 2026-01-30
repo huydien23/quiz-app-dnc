@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useAuth } from "@/hooks/use-auth"
 import { BookOpen, Loader2 } from "lucide-react"
+import { APP_CONFIG } from "@/lib/constants"
 
 export default function RegisterPage() {
   const [name, setName] = useState("")
@@ -87,14 +88,14 @@ export default function RegisterPage() {
         {/* Back to Home Button */}
         <div className="flex justify-center mb-6">
           <Link href="/">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               className="text-slate-600 hover:text-blue-600 hover:bg-blue-50/50 transition-all duration-200"
             >
-              <svg 
-                className="w-4 h-4 mr-2" 
-                fill="none" 
-                stroke="currentColor" 
+              <svg
+                className="w-4 h-4 mr-2"
+                fill="none"
+                stroke="currentColor"
                 viewBox="0 0 24 24"
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -105,11 +106,11 @@ export default function RegisterPage() {
         </div>
 
         <div className="flex justify-center mb-10">
-          <Link href="/" className="flex items-center space-x-3 group">
-            <div className="p-3 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white group-hover:scale-110 transition-transform duration-300 shadow-lg">
+          <Link href="/" className="flex items-center space-x-3 group animate-bounce-slow">
+            <div className="p-3.5 rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-500 text-white group-hover:scale-110 transition-transform duration-500 shadow-xl shadow-blue-100">
               <BookOpen className="h-8 w-8" />
             </div>
-            <span className="text-3xl font-bold text-gradient">QuizMaster</span>
+            <span className="text-3xl font-black tracking-tight text-slate-900">{APP_CONFIG.name}</span>
           </Link>
         </div>
 
@@ -189,7 +190,7 @@ export default function RegisterPage() {
                   <span className="bg-card px-2 text-muted-foreground">Hoặc</span>
                 </div>
               </div>
-              
+
               <Button
                 type="button"
                 variant="outline"

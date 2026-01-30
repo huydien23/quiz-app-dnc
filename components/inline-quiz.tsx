@@ -5,8 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { 
-  Play, Clock, BookOpen, CheckCircle, 
+import {
+  Play, Clock, BookOpen, CheckCircle,
   ArrowLeft, ArrowRight, RotateCcw, X
 } from "lucide-react"
 import { Flag } from "lucide-react"
@@ -17,7 +17,13 @@ import { formatTime } from "@/lib/utils"
 interface InlineQuizProps {
   quiz: Quiz
   onClose: () => void
-  onComplete: (score: number, timeSpent: number) => void
+  onComplete: (result: {
+    score: number
+    timeSpent: number
+    answers: number[]
+    correctAnswers: number
+    totalQuestions: number
+  }) => void
 }
 
 export function InlineQuiz({ quiz, onClose, onComplete }: InlineQuizProps) {
@@ -26,13 +32,13 @@ export function InlineQuiz({ quiz, onClose, onComplete }: InlineQuizProps) {
   const [timeLeft, setTimeLeft] = useState(quiz.timeLimit * 60)
   const [isActive, setIsActive] = useState(false)
   const [isCompleted, setIsCompleted] = useState(false)
-const [startTime, setStartTime] = useState<number>(0)
+  const [startTime, setStartTime] = useState<number>(0)
   const [flagged, setFlagged] = useState<boolean[]>([])
   const [showCloseConfirm, setShowCloseConfirm] = useState(false)
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false)
   const [hasSavedProgress, setHasSavedProgress] = useState(false)
 
-useEffect(() => {
+  useEffect(() => {
     const qLen = quiz.questions?.length || 0
     setSelectedAnswers(new Array(qLen).fill(-1))
     setFlagged(new Array(qLen).fill(false))
@@ -94,11 +100,11 @@ useEffect(() => {
         timestamp: Date.now(),
       }
       localStorage.setItem(getStorageKey(), JSON.stringify(data))
-    } catch {}
+    } catch { }
   }
 
   const clearProgress = () => {
-    try { localStorage.removeItem(getStorageKey()) } catch {}
+    try { localStorage.removeItem(getStorageKey()) } catch { }
   }
 
   // Auto-save on relevant changes
@@ -130,7 +136,7 @@ useEffect(() => {
       } else if (e.key === 'ArrowLeft') {
         e.preventDefault()
         handlePrevQuestion()
-      } else if (["1","2","3","4"].includes(e.key)) {
+      } else if (["1", "2", "3", "4"].includes(e.key)) {
         const idx = parseInt(e.key, 10) - 1
         const max = quiz.questions[currentQuestion]?.options?.length || 0
         if (idx >= 0 && idx < max) {
@@ -169,7 +175,7 @@ useEffect(() => {
     }
   }
 
-const handlePrevQuestion = () => {
+  const handlePrevQuestion = () => {
     if (currentQuestion > 0) {
       setCurrentQuestion(currentQuestion - 1)
     }
@@ -217,18 +223,24 @@ const handlePrevQuestion = () => {
   const handleSubmitQuiz = () => {
     setIsActive(false)
     setIsCompleted(true)
-    
+
     const timeSpent = Math.max(0, (quiz.timeLimit * 60) - timeLeft)
     const correctAnswers = selectedAnswers.reduce((count, answer, index) => {
       return count + (answer === quiz.questions[index].correctAnswer ? 1 : 0)
     }, 0)
     const score = Math.round((correctAnswers / (quiz.questions?.length || 1)) * 100)
-    
+
     clearProgress()
-    onComplete(score, timeSpent)
+    onComplete({
+      score,
+      timeSpent,
+      answers: selectedAnswers,
+      correctAnswers,
+      totalQuestions: quiz.questions?.length || 0
+    })
   }
 
-const currentQ = quiz.questions[currentQuestion]
+  const currentQ = quiz.questions[currentQuestion]
   const progress = ((currentQuestion + 1) / (quiz.questions?.length || 1)) * 100
   const answeredCount = selectedAnswers.filter(a => a !== -1).length
   const flaggedCount = flagged.filter(Boolean).length
@@ -301,7 +313,7 @@ const currentQ = quiz.questions[currentQuestion]
       return count + (answer === quiz.questions[index].correctAnswer ? 1 : 0)
     }, 0)
     const score = Math.round((correctAnswers / (quiz.questions?.length || 1)) * 100)
-const timeSpent = Math.max(0, (quiz.timeLimit * 60) - timeLeft)
+    const timeSpent = Math.max(0, (quiz.timeLimit * 60) - timeLeft)
 
     return (
       <div className="space-y-6">
@@ -390,9 +402,9 @@ const timeSpent = Math.max(0, (quiz.timeLimit * 60) - timeLeft)
               const base = "text-xs h-8 w-8 flex items-center justify-center rounded-md border transition-all"
               const cls =
                 isCurrent ? "border-blue-500 bg-blue-50 text-blue-800 ring-2 ring-blue-300" :
-                isFlagged ? "border-amber-300 bg-amber-50 text-amber-700" :
-                answered ? "border-green-300 bg-green-50 text-green-700" :
-                "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                  isFlagged ? "border-amber-300 bg-amber-50 text-amber-700" :
+                    answered ? "border-green-300 bg-green-50 text-green-700" :
+                      "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
               return (
                 <button
                   key={idx}
@@ -417,11 +429,10 @@ const timeSpent = Math.max(0, (quiz.timeLimit * 60) - timeLeft)
               <button
                 key={index}
                 onClick={() => handleAnswerSelect(index)}
-                className={`w-full p-4 text-left rounded-lg border-2 transition-all ${
-                  selectedAnswers[currentQuestion] === index
-                    ? 'border-blue-500 bg-blue-50 text-blue-800'
-                    : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-                }`}
+                className={`w-full p-4 text-left rounded-lg border-2 transition-all ${selectedAnswers[currentQuestion] === index
+                  ? 'border-blue-500 bg-blue-50 text-blue-800'
+                  : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                  }`}
               >
                 <span className="font-medium mr-3">{String.fromCharCode(65 + index)}.</span>
                 {stripOptionLabel(option, index)}
@@ -434,15 +445,15 @@ const timeSpent = Math.max(0, (quiz.timeLimit * 60) - timeLeft)
       {/* Navigation */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={handlePrevQuestion}
             disabled={currentQuestion === 0}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Câu trước
           </Button>
-          <Button 
+          <Button
             variant="outline"
             onClick={() => toggleFlag(currentQuestion)}
             className={flagged[currentQuestion] ? "border-amber-300 bg-amber-50 text-amber-700" : ""}

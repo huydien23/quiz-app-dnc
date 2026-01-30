@@ -1,33 +1,34 @@
 import Link from "next/link"
-import { BookOpen } from "lucide-react"
+import { BookOpen, Github, Facebook, Phone, BarChart3, Users, ArrowRight, Brain, Shield, Smartphone, Globe, Heart, Code, Lightbulb, Sparkles } from "lucide-react"
+import { APP_CONFIG, FOUNDER_CONFIG } from "@/lib/constants"
 
 export function Footer() {
   return (
-    <footer className="bg-gradient-to-br from-blue-50 via-cyan-50 to-slate-50 border-t border-blue-100 py-12 px-4">
+    <footer className="bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-100 border-t border-slate-200/60 py-16 px-4">
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           {/* Brand */}
-          <div className="md:col-span-2">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="p-2 rounded-lg bg-blue-600">
-                <BookOpen className="h-5 w-5 text-white" />
+          <div className="md:col-span-2 space-y-6">
+            <div className="flex items-center space-x-3">
+              <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-500 shadow-lg shadow-blue-200">
+                <BookOpen className="h-6 w-6 text-white" />
               </div>
-              <span className="text-xl font-bold text-slate-900">QuizMaster</span>
+              <span className="text-2xl font-bold tracking-tight text-slate-900">{APP_CONFIG.name}</span>
             </div>
-            <p className="text-slate-600 mb-4 max-w-md text-sm leading-relaxed">
-              Nền tảng luyện thi trắc nghiệm thông minh, giúp học sinh và sinh viên 
-              cải thiện kết quả học tập một cách hiệu quả và khoa học.
+            <p className="text-slate-600 max-w-md text-base leading-relaxed">
+              Nền tảng luyện thi trắc nghiệm thông minh, đồng hành cùng sĩ tử
+              trên con đường chinh phục tri thức và đạt kết quả cao nhất.
             </p>
-            <div className="flex space-x-3">
-              <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 transition-colors cursor-pointer">
-                <span className="text-base">📘</span>
-              </div>
-              <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 transition-colors cursor-pointer">
-                <span className="text-base">📧</span>
-              </div>
-              <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center hover:border-blue-500 hover:bg-blue-50 transition-colors cursor-pointer">
-                <span className="text-base">🐙</span>
-              </div>
+            <div className="flex space-x-4">
+              <a href={`https://github.com/${FOUNDER_CONFIG.socials.github}`} target="_blank" rel="noreferrer" className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center hover:border-blue-500 hover:text-blue-600 transition-all duration-300 shadow-sm hover:shadow-md">
+                <Github className="h-5 w-5" />
+              </a>
+              <a href={`https://facebook.com/${FOUNDER_CONFIG.socials.facebook}`} target="_blank" rel="noreferrer" className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center hover:border-blue-500 hover:text-blue-600 transition-all duration-300 shadow-sm hover:shadow-md">
+                <Facebook className="h-5 w-5" />
+              </a>
+              <a href={`tel:${FOUNDER_CONFIG.socials.zalo}`} className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center hover:border-blue-500 hover:text-blue-600 transition-all duration-300 shadow-sm hover:shadow-md">
+                <Phone className="h-5 w-5" />
+              </a>
             </div>
           </div>
 
@@ -87,14 +88,21 @@ export function Footer() {
         </div>
 
         {/* Developer Info */}
-        <div className="border-t border-slate-200 mt-10 pt-6">
-          <div className="flex flex-col md:flex-row justify-between items-center text-sm">
-            <div className="text-slate-500 mb-3 md:mb-0">
-              © 2025 QuizMaster. Tất cả quyền được bảo lưu.
+        <div className="border-t border-slate-200 mt-16 pt-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="text-slate-500 text-sm font-medium">
+              © {new Date().getFullYear()} {APP_CONFIG.name}. Tất cả quyền được bảo lưu.
             </div>
-            <div className="text-slate-600">
-              <span className="mr-2">💻</span>
-              Phát triển bởi: <span className="text-blue-600 font-medium">Nguyễn Huy Điền</span>
+            <div className="flex items-center space-x-2 text-slate-600 text-sm">
+              <span className="inline-block p-1 rounded-md bg-blue-50 text-blue-600">
+                <span className="text-xs">💻</span>
+              </span>
+              <span>Tác giả:</span>
+              <span className="text-blue-600 font-bold hover:underline cursor-pointer">
+                {FOUNDER_CONFIG.name} ({FOUNDER_CONFIG.class})
+              </span>
+              <span className="text-slate-300">|</span>
+              <span className="text-slate-500">{FOUNDER_CONFIG.location}</span>
             </div>
           </div>
         </div>

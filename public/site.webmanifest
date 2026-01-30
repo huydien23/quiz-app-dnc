@@ -1,7 +1,7 @@
 {
-  "name": "QuizMaster",
-  "short_name": "QuizMaster",
-  "description": "Hệ thống luyện thi trắc nghiệm trực tuyến",
+  "name": "Eduliora Center",
+  "short_name": "Eduliora",
+  "description": "Nâng Tầm Tri Thức - Hệ thống luyện thi trắc nghiệm trực tuyến hiện đại",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

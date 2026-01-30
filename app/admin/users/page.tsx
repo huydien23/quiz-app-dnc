@@ -71,9 +71,17 @@ export default function AdminUsersPage() {
 
   const getRoleBadge = (role: number) => {
     if (role === 0) {
-      return <Badge variant="default" className="bg-gradient-to-r from-blue-500 to-blue-600">👑 Admin</Badge>
+      return (
+        <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 border-indigo-100 text-[10px] uppercase font-bold">
+          <Shield className="h-3 w-3 mr-1" /> Admin
+        </Badge>
+      )
     }
-    return <Badge variant="secondary">👨‍🎓 Học sinh</Badge>
+    return (
+      <Badge variant="outline" className="bg-slate-50 text-slate-600 border-slate-200 text-[10px] uppercase font-bold">
+        <Users className="h-3 w-3 mr-1" /> Học sinh
+      </Badge>
+    )
   }
 
   if (loading) {
@@ -103,21 +111,22 @@ export default function AdminUsersPage() {
   return (
     <ProtectedRoute requireAdmin>
       <div className="space-y-6">
-        {/* Header */}
-        <div className="mb-8">
-          <Link href="/admin">
-            <Button variant="ghost" size="sm" className="mb-4">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Quay lại Dashboard
-            </Button>
-          </Link>
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2">Quản lý người dùng</h1>
-              <p className="text-muted-foreground">Xem và quản lý tài khoản người dùng</p>
+        {/* Header (Synchronized with Dashboard) */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4 border-b border-slate-200 pb-6">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-1.5 h-6 bg-indigo-600 rounded-full" />
+              <h2 className="text-2xl font-bold text-slate-900 tracking-tight uppercase">
+                Quản lý học viên
+              </h2>
             </div>
+            <p className="text-sm font-medium text-slate-500 ml-3.5">
+              Xem và quản lý hệ thống tài khoản học viên chuyên nghiệp
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
             <Link href="/admin/users/create">
-              <Button>
+              <Button className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs uppercase tracking-wider h-10 px-6 shadow-indigo-100 shadow-lg border-none">
                 <Plus className="h-4 w-4 mr-2" />
                 Tạo người dùng mới
               </Button>
@@ -132,72 +141,78 @@ export default function AdminUsersPage() {
         )}
 
         {/* Stats Summary */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-          <Card className="border-0 bg-gradient-to-br from-blue-50 to-blue-100/50 shadow-lg">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between mb-2">
-                <Users className="h-8 w-8 text-blue-600" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <Card className="border-slate-200/60 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-5 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center border border-blue-100">
+                <Users className="h-6 w-6 text-blue-600" />
               </div>
-              <p className="text-xs sm:text-sm text-slate-600 mb-1">Tổng học viên</p>
-              <p className="text-2xl sm:text-3xl font-bold text-slate-900">
-                {users.filter(u => u.role === 1).length}
-              </p>
+              <div>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Tổng học viên</p>
+                <p className="text-2xl font-bold text-slate-900">
+                  {users.filter(u => u.role === 1).length}
+                </p>
+              </div>
             </CardContent>
           </Card>
 
-          <Card className="border-0 bg-gradient-to-br from-green-50 to-green-100/50 shadow-lg">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between mb-2">
-                <Shield className="h-8 w-8 text-green-600" />
+          <Card className="border-slate-200/60 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-5 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center border border-indigo-100">
+                <Shield className="h-6 w-6 text-indigo-600" />
               </div>
-              <p className="text-xs sm:text-sm text-slate-600 mb-1">Admin</p>
-              <p className="text-2xl sm:text-3xl font-bold text-slate-900">
-                {users.filter(u => u.role === 0).length}
-              </p>
+              <div>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Admin</p>
+                <p className="text-2xl font-bold text-slate-900">
+                  {users.filter(u => u.role === 0).length}
+                </p>
+              </div>
             </CardContent>
           </Card>
 
-          <Card className="border-0 bg-gradient-to-br from-purple-50 to-purple-100/50 shadow-lg">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between mb-2">
-                <UserCheck className="h-8 w-8 text-purple-600" />
+          <Card className="border-slate-200/60 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-5 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center border border-purple-100">
+                <UserCheck className="h-6 w-6 text-purple-600" />
               </div>
-              <p className="text-xs sm:text-sm text-slate-600 mb-1">Hoạt động</p>
-              <p className="text-2xl sm:text-3xl font-bold text-slate-900">
-                {users.filter(u => attempts.some(a => a.userId === u.id)).length}
-              </p>
+              <div>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Dưới 30 ngày</p>
+                <p className="text-2xl font-bold text-slate-900">
+                  {users.filter(u => attempts.some(a => a.userId === u.id)).length}
+                </p>
+              </div>
             </CardContent>
           </Card>
 
-          <Card className="border-0 bg-gradient-to-br from-orange-50 to-orange-100/50 shadow-lg">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between mb-2">
-                <Calendar className="h-8 w-8 text-orange-600" />
+          <Card className="border-slate-200/60 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-5 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center border border-amber-100">
+                <Calendar className="h-6 w-6 text-amber-600" />
               </div>
-              <p className="text-xs sm:text-sm text-slate-600 mb-1">Mới tháng này</p>
-              <p className="text-2xl sm:text-3xl font-bold text-slate-900">
-                {users.filter(u => {
-                  const userDate = new Date(u.createdAt)
-                  const now = new Date()
-                  return userDate.getMonth() === now.getMonth() && 
-                         userDate.getFullYear() === now.getFullYear()
-                }).length}
-              </p>
+              <div>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Mới tháng này</p>
+                <p className="text-2xl font-bold text-slate-900">
+                  {users.filter(u => {
+                    const userDate = new Date(u.createdAt)
+                    const now = new Date()
+                    return userDate.getMonth() === now.getMonth() &&
+                      userDate.getFullYear() === now.getFullYear()
+                  }).length}
+                </p>
+              </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Search */}
-        <div className="mb-6">
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Tìm kiếm người dùng..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
+        <div className="mb-6 relative group max-w-lg">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+          <Input
+            placeholder="Tìm kiếm người dùng nhanh (tên hoặc email)..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 bg-white border-slate-200 focus:border-indigo-500 transition-all h-11"
+          />
         </div>
 
         {/* Users Table */}
@@ -207,14 +222,14 @@ export default function AdminUsersPage() {
             <div className="hidden md:block rounded-lg overflow-hidden">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-gradient-to-r from-slate-50 to-slate-100 hover:from-slate-100 hover:to-slate-200">
-                    <TableHead className="w-16 font-bold">STT</TableHead>
-                    <TableHead className="font-bold">Họ và tên</TableHead>
-                    <TableHead className="font-bold">Email</TableHead>
-                    <TableHead className="text-center font-bold">Vai trò</TableHead>
-                    <TableHead className="text-center font-bold">Số bài thi</TableHead>
-                    <TableHead className="text-center font-bold">Điểm TB</TableHead>
-                    <TableHead className="font-bold">Ngày đăng ký</TableHead>
+                  <TableRow className="bg-slate-50 border-y border-slate-100">
+                    <TableHead className="w-16 font-bold text-slate-600 uppercase text-[10px] tracking-widest pl-6 italic">STT</TableHead>
+                    <TableHead className="font-bold text-slate-600 uppercase text-[10px] tracking-widest">Họ và tên</TableHead>
+                    <TableHead className="font-bold text-slate-600 uppercase text-[10px] tracking-widest">Tài khoản</TableHead>
+                    <TableHead className="text-center font-bold text-slate-600 uppercase text-[10px] tracking-widest">Vai trò</TableHead>
+                    <TableHead className="text-center font-bold text-slate-600 uppercase text-[10px] tracking-widest">Số bài thi</TableHead>
+                    <TableHead className="text-center font-bold text-slate-600 uppercase text-[10px] tracking-widest">Điểm TB</TableHead>
+                    <TableHead className="font-bold text-slate-600 uppercase text-[10px] tracking-widest">Ngày đăng ký</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -239,10 +254,10 @@ export default function AdminUsersPage() {
                       const avgScore = userAttempts.length > 0
                         ? Math.round(userAttempts.reduce((sum, a) => sum + a.score, 0) / userAttempts.length)
                         : 0
-                      
+
                       return (
-                        <TableRow 
-                          key={user.id} 
+                        <TableRow
+                          key={user.id}
                           className="hover:bg-slate-50 transition-colors border-b border-slate-100"
                         >
                           <TableCell className="font-medium text-slate-700">
@@ -250,10 +265,10 @@ export default function AdminUsersPage() {
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold flex-shrink-0">
+                              <div className="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700 font-bold flex-shrink-0 shadow-sm">
                                 {user.name.charAt(0).toUpperCase()}
                               </div>
-                              <span className="font-semibold text-slate-800">{user.name}</span>
+                              <span className="font-bold text-slate-900">{user.name}</span>
                             </div>
                           </TableCell>
                           <TableCell className="text-slate-600">
@@ -263,20 +278,23 @@ export default function AdminUsersPage() {
                             {getRoleBadge(user.role)}
                           </TableCell>
                           <TableCell className="text-center">
-                            <div className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-semibold text-sm">
+                            <div className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-700 font-bold text-[11px] border border-slate-200">
                               {userAttempts.length}
                             </div>
                           </TableCell>
                           <TableCell className="text-center">
                             {userAttempts.length > 0 ? (
-                              <Badge 
-                                variant={avgScore >= 80 ? "default" : avgScore >= 50 ? "secondary" : "destructive"}
-                                className="font-bold text-sm"
+                              <Badge
+                                variant="secondary"
+                                className={`font-extrabold text-[10px] px-1.5 h-5 ${avgScore >= 80 ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
+                                  avgScore >= 50 ? "bg-amber-50 text-amber-700 border-amber-100" :
+                                    "bg-rose-50 text-rose-700 border-rose-100"
+                                  }`}
                               >
                                 {avgScore}%
                               </Badge>
                             ) : (
-                              <span className="text-slate-400 text-sm">--</span>
+                              <span className="text-slate-300 text-xs italic">Chưa thi</span>
                             )}
                           </TableCell>
                           <TableCell className="text-slate-600">
@@ -318,10 +336,10 @@ export default function AdminUsersPage() {
                   const avgScore = userAttempts.length > 0
                     ? Math.round(userAttempts.reduce((sum, a) => sum + a.score, 0) / userAttempts.length)
                     : 0
-                  
+
                   return (
-                    <div 
-                      key={user.id} 
+                    <div
+                      key={user.id}
                       className="py-4 first:pt-0 last:pb-0"
                     >
                       <div className="flex items-start gap-3 mb-3">
@@ -337,7 +355,7 @@ export default function AdminUsersPage() {
                           {getRoleBadge(user.role)}
                         </div>
                       </div>
-                      
+
                       <div className="grid grid-cols-3 gap-2 pt-3 border-t border-slate-100">
                         <div className="text-center">
                           <p className="text-xs text-slate-500 mb-1">Bài thi</p>
@@ -346,10 +364,9 @@ export default function AdminUsersPage() {
                         <div className="text-center">
                           <p className="text-xs text-slate-500 mb-1">Điểm TB</p>
                           {userAttempts.length > 0 ? (
-                            <p className={`text-lg font-bold ${
-                              avgScore >= 80 ? 'text-green-600' : 
+                            <p className={`text-lg font-bold ${avgScore >= 80 ? 'text-green-600' :
                               avgScore >= 50 ? 'text-orange-600' : 'text-red-600'
-                            }`}>
+                              }`}>
                               {avgScore}%
                             </p>
                           ) : (
@@ -359,9 +376,9 @@ export default function AdminUsersPage() {
                         <div className="text-center">
                           <p className="text-xs text-slate-500 mb-1">Đăng ký</p>
                           <p className="text-xs font-medium text-slate-600">
-                            {new Date(user.createdAt).toLocaleDateString("vi-VN", { 
-                              day: '2-digit', 
-                              month: '2-digit' 
+                            {new Date(user.createdAt).toLocaleDateString("vi-VN", {
+                              day: '2-digit',
+                              month: '2-digit'
                             })}
                           </p>
                         </div>

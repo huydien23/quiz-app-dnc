@@ -1,9 +1,21 @@
 // Application constants
 export const APP_CONFIG = {
-  name: "QuizMaster",
-  description: "Hệ thống luyện thi trắc nghiệm trực tuyến",
-  version: "1.0.0",
-  author: "QuizMaster Team"
+  name: "Eduliora Center",
+  description: "Nâng Tầm Tri Thức - Hệ thống luyện thi trắc nghiệm trực tuyến hiện đại",
+  version: "1.2.0",
+  author: "Hồ Hoàng Lanh"
+} as const
+
+export const FOUNDER_CONFIG = {
+  name: "Hồ Hoàng Lanh",
+  class: "DH23TIN03",
+  location: "Cà Mau",
+  bio: "Sinh viên năm 3 ngành Công nghệ thông tin tại Đại học Nam Cần Thơ, chuyên về phát triển Web Fullstack với niềm đam mê kiến tạo những sản phẩm công nghệ giáo dục hữu ích cho cộng đồng.",
+  socials: {
+    github: "lanhhohoang",
+    facebook: "hohoanglanh.cm",
+    zalo: "0334455667" // Example number, replace with actual
+  }
 } as const
 
 // File upload constants

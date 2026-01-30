@@ -4,8 +4,8 @@ import React, { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { 
-  Bell, BookOpen, Award, Target, Calendar, 
+import {
+  Bell, BookOpen, Award, Target, Calendar,
   CheckCircle, AlertCircle, Info, Star, Trophy,
   X, Eye, EyeOff
 } from "lucide-react"
@@ -14,6 +14,7 @@ import { useToast } from "@/components/toast-provider"
 import { formatDistanceToNow } from "date-fns"
 import { vi } from "date-fns/locale"
 import { DashboardLayout } from "@/components/dashboard-layout"
+import { APP_CONFIG } from "@/lib/constants"
 
 interface Notification {
   id: string
@@ -28,7 +29,7 @@ interface Notification {
 export default function NotificationsPage() {
   const { user } = useAuth()
   const { success, error } = useToast()
-  
+
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState("all") // all, unread, read
@@ -75,7 +76,7 @@ export default function NotificationsPage() {
           id: '4',
           type: 'update',
           title: 'Cập nhật hệ thống',
-          message: 'QuizMaster đã được cập nhật với nhiều tính năng mới. Hãy khám phá ngay!',
+          message: `${APP_CONFIG.name} đã được cập nhật với nhiều tính năng mới. Hãy khám phá ngay!`,
           isRead: true,
           createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 1 week ago
           actionUrl: '/guide'
@@ -90,7 +91,7 @@ export default function NotificationsPage() {
           actionUrl: '/dashboard/stats'
         }
       ]
-      
+
       setNotifications(mockNotifications)
     } catch (err) {
       console.error('Error loading notifications:', err)
@@ -112,9 +113,9 @@ export default function NotificationsPage() {
   }
 
   const markAsRead = (id: string) => {
-    setNotifications(prev => 
-      prev.map(notification => 
-        notification.id === id 
+    setNotifications(prev =>
+      prev.map(notification =>
+        notification.id === id
           ? { ...notification, isRead: true }
           : notification
       )
@@ -123,7 +124,7 @@ export default function NotificationsPage() {
   }
 
   const markAllAsRead = () => {
-    setNotifications(prev => 
+    setNotifications(prev =>
       prev.map(notification => ({ ...notification, isRead: true }))
     )
     success("Đã đánh dấu tất cả đã đọc")
@@ -243,26 +244,24 @@ export default function NotificationsPage() {
         {/* Notifications List */}
         <div className="space-y-4">
           {filteredNotifications.map((notification) => (
-            <Card 
-              key={notification.id} 
-              className={`border-2 transition-all duration-300 hover:shadow-xl ${
-                notification.isRead 
-                  ? 'border-0 bg-white/80 backdrop-blur-sm shadow-xl' 
-                  : `${getNotificationColor(notification.type)} shadow-xl`
-              }`}
+            <Card
+              key={notification.id}
+              className={`border-2 transition-all duration-300 hover:shadow-xl ${notification.isRead
+                ? 'border-0 bg-white/80 backdrop-blur-sm shadow-xl'
+                : `${getNotificationColor(notification.type)} shadow-xl`
+                }`}
             >
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">
                   <div className="flex-shrink-0 mt-1">
                     {getNotificationIcon(notification.type)}
                   </div>
-                  
+
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <h3 className={`font-semibold mb-2 font-heading ${
-                          notification.isRead ? 'text-slate-800' : 'text-slate-900'
-                        }`}>
+                        <h3 className={`font-semibold mb-2 font-heading ${notification.isRead ? 'text-slate-800' : 'text-slate-900'
+                          }`}>
                           {notification.title}
                         </h3>
                         <p className="text-slate-600 font-body mb-3">
@@ -282,7 +281,7 @@ export default function NotificationsPage() {
                           )}
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center gap-2 ml-4">
                         {!notification.isRead && (
                           <Button
@@ -331,8 +330,8 @@ export default function NotificationsPage() {
               {filter === "all" ? 'Chưa có thông báo nào' : 'Không có thông báo phù hợp'}
             </h3>
             <p className="text-slate-600 font-body">
-              {filter === "all" 
-                ? 'Bạn sẽ nhận được thông báo khi có cập nhật mới' 
+              {filter === "all"
+                ? 'Bạn sẽ nhận được thông báo khi có cập nhật mới'
                 : 'Thử thay đổi bộ lọc để xem thông báo khác'
               }
             </p>

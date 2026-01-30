@@ -4,14 +4,15 @@ import React from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { 
-  BookOpen, Clock, Award, TrendingUp, Play, Eye, 
+import {
+  BookOpen, Clock, Award, TrendingUp, Play, Eye,
   Target, Calendar, Star, Trophy, CheckCircle,
-  BarChart3, Users, Zap, ArrowRight, Brain, 
+  BarChart3, Users, ArrowRight, Brain,
   Shield, Smartphone, Globe, Heart, Code, Lightbulb,
-  ArrowLeft, CheckCircle2, AlertCircle, Info
+  ArrowLeft, CheckCircle2, AlertCircle, Info, Phone
 } from "lucide-react"
 import Link from "next/link"
+import { APP_CONFIG } from "@/lib/constants"
 
 export function GuidePage() {
   const steps = [
@@ -151,10 +152,10 @@ export function GuidePage() {
           </Badge>
           <h1 className="text-5xl font-bold text-slate-800 mb-6 font-heading">
             Hướng dẫn sử dụng
-            <span className="text-gradient block mt-2">QuizMaster</span>
+            <span className="text-gradient block mt-2">{APP_CONFIG.name}</span>
           </h1>
           <p className="text-xl text-slate-600 font-body max-w-2xl mx-auto">
-            Hướng dẫn chi tiết từ A-Z để bạn có thể sử dụng QuizMaster một cách hiệu quả nhất
+            Hướng dẫn chi tiết từ A-Z để bạn có thể sử dụng {APP_CONFIG.name} một cách hiệu quả nhất
           </p>
         </div>
       </section>
@@ -254,7 +255,7 @@ export function GuidePage() {
               Câu hỏi thường gặp
             </h2>
             <p className="text-xl text-slate-600 font-body">
-              Giải đáp những thắc mắc phổ biến về QuizMaster
+              Giải đáp những thắc mắc phổ biến về {APP_CONFIG.name}
             </p>
           </div>
 
@@ -265,10 +266,10 @@ export function GuidePage() {
                   <Info className="h-6 w-6 text-blue-600 flex-shrink-0 mt-1" />
                   <div>
                     <h3 className="text-lg font-bold text-slate-800 mb-2 font-heading">
-                      QuizMaster có miễn phí không?
+                      {APP_CONFIG.name} có miễn phí không?
                     </h3>
                     <p className="text-slate-600 font-body">
-                      Có, QuizMaster hoàn toàn miễn phí cho tất cả học sinh. Bạn có thể sử dụng 
+                      Có, {APP_CONFIG.name} hoàn toàn miễn phí cho tất cả học sinh. Bạn có thể sử dụng
                       tất cả tính năng mà không cần trả phí.
                     </p>
                   </div>
@@ -285,7 +286,7 @@ export function GuidePage() {
                       Làm sao để tạo tài khoản?
                     </h3>
                     <p className="text-slate-600 font-body">
-                      Nhấn nút "Đăng ký" trên trang chủ, nhập email và mật khẩu, 
+                      Nhấn nút "Đăng ký" trên trang chủ, nhập email và mật khẩu,
                       sau đó xác thực email qua link được gửi đến hộp thư của bạn.
                     </p>
                   </div>
@@ -302,7 +303,7 @@ export function GuidePage() {
                       Có thể sử dụng trên điện thoại không?
                     </h3>
                     <p className="text-slate-600 font-body">
-                      Có, QuizMaster được tối ưu hoàn toàn cho mobile. Bạn có thể học 
+                      Có, {APP_CONFIG.name} được tối ưu hoàn toàn cho mobile. Bạn có thể học
                       trên điện thoại, máy tính bảng hoặc máy tính một cách mượt mà.
                     </p>
                   </div>
@@ -319,7 +320,7 @@ export function GuidePage() {
                       Dữ liệu có được bảo mật không?
                     </h3>
                     <p className="text-slate-600 font-body">
-                      Tuyệt đối có. Tất cả dữ liệu được mã hóa và bảo vệ theo tiêu chuẩn 
+                      Tuyệt đối có. Tất cả dữ liệu được mã hóa và bảo vệ theo tiêu chuẩn
                       quốc tế. Thông tin cá nhân của bạn được bảo mật tuyệt đối.
                     </p>
                   </div>

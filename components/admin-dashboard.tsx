@@ -6,21 +6,30 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
-import { 
+import {
   BookOpen, Users, TrendingUp, Clock, Plus, Eye, Edit, Trash2,
   BarChart3, Activity, Calendar, Star, AlertCircle, CheckCircle,
   FileText, PieChart, ArrowUpRight, ArrowDownRight, RefreshCw,
   Download, FileSpreadsheet, Search, Filter, UserCheck, Trophy,
-  Award, Target, Zap, TrendingDown, CalendarDays, Hash
+  Award, Target, TrendingDown, CalendarDays, Hash,
+  ChevronLeft, ChevronRight, Eraser
 } from "lucide-react"
 import { QuizService } from "@/lib/quiz-service"
 import { AdminService } from "@/lib/admin-service"
 import type { Quiz, QuizAttempt, User } from "@/lib/types"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 import { useToast } from "@/components/toast-provider"
 import { formatDistanceToNow } from "date-fns"
 import { vi } from "date-fns/locale"
 import { LogoutHandler } from "@/components/logout-handler"
+import {
+  CategoriesManagement,
+  NotificationsManagement,
+  CommentsManagement,
+  SettingsManagement,
+  AuditLogs
+} from "@/components/admin"
 import { Input } from "@/components/ui/input"
 import {
   Select,
@@ -89,7 +98,7 @@ interface DailyActivity {
 
 export function AdminDashboard() {
   const { success, error } = useToast()
-  
+
   // Data states
   const [stats, setStats] = useState<DashboardStats>({
     totalQuizzes: 0,
@@ -103,43 +112,56 @@ export function AdminDashboard() {
       usersGrowth: 0
     }
   })
-  
+
   const [recentQuizzes, setRecentQuizzes] = useState<Quiz[]>([])
   const [topQuizzes, setTopQuizzes] = useState<(Quiz & { attemptCount: number, avgScore: number })[]>([])
   const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
-  
+
   // New states for enhanced features
-  const [activeTab, setActiveTab] = useState<'overview' | 'analytics' | 'results' | 'users'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'analytics' | 'results' | 'users' | 'categories' | 'notifications' | 'comments' | 'settings' | 'logs'>('overview')
   const [allQuizzes, setAllQuizzes] = useState<Quiz[]>([])
   const [allUsers, setAllUsers] = useState<User[]>([])
   const [allAttempts, setAllAttempts] = useState<QuizAttempt[]>([])
-  const [selectedQuiz, setSelectedQuiz] = useState<string>("")
   const [quizResults, setQuizResults] = useState<QuizResultDetail[]>([])
-  const [searchTerm, setSearchTerm] = useState("")
-  const [sortBy, setSortBy] = useState<"score" | "date" | "name">("score")
-  
+
   // Analytics states
   const [topPerformers, setTopPerformers] = useState<TopPerformer[]>([])
   const [dailyActivities, setDailyActivities] = useState<DailyActivity[]>([])
-  const [dateRange, setDateRange] = useState<"7days" | "30days" | "all">("7days")
+  const [selectedQuiz, setSelectedQuiz] = useState<string>("")
+  const [searchTerm, setSearchTerm] = useState("")
+  const [sortBy, setSortBy] = useState<'score' | 'date' | 'name'>('date')
+  const [dateRange, setDateRange] = useState<'7days' | '30days' | 'all'>('7days')
   const [minScore, setMinScore] = useState<string>("")
   const [maxScore, setMaxScore] = useState<string>("")
-  const [attemptFilter, setAttemptFilter] = useState<"all" | "first" | "last" | "best">("all")
+  const [attemptFilter, setAttemptFilter] = useState<'all' | 'first' | 'last' | 'best' | 'grouped'>('best')
+  const [addCategoryTrigger, setAddCategoryTrigger] = useState(0)
+  const [addNotificationTrigger, setAddNotificationTrigger] = useState(0)
+  const [cleanupNotificationsTrigger, setCleanupNotificationsTrigger] = useState(0)
+  const [cleanupLogsTrigger, setCleanupLogsTrigger] = useState(0)
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
+
+  // Reset page when filters change - Moved to top to follow hooks rules
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [selectedQuiz, searchTerm, sortBy, minScore, maxScore, attemptFilter])
 
   useEffect(() => {
     loadDashboardData()
-    
-    // Timeout fallback for debugging
-    const timeout = setTimeout(() => {
-      if (loading) {
-        console.error("Loading timeout - data still loading after 10s")
-      }
-    }, 10000)
-    
-    return () => clearTimeout(timeout)
   }, [])
+
+  // Read initial tab from URL query
+  const searchParams = useSearchParams()
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    if (tab && ['overview', 'analytics', 'results', 'users', 'categories', 'notifications', 'comments', 'settings', 'logs'].includes(tab)) {
+      setActiveTab(tab as any)
+    }
+  }, [searchParams])
 
   useEffect(() => {
     if (selectedQuiz && allAttempts.length > 0) {
@@ -166,10 +188,10 @@ export function AdminDashboard() {
     const userStats = allUsers.map(user => {
       const userAttempts = allAttempts.filter(a => a.userId === user.id)
       if (userAttempts.length === 0) return null
-      
+
       const avgScore = userAttempts.reduce((sum, a) => sum + a.score, 0) / userAttempts.length
       const bestScore = Math.max(...userAttempts.map(a => a.score))
-      
+
       return {
         userId: user.id,
         userName: user.name,
@@ -179,57 +201,57 @@ export function AdminDashboard() {
         bestScore
       }
     }).filter(Boolean) as TopPerformer[]
-    
+
     setTopPerformers(userStats.sort((a, b) => b.avgScore - a.avgScore).slice(0, 10))
-    
+
     // Calculate Daily Activities
     const now = new Date()
     const daysToShow = dateRange === "7days" ? 7 : dateRange === "30days" ? 30 : 90
     const activities: DailyActivity[] = []
-    
+
     for (let i = daysToShow - 1; i >= 0; i--) {
       const date = new Date(now)
       date.setDate(date.getDate() - i)
       date.setHours(0, 0, 0, 0)
-      
+
       const nextDate = new Date(date)
       nextDate.setDate(nextDate.getDate() + 1)
-      
+
       const dayAttempts = allAttempts.filter(a => {
         const attemptDate = new Date(a.completedAt)
         return attemptDate >= date && attemptDate < nextDate
       })
-      
+
       const avgScore = dayAttempts.length > 0
         ? dayAttempts.reduce((sum, a) => sum + a.score, 0) / dayAttempts.length
         : 0
-      
+
       activities.push({
         date: date.toISOString().split('T')[0],
         attempts: dayAttempts.length,
         avgScore: Math.round(avgScore * 10) / 10
       })
     }
-    
+
     setDailyActivities(activities)
   }
 
   const loadQuizResults = (quizId: string) => {
     const quizAttempts = allAttempts.filter(a => a.quizId === quizId)
     const quiz = allQuizzes.find(q => q.id === quizId)
-    
+
     const results: QuizResultDetail[] = quizAttempts.map(attempt => {
       const user = allUsers.find(u => u.id === attempt.userId)
-      
+
       // Calculate attempt number for this user on this quiz
       const userQuizAttempts = quizAttempts
         .filter(a => a.userId === attempt.userId)
         .sort((a, b) => new Date(a.completedAt).getTime() - new Date(b.completedAt).getTime())
       const attemptNumber = userQuizAttempts.findIndex(a => a.id === attempt.id) + 1
-      
+
       // Get user's best score on this quiz
       const userBestScore = Math.max(...userQuizAttempts.map(a => a.score))
-      
+
       return {
         userId: attempt.userId,
         userName: user?.name || 'Unknown',
@@ -243,7 +265,7 @@ export function AdminDashboard() {
         userBestScore
       }
     })
-    
+
     setQuizResults(results)
   }
 
@@ -355,76 +377,75 @@ export function AdminDashboard() {
   let filteredResults = quizResults.filter(result => {
     // Search filter
     const matchSearch = result.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       result.userEmail.toLowerCase().includes(searchTerm.toLowerCase())
-    
+      result.userEmail.toLowerCase().includes(searchTerm.toLowerCase())
+
     // Score range filter
     const matchScore = (minScore === "" || result.score >= parseInt(minScore)) &&
-                      (maxScore === "" || result.score <= parseInt(maxScore))
-    
+      (maxScore === "" || result.score <= parseInt(maxScore))
+
     return matchSearch && matchScore
   })
 
   // Attempt filter (first/last/best)
   if (attemptFilter !== "all") {
-    const userLastAttempts = new Map<string, QuizResultDetail>()
-    
-    filteredResults.forEach(result => {
-      const key = result.userId
-      const existing = userLastAttempts.get(key)
-      
-      if (!existing) {
-        userLastAttempts.set(key, result)
-      } else {
-        if (attemptFilter === "first") {
-          if (new Date(result.completedAt) < new Date(existing.completedAt)) {
-            userLastAttempts.set(key, result)
-          }
-        } else if (attemptFilter === "last") {
-          if (new Date(result.completedAt) > new Date(existing.completedAt)) {
-            userLastAttempts.set(key, result)
-          }
-        } else if (attemptFilter === "best") {
-          if (result.score > existing.score) {
-            userLastAttempts.set(key, result)
-          }
-        }
+    const userAttemptsMap = new Map<string, QuizResultDetail[]>()
+    filteredResults.forEach(r => {
+      const existing = userAttemptsMap.get(r.userId) || []
+      userAttemptsMap.set(r.userId, [...existing, r])
+    })
+
+    const finalResults: QuizResultDetail[] = []
+    userAttemptsMap.forEach((attempts) => {
+      if (attemptFilter === 'first') {
+        finalResults.push(attempts.sort((a, b) => new Date(a.completedAt).getTime() - new Date(b.completedAt).getTime())[0])
+      } else if (attemptFilter === 'last') {
+        finalResults.push(attempts.sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())[0])
+      } else if (attemptFilter === 'best') {
+        finalResults.push(attempts.sort((a, b) => b.score - a.score)[0])
+      } else if (attemptFilter === 'grouped') {
+        // For grouped mode, we take the best attempt but we'll use it to represent the user
+        const best = attempts.sort((a, b) => b.score - a.score)[0]
+        finalResults.push({
+          ...best,
+          attemptNumber: attempts.length // Overwrite with total number of attempts
+        })
       }
     })
-    
-    filteredResults = Array.from(userLastAttempts.values())
+    filteredResults = finalResults
   }
 
   const sortedResults = [...filteredResults].sort((a, b) => {
-    switch (sortBy) {
-      case "score":
-        return b.score - a.score
-      case "date":
-        return new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
-      case "name":
-        return a.userName.localeCompare(b.userName)
-      default:
-        return 0
-    }
+    if (sortBy === 'score') return b.score - a.score
+    if (sortBy === 'name') return a.userName.localeCompare(b.userName)
+    return new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
   })
+
+  // Pagination Logic
+  const totalPages = Math.ceil(sortedResults.length / itemsPerPage)
+  const paginatedResults = sortedResults.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  )
+
 
   const loadDashboardData = async () => {
     try {
       setLoading(true)
       console.log("Loading dashboard data...")
-      
+
       // Load REAL data from Firebase
       const [quizzesData, usersData, attemptsData] = await Promise.all([
         AdminService.getAllQuizzes(),
         AdminService.getAllUsers(),
         AdminService.getAllAttempts()
       ])
-      
+
       console.log("Loaded data:", { quizzesData, usersData, attemptsData })
-      
+
       setAllQuizzes(quizzesData)
       setAllUsers(usersData)
       setAllAttempts(attemptsData)
-      
+
       const allQuizzes = quizzesData
       const allAttempts = attemptsData
       const allUsers = usersData
@@ -432,9 +453,9 @@ export function AdminDashboard() {
       const activeQuizzes = allQuizzes.filter(quiz => quiz.isActive)
       const totalAttempts = allAttempts.length
       const totalUsers = allUsers.length
-      
+
       // Calculate average score
-      const avgScore = allAttempts.length > 0 
+      const avgScore = allAttempts.length > 0
         ? allAttempts.reduce((sum, attempt) => sum + (attempt.score || 0), 0) / allAttempts.length
         : 0
 
@@ -487,7 +508,7 @@ export function AdminDashboard() {
 
       // Generate recent activities
       const activities: RecentActivity[] = []
-      
+
       // Add recent quiz completions
       allAttempts.slice(0, 3).forEach(attempt => {
         const user = allUsers.find(u => u.id === attempt.userId)
@@ -543,13 +564,13 @@ export function AdminDashboard() {
     success("Đã làm mới dữ liệu")
   }
 
-  const StatCard = ({ 
-    title, 
-    value, 
-    subtitle, 
-    icon: Icon, 
-    trend, 
-    trendValue 
+  const StatCard = ({
+    title,
+    value,
+    subtitle,
+    icon: Icon,
+    trend,
+    trendValue
   }: {
     title: string
     value: number | string
@@ -558,32 +579,27 @@ export function AdminDashboard() {
     trend?: 'up' | 'down'
     trendValue?: string
   }) => (
-    <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300">
+    <Card className="border border-slate-200/60 bg-white shadow-sm hover:shadow-md transition-all duration-200 rounded-xl overflow-hidden hover:border-indigo-200">
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-slate-600 mb-1">{title}</p>
-            <p className="text-2xl font-bold text-slate-800">{value}</p>
+          <div className="space-y-1">
+            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">{title}</p>
+            <div className="flex items-baseline gap-2">
+              <h3 className="text-3xl font-bold text-slate-900 tracking-tight">{value}</h3>
+              {trend && trendValue && (
+                <div className={`flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded-full ${trend === 'up' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'
+                  }`}>
+                  {trend === 'up' ? <ArrowUpRight className="h-3 w-3 mr-0.5" /> : <ArrowDownRight className="h-3 w-3 mr-0.5" />}
+                  {trendValue}
+                </div>
+              )}
+            </div>
             {subtitle && (
-              <p className="text-xs text-slate-500 mt-1">{subtitle}</p>
+              <p className="text-xs font-medium text-slate-400 mt-1">{subtitle}</p>
             )}
           </div>
-          <div className="flex flex-col items-end">
-            <div className="p-3 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-              <Icon className="h-6 w-6" />
-            </div>
-            {trend && trendValue && (
-              <div className={`flex items-center mt-2 text-xs font-medium ${
-                trend === 'up' ? 'text-green-600' : 'text-red-600'
-              }`}>
-                {trend === 'up' ? (
-                  <ArrowUpRight className="h-3 w-3 mr-1" />
-                ) : (
-                  <ArrowDownRight className="h-3 w-3 mr-1" />
-                )}
-                {trendValue}
-              </div>
-            )}
+          <div className="p-3.5 rounded-xl bg-indigo-50 border border-indigo-100/50">
+            <Icon className="h-6 w-6 text-indigo-600" />
           </div>
         </div>
       </CardContent>
@@ -629,199 +645,328 @@ export function AdminDashboard() {
   return (
     <div className="space-y-6 pb-20">
       <LogoutHandler />
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 font-heading">Dashboard</h1>
-          <p className="text-sm sm:text-base text-slate-600 font-body">Tổng quan hệ thống quản lý bài thi</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={handleRefresh} disabled={refreshing} className="btn-secondary flex-1 sm:flex-none">
-            <RefreshCw className={`h-4 w-4 sm:mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">Làm mới</span>
-          </Button>
-          <Link href="/admin/quiz/create" className="flex-1 sm:flex-none">
-            <Button variant="outline" className="btn-secondary w-full">
-              <Plus className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Tạo bài thi</span>
-            </Button>
-          </Link>
-          <Link href="/admin/quiz/quick" className="flex-1 sm:flex-none">
-            <Button className="btn-primary w-full">
-              <Plus className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Tạo nhanh</span>
-            </Button>
-          </Link>
-        </div>
-      </div>
-
-      {/* Tabs Navigation */}
+      {/* Optimized Header (No more redundant tabs) */}
+      {/* Tabs component for navigation */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 max-w-2xl">
-          <TabsTrigger value="overview">Tổng quan</TabsTrigger>
-          <TabsTrigger value="analytics">Thống kê</TabsTrigger>
-          <TabsTrigger value="results">Kết quả</TabsTrigger>
-          <TabsTrigger value="users">Học viên</TabsTrigger>
-        </TabsList>
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4 border-b border-slate-200 pb-6">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-1.5 h-6 bg-indigo-600 rounded-full" />
+              {/* Dynamic tab titles */}
+              <h2 className="text-2xl font-bold text-slate-900 tracking-tight uppercase">
+                {activeTab === 'overview' && 'Bảng tổng quan'}
+                {activeTab === 'analytics' && 'Phân tích số liệu'}
+                {activeTab === 'results' && 'Kết quả bài thi'}
+                {activeTab === 'users' && 'Quản lý học viên'}
+                {activeTab === 'categories' && 'Danh mục đề'}
+                {activeTab === 'notifications' && 'Thông báo hệ thống'}
+                {activeTab === 'comments' && 'Quản lý bình luận'}
+                {activeTab === 'settings' && 'Cấu hình hệ thống'}
+                {activeTab === 'logs' && 'Nhật ký hoạt động'}
+              </h2>
+            </div>
+            {/* Dynamic tab descriptions */}
+            <p className="text-sm font-medium text-slate-500 ml-3.5">
+              {activeTab === 'overview' && 'Giám sát hiệu suất và dữ liệu hệ thống thời gian thực'}
+              {activeTab === 'analytics' && 'Báo cáo chi tiết và thông số phân tích hiệu suất'}
+              {activeTab === 'results' && 'Theo dõi tiến độ và điểm số của học viên'}
+              {activeTab === 'users' && 'Quản lý và phân quyền tài khoản người dùng'}
+              {activeTab === 'categories' && 'Phân loại và tổ chức hệ thống các bài thi'}
+              {activeTab === 'notifications' && 'Gửi và quản lý thông báo toàn hệ thống'}
+              {activeTab === 'comments' && 'Kiểm duyệt và phản hồi ý kiến người dùng'}
+              {activeTab === 'settings' && 'Tùy chỉnh các tham số vận hành ứng dụng'}
+              {activeTab === 'logs' && 'Lịch sử chi tiết các hoạt động hệ thống'}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {/* Action buttons for specific tabs */}
+            {activeTab === 'results' && (
+              <div className="flex items-center gap-2 mr-2 pr-4 border-r border-slate-200">
+                <Button
+                  onClick={exportToCSV}
+                  variant="outline"
+                  size="sm"
+                  className="h-9 px-3 border-slate-200 hover:bg-slate-50 text-slate-600 font-bold text-[10px] uppercase tracking-wider"
+                  disabled={quizResults.length === 0}
+                >
+                  <FileSpreadsheet className="h-3.5 w-3.5 mr-2 text-green-600" />
+                  CSV
+                </Button>
+                <Button
+                  onClick={exportToExcel}
+                  variant="outline"
+                  size="sm"
+                  className="h-9 px-3 border-slate-200 hover:bg-slate-50 text-slate-600 font-bold text-[10px] uppercase tracking-wider"
+                  disabled={quizResults.length === 0}
+                >
+                  <Download className="h-3.5 w-3.5 mr-2 text-blue-600" />
+                  Excel
+                </Button>
+              </div>
+            )}
+            {activeTab === 'categories' && (
+              <Button
+                onClick={() => setAddCategoryTrigger(prev => prev + 1)}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs uppercase tracking-wider h-10 px-6 shadow-indigo-100 shadow-lg border-none"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Thêm danh mục
+              </Button>
+            )}
+
+            {activeTab === 'notifications' && (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setCleanupNotificationsTrigger(prev => prev + 1)}
+                  className="h-10 border-slate-200 text-slate-600 hover:bg-slate-50 font-bold text-xs uppercase tracking-wider bg-white"
+                >
+                  <Eraser className="h-4 w-4 mr-2" />
+                  Dọn dẹp
+                </Button>
+                <Button
+                  onClick={() => setAddNotificationTrigger(prev => prev + 1)}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs uppercase tracking-wider h-10 px-6 shadow-indigo-100 shadow-lg border-none"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Tạo thông báo
+                </Button>
+              </div>
+            )}
+            {activeTab === 'logs' && (
+              <Button
+                variant="outline"
+                onClick={() => setCleanupLogsTrigger(prev => prev + 1)}
+                className="h-10 border-slate-200 text-slate-600 hover:bg-slate-50 font-bold text-xs uppercase tracking-wider bg-white"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Dọn dẹp
+              </Button>
+            )}
+
+            <Button
+              variant="outline"
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="h-10 border-slate-200 text-slate-600 hover:bg-slate-50 rounded-lg font-bold text-xs uppercase tracking-wider bg-white"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+              Làm mới
+            </Button>
+          </div>
+        </div>
 
         {/* OVERVIEW TAB */}
         <TabsContent value="overview" className="space-y-6 mt-6">
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          title="Tổng bài thi"
-          value={stats.totalQuizzes}
-          subtitle={`${stats.trendsData.quizzesGrowth}% so với tháng trước`}
-          icon={BookOpen}
-          trend="up"
-          trendValue={`+${stats.trendsData.quizzesGrowth}%`}
-        />
-        <StatCard
-          title="Đang hoạt động"
-          value={stats.activeQuizzes}
-          icon={CheckCircle}
-        />
-        <StatCard
-          title="Lượt làm bài"
-          value={stats.totalAttempts}
-          subtitle={`${stats.trendsData.attemptsGrowth}% so với tháng trước`}
-          icon={TrendingUp}
-          trend="up"
-          trendValue={`+${stats.trendsData.attemptsGrowth}%`}
-        />
-        <StatCard
-          title="Điểm trung bình"
-          value={`${stats.avgScore}%`}
-          icon={Star}
-        />
-      </div>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <StatCard
+              title="Tổng bài thi"
+              value={stats.totalQuizzes}
+              subtitle={`${stats.trendsData.quizzesGrowth}% so với tháng trước`}
+              icon={BookOpen}
+              trend="up"
+              trendValue={`+${stats.trendsData.quizzesGrowth}%`}
+            />
+            <StatCard
+              title="Đang hoạt động"
+              value={stats.activeQuizzes}
+              icon={CheckCircle}
+            />
+            <StatCard
+              title="Lượt làm bài"
+              value={stats.totalAttempts}
+              subtitle={`${stats.trendsData.attemptsGrowth}% so với tháng trước`}
+              icon={TrendingUp}
+              trend="up"
+              trendValue={`+${stats.trendsData.attemptsGrowth}%`}
+            />
+            <StatCard
+              title="Điểm trung bình"
+              value={`${stats.avgScore}%`}
+              icon={Star}
+            />
+          </div>
 
-      {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Quizzes */}
-        <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-blue-600" />
-              Bài thi gần đây
-            </CardTitle>
-            <CardDescription>Danh sách các bài thi được tạo gần đây</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recentQuizzes.length === 0 ? (
-                <div className="text-center py-8 text-slate-500">
-                  <BookOpen className="h-12 w-12 mx-auto mb-4 text-slate-300" />
-                  <p>Chưa có bài thi nào</p>
+          {/* Main Content */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Recent Quizzes */}
+            <Card className="border border-slate-200/60 bg-white shadow-sm rounded-xl overflow-hidden hover:border-indigo-100 transition-all duration-300">
+              <CardHeader className="border-b border-slate-50 bg-slate-50/30">
+                <CardTitle className="flex items-center gap-2 text-slate-800 text-base font-bold uppercase tracking-tight">
+                  <BookOpen className="h-4.5 w-4.5 text-indigo-600" />
+                  Bài thi gần đây
+                </CardTitle>
+                <CardDescription className="text-xs font-medium text-slate-500 uppercase tracking-wider">Danh sách bài thi mới cập nhật</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {recentQuizzes.length === 0 ? (
+                    <div className="text-center py-8 text-slate-500">
+                      <BookOpen className="h-12 w-12 mx-auto mb-4 text-slate-300" />
+                      <p>Chưa có bài thi nào</p>
+                    </div>
+                  ) : (
+                    recentQuizzes.map((quiz) => (
+                      <div key={quiz.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50/50 hover:bg-slate-100/50 transition-colors">
+                        <div className="flex-1">
+                          <h4 className="font-medium text-slate-800">{quiz.title}</h4>
+                          <p className="text-sm text-slate-600">{quiz.questions?.length || 0} câu hỏi</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={quiz.isActive ? "default" : "secondary"}>
+                            {quiz.isActive ? "Hoạt động" : "Tạm dừng"}
+                          </Badge>
+                          <Link href={`/quiz/${quiz.id}`}>
+                            <Button variant="ghost" size="sm">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </Link>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
-              ) : (
-                recentQuizzes.map((quiz) => (
-                  <div key={quiz.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50/50 hover:bg-slate-100/50 transition-colors">
-                    <div className="flex-1">
-                      <h4 className="font-medium text-slate-800">{quiz.title}</h4>
-                      <p className="text-sm text-slate-600">{quiz.questions?.length || 0} câu hỏi</p>
+              </CardContent>
+            </Card>
+
+            {/* Top Quizzes */}
+            <Card className="border border-slate-200/60 bg-white shadow-sm rounded-xl overflow-hidden hover:border-indigo-100 transition-all duration-300">
+              <CardHeader className="border-b border-slate-50 bg-slate-50/30">
+                <CardTitle className="flex items-center gap-2 text-slate-800 text-base font-bold uppercase tracking-tight">
+                  <TrendingUp className="h-4.5 w-4.5 text-green-600" />
+                  Bài thi phổ biến
+                </CardTitle>
+                <CardDescription className="text-xs font-medium text-slate-500 uppercase tracking-wider">Top các bài thi được quan tâm</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {topQuizzes.length === 0 ? (
+                    <div className="text-center py-8 text-slate-500">
+                      <TrendingUp className="h-12 w-12 mx-auto mb-4 text-slate-300" />
+                      <p>Chưa có dữ liệu thống kê</p>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant={quiz.isActive ? "default" : "secondary"}>
-                        {quiz.isActive ? "Hoạt động" : "Tạm dừng"}
-                      </Badge>
-                      <Link href={`/quiz/${quiz.id}`}>
-                        <Button variant="ghost" size="sm">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </Link>
-                    </div>
+                  ) : (
+                    topQuizzes.map((quiz, index) => (
+                      <div key={quiz.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50/50 hover:bg-slate-100/50 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white flex items-center justify-center text-sm font-bold">
+                            {index + 1}
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-medium text-slate-800">{quiz.title}</h4>
+                            <p className="text-sm text-slate-600">{quiz.attemptCount} lượt làm</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-medium text-slate-800">{Math.round(quiz.avgScore)}%</p>
+                          <p className="text-xs text-slate-600">điểm TB</p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Recent Activity */}
+          <Card className="border border-slate-200/60 bg-white shadow-sm rounded-xl overflow-hidden hover:border-indigo-100 transition-all duration-300">
+            <CardHeader className="border-b border-slate-50 bg-slate-50/30">
+              <CardTitle className="flex items-center gap-2 text-slate-800 text-base font-bold uppercase tracking-tight">
+                <Activity className="h-4.5 w-4.5 text-purple-600" />
+                Hoạt động gần đây
+              </CardTitle>
+              <CardDescription className="text-xs font-medium text-slate-500 uppercase tracking-wider">Lịch sử tương tác hệ thống mới nhất</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {recentActivities.length === 0 ? (
+                  <div className="text-center py-8 text-slate-500">
+                    <Activity className="h-12 w-12 mx-auto mb-4 text-slate-300" />
+                    <p>Chưa có hoạt động nào</p>
                   </div>
-                ))
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Top Quizzes */}
-        <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-green-600" />
-              Bài thi phổ biến
-            </CardTitle>
-            <CardDescription>Top bài thi có nhiều lượt làm nhất</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {topQuizzes.length === 0 ? (
-                <div className="text-center py-8 text-slate-500">
-                  <TrendingUp className="h-12 w-12 mx-auto mb-4 text-slate-300" />
-                  <p>Chưa có dữ liệu thống kê</p>
-                </div>
-              ) : (
-                topQuizzes.map((quiz, index) => (
-                  <div key={quiz.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50/50 hover:bg-slate-100/50 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white flex items-center justify-center text-sm font-bold">
-                        {index + 1}
+                ) : (
+                  recentActivities.map((activity) => (
+                    <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg bg-slate-50/50 hover:bg-slate-100/50 transition-colors">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 text-white flex items-center justify-center text-sm">
+                        {activity.type === 'quiz_completed' && <CheckCircle className="h-4 w-4" />}
+                        {activity.type === 'quiz_created' && <Plus className="h-4 w-4" />}
+                        {activity.type === 'user_registered' && <Users className="h-4 w-4" />}
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-medium text-slate-800">{quiz.title}</h4>
-                        <p className="text-sm text-slate-600">{quiz.attemptCount} lượt làm</p>
+                        <p className="text-sm text-slate-800">{activity.description}</p>
+                        <p className="text-xs text-slate-500 mt-1">
+                          {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true, locale: vi })}
+                        </p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm font-medium text-slate-800">{Math.round(quiz.avgScore)}%</p>
-                      <p className="text-xs text-slate-600">điểm TB</p>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Recent Activity */}
-      <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Activity className="h-5 w-5 text-purple-600" />
-            Hoạt động gần đây
-          </CardTitle>
-          <CardDescription>Những hoạt động mới nhất trong hệ thống</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {recentActivities.length === 0 ? (
-              <div className="text-center py-8 text-slate-500">
-                <Activity className="h-12 w-12 mx-auto mb-4 text-slate-300" />
-                <p>Chưa có hoạt động nào</p>
+                  ))
+                )}
               </div>
-            ) : (
-              recentActivities.map((activity) => (
-                <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg bg-slate-50/50 hover:bg-slate-100/50 transition-colors">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 text-white flex items-center justify-center text-sm">
-                    {activity.type === 'quiz_completed' && <CheckCircle className="h-4 w-4" />}
-                    {activity.type === 'quiz_created' && <Plus className="h-4 w-4" />}
-                    {activity.type === 'user_registered' && <Users className="h-4 w-4" />}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-slate-800">{activity.description}</p>
-                    <p className="text-xs text-slate-500 mt-1">
-                      {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true, locale: vi })}
-                    </p>
-                  </div>
+            </CardContent>
+
+            {/* Pagination Controls */}
+            {selectedQuiz && sortedResults.length > 0 && (
+              <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                <div className="text-sm text-slate-500 font-medium">
+                  Hiển thị <span className="text-slate-900">{(currentPage - 1) * itemsPerPage + 1}</span> - <span className="text-slate-900">{Math.min(currentPage * itemsPerPage, sortedResults.length)}</span> trong tổng số <span className="text-slate-900">{sortedResults.length}</span> kết quả
                 </div>
-              ))
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(prev => prev - 1)}
+                    className="h-8 w-8 p-0"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+
+                  <div className="flex items-center gap-1">
+                    {[...Array(totalPages)].map((_, i) => {
+                      const pageNum = i + 1
+                      // Only show page numbers if there are not too many, otherwise we could add elipsis
+                      if (totalPages <= 5 || pageNum === 1 || pageNum === totalPages || (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)) {
+                        return (
+                          <Button
+                            key={pageNum}
+                            variant={currentPage === pageNum ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setCurrentPage(pageNum)}
+                            className={`h-8 w-8 p-0 text-xs font-bold ${currentPage === pageNum ? 'bg-indigo-600 shadow-md shadow-indigo-100' : ''}`}
+                          >
+                            {pageNum}
+                          </Button>
+                        )
+                      } else if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
+                        return <span key={pageNum} className="px-1 text-slate-400">...</span>
+                      }
+                      return null
+                    })}
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage(prev => prev + 1)}
+                    className="h-8 w-8 p-0"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
             )}
-          </div>
-        </CardContent>
-      </Card>
+          </Card>
         </TabsContent>
 
         {/* ANALYTICS TAB */}
         <TabsContent value="analytics" className="space-y-6 mt-6">
-          {/* Date Range Filter */}
-          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-            <h2 className="text-xl font-bold text-slate-800">Phân tích chi tiết</h2>
+          {/* Date Range Filter (Title handled by parent AdminDashboard) */}
+          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-end mb-4">
             <Select value={dateRange} onValueChange={(v: any) => setDateRange(v)}>
               <SelectTrigger className="w-full sm:w-48">
                 <SelectValue />
@@ -853,28 +998,26 @@ export function AdminDashboard() {
                   </div>
                 ) : (
                   topPerformers.map((performer, index) => (
-                    <div 
-                      key={performer.userId} 
-                      className={`flex items-center gap-4 p-4 rounded-lg transition-all ${
-                        index < 3 
-                          ? 'bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200' 
-                          : 'bg-slate-50 hover:bg-slate-100'
-                      }`}
+                    <div
+                      key={performer.userId}
+                      className={`flex items-center gap-4 p-4 rounded-lg transition-all ${index < 3
+                        ? 'bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200'
+                        : 'bg-slate-50 hover:bg-slate-100'
+                        }`}
                     >
-                      <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg ${
-                        index === 0 ? 'bg-gradient-to-br from-yellow-400 to-yellow-600' :
+                      <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg ${index === 0 ? 'bg-gradient-to-br from-yellow-400 to-yellow-600' :
                         index === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500' :
-                        index === 2 ? 'bg-gradient-to-br from-orange-400 to-orange-600' :
-                        'bg-gradient-to-br from-blue-400 to-blue-600'
-                      }`}>
+                          index === 2 ? 'bg-gradient-to-br from-orange-400 to-orange-600' :
+                            'bg-gradient-to-br from-blue-400 to-blue-600'
+                        }`}>
                         {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
                       </div>
-                      
+
                       <div className="flex-1 min-w-0">
                         <h4 className="font-bold text-slate-900">{performer.userName}</h4>
                         <p className="text-sm text-slate-600 truncate">{performer.userEmail}</p>
                       </div>
-                      
+
                       <div className="flex items-center gap-6">
                         <div className="text-center">
                           <p className="text-xs text-slate-500 mb-1">Điểm TB</p>
@@ -903,21 +1046,19 @@ export function AdminDashboard() {
               {/* Mobile View */}
               <div className="md:hidden space-y-3">
                 {topPerformers.slice(0, 5).map((performer, index) => (
-                  <div 
+                  <div
                     key={performer.userId}
-                    className={`p-4 rounded-lg ${
-                      index < 3 
-                        ? 'bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200' 
-                        : 'bg-slate-50'
-                    }`}
+                    className={`p-4 rounded-lg ${index < 3
+                      ? 'bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200'
+                      : 'bg-slate-50'
+                      }`}
                   >
                     <div className="flex items-center gap-3 mb-3">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${
-                        index === 0 ? 'bg-gradient-to-br from-yellow-400 to-yellow-600' :
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${index === 0 ? 'bg-gradient-to-br from-yellow-400 to-yellow-600' :
                         index === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500' :
-                        index === 2 ? 'bg-gradient-to-br from-orange-400 to-orange-600' :
-                        'bg-gradient-to-br from-blue-400 to-blue-600'
-                      }`}>
+                          index === 2 ? 'bg-gradient-to-br from-orange-400 to-orange-600' :
+                            'bg-gradient-to-br from-blue-400 to-blue-600'
+                        }`}>
                         {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -965,13 +1106,13 @@ export function AdminDashboard() {
                   dailyActivities.map((activity) => {
                     const maxAttempts = Math.max(...dailyActivities.map(a => a.attempts))
                     const barWidth = maxAttempts > 0 ? (activity.attempts / maxAttempts) * 100 : 0
-                    
+
                     return (
                       <div key={activity.date} className="space-y-1">
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-slate-600 font-medium">
-                            {new Date(activity.date).toLocaleDateString('vi-VN', { 
-                              day: '2-digit', 
+                            {new Date(activity.date).toLocaleDateString('vi-VN', {
+                              day: '2-digit',
                               month: '2-digit',
                               year: dateRange === "all" ? '2-digit' : undefined
                             })}
@@ -986,7 +1127,7 @@ export function AdminDashboard() {
                           </div>
                         </div>
                         <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
-                          <div 
+                          <div
                             className="bg-gradient-to-r from-blue-500 to-purple-600 h-2.5 rounded-full transition-all duration-500"
                             style={{ width: `${barWidth}%` }}
                           />
@@ -1027,7 +1168,7 @@ export function AdminDashboard() {
                     const minScore = quizAttempts.length > 0
                       ? Math.min(...quizAttempts.map(a => a.score))
                       : 0
-                    
+
                     return (
                       <div key={quiz.id} className="p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors">
                         <div className="flex items-start justify-between mb-3">
@@ -1039,7 +1180,7 @@ export function AdminDashboard() {
                             {quiz.isActive ? "Hoạt động" : "Tạm dừng"}
                           </Badge>
                         </div>
-                        
+
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                           <div className="text-center p-2 rounded bg-blue-50">
                             <p className="text-xs text-slate-600 mb-1">Lượt thi</p>
@@ -1081,7 +1222,7 @@ export function AdminDashboard() {
                 const good = allAttempts.filter(a => a.score >= 50 && a.score < 80).length
                 const poor = allAttempts.filter(a => a.score < 50).length
                 const total = allAttempts.length
-                
+
                 return (
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -1095,7 +1236,7 @@ export function AdminDashboard() {
                           {total > 0 ? Math.round((excellent / total) * 100) : 0}% tổng số
                         </p>
                       </div>
-                      
+
                       <div className="p-4 rounded-lg bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-200">
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-sm font-medium text-orange-700">Khá (50-79%)</span>
@@ -1106,7 +1247,7 @@ export function AdminDashboard() {
                           {total > 0 ? Math.round((good / total) * 100) : 0}% tổng số
                         </p>
                       </div>
-                      
+
                       <div className="p-4 rounded-lg bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-200">
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-sm font-medium text-red-700">Yếu (&lt;50%)</span>
@@ -1118,7 +1259,7 @@ export function AdminDashboard() {
                         </p>
                       </div>
                     </div>
-                    
+
                     {total > 0 && (
                       <div className="space-y-2">
                         <div className="flex items-center justify-between text-sm">
@@ -1126,17 +1267,17 @@ export function AdminDashboard() {
                           <span className="font-bold text-slate-900">{total}</span>
                         </div>
                         <div className="w-full h-4 bg-slate-100 rounded-full overflow-hidden flex">
-                          <div 
+                          <div
                             className="bg-green-500 h-full"
                             style={{ width: `${(excellent / total) * 100}%` }}
                             title={`Xuất sắc: ${excellent}`}
                           />
-                          <div 
+                          <div
                             className="bg-orange-500 h-full"
                             style={{ width: `${(good / total) * 100}%` }}
                             title={`Khá: ${good}`}
                           />
-                          <div 
+                          <div
                             className="bg-red-500 h-full"
                             style={{ width: `${(poor / total) * 100}%` }}
                             title={`Yếu: ${poor}`}
@@ -1153,78 +1294,55 @@ export function AdminDashboard() {
 
         {/* RESULTS TAB */}
         <TabsContent value="results" className="space-y-6 mt-6">
-          <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
-            <CardHeader className="pb-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <CardTitle className="text-xl sm:text-2xl">Bảng điểm chi tiết</CardTitle>
-                  <CardDescription className="mt-1">Xem và xuất kết quả theo bài thi</CardDescription>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    onClick={exportToCSV}
-                    variant="outline"
-                    size="sm"
-                    className="flex-1 sm:flex-none"
-                    disabled={quizResults.length === 0}
-                  >
-                    <FileSpreadsheet className="h-4 w-4 mr-2" />
-                    CSV
-                  </Button>
-                  <Button
-                    onClick={exportToExcel}
-                    variant="outline"
-                    size="sm"
-                    className="flex-1 sm:flex-none"
-                    disabled={quizResults.length === 0}
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Excel
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Filters Row 1 */}
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Select value={selectedQuiz} onValueChange={setSelectedQuiz}>
-                  <SelectTrigger className="w-full sm:w-64">
-                    <SelectValue placeholder="Chọn bài thi" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {allQuizzes.length === 0 ? (
-                      <SelectItem value="none" disabled>Chưa có bài thi</SelectItem>
-                    ) : (
-                      allQuizzes.map(quiz => (
-                        <SelectItem key={quiz.id} value={quiz.id}>
-                          {quiz.title}
-                        </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
-
-                <div className="flex gap-2 flex-1">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-                    <Input
-                      placeholder="Tìm kiếm học viên..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-
-                  <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
-                    <SelectTrigger className="w-24 sm:w-32">
-                      <SelectValue />
+          <Card className="border border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-sm rounded-xl">
+            <CardContent className="p-6 space-y-6">
+              {/* Primary Filter Toolbar */}
+              <div className="flex flex-col lg:flex-row gap-4">
+                <div className="w-full lg:w-72">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Chọn bài thi mẫu</p>
+                  <Select value={selectedQuiz} onValueChange={setSelectedQuiz}>
+                    <SelectTrigger className="h-11 bg-white border-slate-200 shadow-sm">
+                      <SelectValue placeholder="Chọn bài thi" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="score">Điểm</SelectItem>
-                      <SelectItem value="date">Ngày</SelectItem>
-                      <SelectItem value="name">Tên</SelectItem>
+                    <SelectContent position="popper" className="z-[100] bg-white border-slate-200 shadow-xl" sideOffset={4}>
+                      {allQuizzes.length === 0 ? (
+                        <SelectItem value="none" disabled>Chưa có bài thi</SelectItem>
+                      ) : (
+                        allQuizzes.map(quiz => (
+                          <SelectItem key={quiz.id} value={quiz.id}>
+                            {quiz.title}
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
+                </div>
+
+                <div className="flex-1 flex flex-col sm:flex-row gap-4 items-end">
+                  <div className="w-full">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Tìm kiếm & Phân loại</p>
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                        <Input
+                          placeholder="Tìm học viên (Tên hoặc Email)..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="h-11 pl-10 bg-white border-slate-200 shadow-sm"
+                        />
+                      </div>
+                      <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+                        <SelectTrigger className="h-11 w-32 bg-white border-slate-200 shadow-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent position="popper" className="z-[100] bg-white border-slate-200 shadow-xl" sideOffset={4}>
+                          <SelectItem value="score">Điểm số</SelectItem>
+                          <SelectItem value="date">Ngày thi</SelectItem>
+                          <SelectItem value="name">Tên</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -1242,7 +1360,7 @@ export function AdminDashboard() {
                     className="h-9"
                   />
                 </div>
-                
+
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-slate-600">Điểm đến</label>
                   <Input
@@ -1259,14 +1377,15 @@ export function AdminDashboard() {
                 <div className="space-y-1 col-span-2">
                   <label className="text-xs font-medium text-slate-600">Lọc lần thi</label>
                   <Select value={attemptFilter} onValueChange={(value: any) => setAttemptFilter(value)}>
-                    <SelectTrigger className="h-9">
+                    <SelectTrigger className="h-9 bg-white border-slate-200">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Tất cả lần thi</SelectItem>
-                      <SelectItem value="first">Lần đầu tiên</SelectItem>
-                      <SelectItem value="last">Lần gần nhất</SelectItem>
-                      <SelectItem value="best">Điểm cao nhất</SelectItem>
+                    <SelectContent position="popper" className="z-[100] bg-white border-slate-200 shadow-xl" sideOffset={4}>
+                      <SelectItem value="best">Điểm cao nhất (Mỗi người 1 dòng)</SelectItem>
+                      <SelectItem value="last">Lần thi cuối (Mỗi người 1 dòng)</SelectItem>
+                      <SelectItem value="grouped">Báo cáo tổng hợp (Theo học viên)</SelectItem>
+                      <SelectItem value="all">Lịch sử chi tiết (Tất cả lượt thi)</SelectItem>
+                      <SelectItem value="first">Lần thi đầu tiên</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -1307,10 +1426,10 @@ export function AdminDashboard() {
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-slate-50">
-                        <TableHead className="w-16">STT</TableHead>
+                        <TableHead className="w-16 text-center">STT</TableHead>
                         <TableHead>Họ và tên</TableHead>
                         <TableHead>Email</TableHead>
-                        <TableHead className="text-center">Lần thi</TableHead>
+                        <TableHead className="text-center">{attemptFilter === 'grouped' ? 'Số lượt thi' : 'Lần thi'}</TableHead>
                         <TableHead className="text-center">Điểm</TableHead>
                         <TableHead className="text-center">Cao nhất</TableHead>
                         <TableHead className="text-center">Đúng/Tổng</TableHead>
@@ -1325,31 +1444,36 @@ export function AdminDashboard() {
                             Vui lòng chọn bài thi
                           </TableCell>
                         </TableRow>
-                      ) : sortedResults.length === 0 ? (
+                      ) : paginatedResults.length === 0 ? (
                         <TableRow>
                           <TableCell colSpan={9} className="text-center py-8 text-slate-500">
                             Chưa có kết quả nào
                           </TableCell>
                         </TableRow>
                       ) : (
-                        sortedResults.map((result, index) => {
+                        paginatedResults.map((result, index) => {
                           const isBestScore = result.score === result.userBestScore
                           const scoreImprovement = result.userBestScore && result.score < result.userBestScore
-                          
+                          const globalIndex = (currentPage - 1) * itemsPerPage + index + 1
+
                           return (
                             <TableRow key={`${result.userId}-${result.completedAt}-${index}`} className="hover:bg-slate-50">
-                              <TableCell className="font-medium">{index + 1}</TableCell>
+                              <TableCell className="font-medium">{globalIndex}</TableCell>
                               <TableCell className="font-medium">{result.userName}</TableCell>
                               <TableCell className="text-slate-600">{result.userEmail}</TableCell>
                               <TableCell className="text-center">
-                                <Badge variant="outline" className="font-medium">
-                                  <Hash className="h-3 w-3 mr-1" />
-                                  {result.attemptNumber || 1}
+                                <Badge variant={attemptFilter === 'grouped' ? "secondary" : "outline"} className="font-medium">
+                                  {attemptFilter === 'grouped' ? (
+                                    <Activity className="h-3 w-3 mr-1" />
+                                  ) : (
+                                    <Hash className="h-3 w-3 mr-1" />
+                                  )}
+                                  {attemptFilter === 'grouped' ? `${result.attemptNumber} lượt` : `# ${result.attemptNumber || 1}`}
                                 </Badge>
                               </TableCell>
                               <TableCell className="text-center">
                                 <div className="flex items-center justify-center gap-1">
-                                  <Badge 
+                                  <Badge
                                     variant={result.score >= 80 ? "default" : result.score >= 50 ? "secondary" : "destructive"}
                                     className="font-bold"
                                   >
@@ -1391,20 +1515,21 @@ export function AdminDashboard() {
                     <div className="p-8 text-center text-slate-500">
                       Vui lòng chọn bài thi
                     </div>
-                  ) : sortedResults.length === 0 ? (
+                  ) : paginatedResults.length === 0 ? (
                     <div className="p-8 text-center text-slate-500">
                       Chưa có kết quả nào
                     </div>
                   ) : (
-                    sortedResults.map((result, index) => {
+                    paginatedResults.map((result, index) => {
                       const isBestScore = result.score === result.userBestScore
-                      
+                      const globalIndex = (currentPage - 1) * itemsPerPage + index + 1
+
                       return (
                         <div key={`${result.userId}-${result.completedAt}-${index}`} className="p-4 hover:bg-slate-50">
                           <div className="flex items-start justify-between mb-2">
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-1">
-                                <span className="text-xs font-semibold text-slate-500">#{index + 1}</span>
+                                <span className="text-xs font-semibold text-slate-500">#{globalIndex}</span>
                                 <h4 className="font-semibold text-slate-900 truncate">{result.userName}</h4>
                                 {result.attemptNumber && result.attemptNumber > 1 && (
                                   <Badge variant="outline" className="text-xs">
@@ -1418,7 +1543,7 @@ export function AdminDashboard() {
                               <p className="text-sm text-slate-600 truncate">{result.userEmail}</p>
                             </div>
                             <div className="ml-2 flex flex-col gap-1">
-                              <Badge 
+                              <Badge
                                 variant={result.score >= 80 ? "default" : result.score >= 50 ? "secondary" : "destructive"}
                                 className="font-bold"
                               >
@@ -1443,12 +1568,62 @@ export function AdminDashboard() {
                 </div>
               </div>
 
-              {sortedResults.length > 0 && (
-                <div className="text-sm text-slate-600 text-center">
-                  Hiển thị {sortedResults.length} kết quả
-                </div>
-              )}
             </CardContent>
+
+            {/* Pagination Controls */}
+            {selectedQuiz && sortedResults.length > 0 && (
+              <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                <div className="hidden sm:block text-sm text-slate-500 font-medium">
+                  Hiển thị <span className="text-slate-900">{(currentPage - 1) * itemsPerPage + 1}</span> - <span className="text-slate-900">{Math.min(currentPage * itemsPerPage, sortedResults.length)}</span> trong tổng số <span className="text-slate-900">{sortedResults.length}</span> kết quả
+                </div>
+                <div className="flex items-center gap-1.5 ml-auto sm:ml-0">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(prev => prev - 1)}
+                    className="h-8 w-8 p-0 border-slate-200"
+                  >
+                    <ChevronLeft className="h-4 w-4 text-slate-600" />
+                  </Button>
+
+                  <div className="flex items-center gap-1">
+                    {[...Array(totalPages)].map((_, i) => {
+                      const pageNum = i + 1
+                      if (totalPages <= 5 || pageNum === 1 || pageNum === totalPages || (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)) {
+                        return (
+                          <Button
+                            key={pageNum}
+                            variant={currentPage === pageNum ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setCurrentPage(pageNum)}
+                            className={`h-8 min-w-[32px] px-2 text-xs font-bold transition-all ${currentPage === pageNum
+                              ? 'bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-100'
+                              : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                              }`}
+                          >
+                            {pageNum}
+                          </Button>
+                        )
+                      } else if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
+                        return <span key={pageNum} className="px-1 text-slate-400">...</span>
+                      }
+                      return null
+                    })}
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage(prev => prev + 1)}
+                    className="h-8 w-8 p-0 border-slate-200"
+                  >
+                    <ChevronRight className="h-4 w-4 text-slate-600" />
+                  </Button>
+                </div>
+              </div>
+            )}
           </Card>
         </TabsContent>
 
@@ -1456,14 +1631,7 @@ export function AdminDashboard() {
         <TabsContent value="users" className="space-y-6 mt-6">
           <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
             <CardHeader>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5 text-blue-600" />
-                    Danh sách học viên
-                  </CardTitle>
-                  <CardDescription>Quản lý người dùng trong hệ thống</CardDescription>
-                </div>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-end gap-4">
                 <div className="flex gap-2">
                   <Input
                     placeholder="Tìm kiếm..."
@@ -1501,8 +1669,8 @@ export function AdminDashboard() {
                     {allUsers.filter(u => {
                       const userDate = new Date(u.createdAt)
                       const now = new Date()
-                      return userDate.getMonth() === now.getMonth() && 
-                             userDate.getFullYear() === now.getFullYear()
+                      return userDate.getMonth() === now.getMonth() &&
+                        userDate.getFullYear() === now.getFullYear()
                     }).length}
                   </p>
                 </div>
@@ -1532,7 +1700,7 @@ export function AdminDashboard() {
                       </TableRow>
                     ) : (
                       allUsers
-                        .filter(user => 
+                        .filter(user =>
                           user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           user.email.toLowerCase().includes(searchTerm.toLowerCase())
                         )
@@ -1541,10 +1709,10 @@ export function AdminDashboard() {
                           const avgScore = userAttempts.length > 0
                             ? Math.round(userAttempts.reduce((sum, a) => sum + a.score, 0) / userAttempts.length)
                             : 0
-                          
+
                           return (
-                            <TableRow 
-                              key={user.id} 
+                            <TableRow
+                              key={user.id}
                               className="hover:bg-slate-50 transition-colors border-b border-slate-100"
                             >
                               <TableCell className="font-medium text-slate-700">
@@ -1562,11 +1730,12 @@ export function AdminDashboard() {
                                 {user.email}
                               </TableCell>
                               <TableCell className="text-center">
-                                <Badge 
-                                  variant={user.role === 0 ? "default" : "secondary"}
-                                  className={user.role === 0 ? "bg-gradient-to-r from-blue-500 to-blue-600" : ""}
+                                <Badge
+                                  className={user.role === 0
+                                    ? "bg-indigo-50 text-indigo-700 border-indigo-100 text-[10px] uppercase font-bold"
+                                    : "bg-slate-50 text-slate-600 border-slate-100 text-[10px] uppercase font-bold"}
                                 >
-                                  {user.role === 0 ? "👑 Admin" : "👨‍🎓 Học viên"}
+                                  {user.role === 0 ? "Admin" : "Học viên"}
                                 </Badge>
                               </TableCell>
                               <TableCell className="text-center">
@@ -1576,7 +1745,7 @@ export function AdminDashboard() {
                               </TableCell>
                               <TableCell className="text-center">
                                 {userAttempts.length > 0 ? (
-                                  <Badge 
+                                  <Badge
                                     variant={avgScore >= 80 ? "default" : avgScore >= 50 ? "secondary" : "destructive"}
                                     className="font-bold text-sm"
                                   >
@@ -1613,7 +1782,7 @@ export function AdminDashboard() {
                   </div>
                 ) : (
                   allUsers
-                    .filter(user => 
+                    .filter(user =>
                       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                       user.email.toLowerCase().includes(searchTerm.toLowerCase())
                     )
@@ -1622,10 +1791,10 @@ export function AdminDashboard() {
                       const avgScore = userAttempts.length > 0
                         ? Math.round(userAttempts.reduce((sum, a) => sum + a.score, 0) / userAttempts.length)
                         : 0
-                      
+
                       return (
-                        <div 
-                          key={user.id} 
+                        <div
+                          key={user.id}
                           className="p-4 rounded-lg border border-slate-200 bg-white hover:shadow-md transition-shadow"
                         >
                           <div className="flex items-start gap-3 mb-3">
@@ -1638,15 +1807,16 @@ export function AdminDashboard() {
                                 <h4 className="font-bold text-slate-900 truncate">{user.name}</h4>
                               </div>
                               <p className="text-sm text-slate-600 truncate">{user.email}</p>
-                              <Badge 
-                                variant={user.role === 0 ? "default" : "secondary"}
-                                className="mt-2"
+                              <Badge
+                                className={user.role === 0
+                                  ? "bg-indigo-50 text-indigo-700 border-indigo-100 text-[10px] uppercase font-extrabold mt-2"
+                                  : "bg-slate-50 text-slate-600 border-slate-100 text-[10px] uppercase font-extrabold mt-2"}
                               >
-                                {user.role === 0 ? "👑 Admin" : "👨‍🎓 Học viên"}
+                                {user.role === 0 ? "Admin" : "Học viên"}
                               </Badge>
                             </div>
                           </div>
-                          
+
                           <div className="grid grid-cols-3 gap-2 pt-3 border-t border-slate-100">
                             <div className="text-center">
                               <p className="text-xs text-slate-500 mb-1">Bài thi</p>
@@ -1655,10 +1825,9 @@ export function AdminDashboard() {
                             <div className="text-center">
                               <p className="text-xs text-slate-500 mb-1">Điểm TB</p>
                               {userAttempts.length > 0 ? (
-                                <p className={`text-lg font-bold ${
-                                  avgScore >= 80 ? 'text-green-600' : 
+                                <p className={`text-lg font-bold ${avgScore >= 80 ? 'text-green-600' :
                                   avgScore >= 50 ? 'text-orange-600' : 'text-red-600'
-                                }`}>
+                                  }`}>
                                   {avgScore}%
                                 </p>
                               ) : (
@@ -1668,9 +1837,9 @@ export function AdminDashboard() {
                             <div className="text-center">
                               <p className="text-xs text-slate-500 mb-1">Đăng ký</p>
                               <p className="text-xs font-medium text-slate-600">
-                                {new Date(user.createdAt).toLocaleDateString("vi-VN", { 
-                                  day: '2-digit', 
-                                  month: '2-digit' 
+                                {new Date(user.createdAt).toLocaleDateString("vi-VN", {
+                                  day: '2-digit',
+                                  month: '2-digit'
                                 })}
                               </p>
                             </div>
@@ -1684,7 +1853,7 @@ export function AdminDashboard() {
               {/* Footer */}
               {allUsers.length > 0 && (
                 <div className="mt-6 pt-4 border-t border-slate-200 text-center text-sm text-slate-600">
-                  Hiển thị {allUsers.filter(user => 
+                  Hiển thị {allUsers.filter(user =>
                     user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                     user.email.toLowerCase().includes(searchTerm.toLowerCase())
                   ).length} / {allUsers.length} người dùng
@@ -1692,6 +1861,34 @@ export function AdminDashboard() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* CATEGORIES TAB */}
+        <TabsContent value="categories" className="mt-6">
+          <CategoriesManagement addTrigger={addCategoryTrigger} />
+        </TabsContent>
+
+        {/* NOTIFICATIONS TAB */}
+        <TabsContent value="notifications" className="mt-6">
+          <NotificationsManagement
+            addTrigger={addNotificationTrigger}
+            cleanupTrigger={cleanupNotificationsTrigger}
+          />
+        </TabsContent>
+
+        {/* COMMENTS TAB */}
+        <TabsContent value="comments" className="mt-6">
+          <CommentsManagement />
+        </TabsContent>
+
+        {/* SETTINGS TAB */}
+        <TabsContent value="settings" className="mt-6">
+          <SettingsManagement />
+        </TabsContent>
+
+        {/* AUDIT LOGS TAB */}
+        <TabsContent value="logs" className="mt-6">
+          <AuditLogs cleanupTrigger={cleanupLogsTrigger} />
         </TabsContent>
       </Tabs>
     </div>

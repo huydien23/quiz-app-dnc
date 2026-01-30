@@ -15,6 +15,7 @@ import { LeaderboardService } from "@/lib/leaderboard-service"
 import type { Quiz, QuizAttempt } from "@/lib/types"
 import { Trophy, CheckCircle, XCircle, RotateCcw, Home, ArrowUp, Crown, Medal, Award, Users } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
+import { StudentComments } from "@/components/student"
 
 export const dynamic = 'force-dynamic'
 
@@ -33,7 +34,7 @@ export default function QuizResultPage() {
   const [mounted, setMounted] = useState(false)
   // Hide review by default; user can reveal with a button
   const [showReview, setShowReview] = useState(false)
-  
+
   // Leaderboard data
   const [quizLeaderboard, setQuizLeaderboard] = useState<any[]>([])
   const [userRankInfo, setUserRankInfo] = useState<any>(null)
@@ -63,7 +64,7 @@ export default function QuizResultPage() {
       if (!user || !quizId) {
         return
       }
-      
+
       try {
         setLeaderboardLoading(true)
         const [leaderboard, rankInfo] = await Promise.all([
@@ -78,7 +79,7 @@ export default function QuizResultPage() {
         setLeaderboardLoading(false)
       }
     }
-    
+
     if (user && quizId) {
       loadLeaderboard()
     }
@@ -161,12 +162,11 @@ export default function QuizResultPage() {
           {/* Main Result Card - Redesigned */}
           <Card className="mb-6 border-0 bg-white/90 backdrop-blur-sm shadow-2xl animate-in fade-in-50 duration-500 delay-100 overflow-hidden">
             {/* Gradient top border */}
-            <div className={`h-2 ${
-              percentage >= 80 ? 'bg-gradient-to-r from-green-500 to-emerald-600' :
+            <div className={`h-2 ${percentage >= 80 ? 'bg-gradient-to-r from-green-500 to-emerald-600' :
               percentage >= 60 ? 'bg-gradient-to-r from-yellow-500 to-orange-600' :
-              'bg-gradient-to-r from-red-500 to-pink-600'
-            }`} />
-            
+                'bg-gradient-to-r from-red-500 to-pink-600'
+              }`} />
+
             <CardHeader className="text-center pb-4">
               {/* Big score display */}
               <div className="mb-4">
@@ -180,18 +180,17 @@ export default function QuizResultPage() {
                   {(correctCount * 0.25).toFixed(2)}<span className="text-slate-400">/</span>10 điểm
                 </div>
               </div>
-              
+
               {/* Badge */}
               <div className="flex justify-center mb-3">
-                <Badge className={`px-4 py-1.5 text-sm sm:text-base font-semibold ${
-                  percentage >= 80 ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white' :
+                <Badge className={`px-4 py-1.5 text-sm sm:text-base font-semibold ${percentage >= 80 ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white' :
                   percentage >= 60 ? 'bg-gradient-to-r from-yellow-500 to-orange-600 text-white' :
-                  'bg-gradient-to-r from-red-500 to-pink-600 text-white'
-                }`}>
+                    'bg-gradient-to-r from-red-500 to-pink-600 text-white'
+                  }`}>
                   {percentage >= 80 ? "🎉 Xuất sắc" : percentage >= 60 ? "👍 Khá tốt" : "💪 Cần cải thiện"}
                 </Badge>
               </div>
-              
+
               <CardDescription className="text-base sm:text-lg text-slate-700 font-medium">
                 {getResultMessage()}
               </CardDescription>
@@ -240,12 +239,12 @@ export default function QuizResultPage() {
                 <span className="hidden sm:inline">Làm lại</span>
               </Button>
             </Link>
-            <Button 
+            <Button
               onClick={() => {
                 const leaderboardSection = document.getElementById('quiz-leaderboard')
                 leaderboardSection?.scrollIntoView({ behavior: 'smooth', block: 'start' })
               }}
-              variant="outline" 
+              variant="outline"
               className="w-full h-11 sm:h-12 text-xs sm:text-base btn-secondary hover:shadow-lg transition-all"
             >
               <Trophy className="h-4 w-4 sm:mr-2" />
@@ -281,18 +280,18 @@ export default function QuizResultPage() {
               </div>
             </CardHeader>
             <CardContent className="p-4 sm:p-6">{leaderboardLoading ? (
-                  <div className="text-center py-8">
-                    <Trophy className="h-12 w-12 animate-pulse text-yellow-500 mx-auto mb-4" />
-                    <p className="text-slate-600">Đang tải bảng xếp hạng...</p>
-                  </div>
-                ) : quizLeaderboard.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Users className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-                    <p className="text-slate-600 font-medium">Chưa có người dùng nào hoàn thành bài thi này</p>
-                    <p className="text-slate-500 text-sm mt-2">Hãy là người đầu tiên xuất hiện trên bảng xếp hạng!</p>
-                  </div>
-                ) : (
-                  <>
+              <div className="text-center py-8">
+                <Trophy className="h-12 w-12 animate-pulse text-yellow-500 mx-auto mb-4" />
+                <p className="text-slate-600">Đang tải bảng xếp hạng...</p>
+              </div>
+            ) : quizLeaderboard.length === 0 ? (
+              <div className="text-center py-8">
+                <Users className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+                <p className="text-slate-600 font-medium">Chưa có người dùng nào hoàn thành bài thi này</p>
+                <p className="text-slate-500 text-sm mt-2">Hãy là người đầu tiên xuất hiện trên bảng xếp hạng!</p>
+              </div>
+            ) : (
+              <>
                 {/* User's rank info */}
                 {userRankInfo && (
                   <div className="mb-4 p-4 rounded-xl bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200">
@@ -333,7 +332,7 @@ export default function QuizResultPage() {
                           if (rank === 2) return 'from-gray-300 to-gray-500'
                           return 'from-amber-400 to-amber-600'
                         }
-                        
+
                         const getRankIcon = (rank: number) => {
                           if (rank === 1) return <Crown className="h-4 w-4 text-white" />
                           if (rank === 2) return <Medal className="h-4 w-4 text-white" />
@@ -343,15 +342,14 @@ export default function QuizResultPage() {
                         const isCurrentUser = entry.userId === user?.id
 
                         return (
-                          <div 
+                          <div
                             key={entry.userId}
-                            className={`flex items-center justify-between p-3 rounded-lg transition-all ${
-                              isCurrentUser 
-                                ? 'bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-300 shadow-md' 
-                                : index === 0 
-                                  ? 'bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200'
-                                  : 'bg-slate-50 border border-slate-200'
-                            }`}
+                            className={`flex items-center justify-between p-3 rounded-lg transition-all ${isCurrentUser
+                              ? 'bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-300 shadow-md'
+                              : index === 0
+                                ? 'bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200'
+                                : 'bg-slate-50 border border-slate-200'
+                              }`}
                           >
                             <div className="flex items-center gap-3 flex-1 min-w-0">
                               <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${getRankColor(entry.rank)} flex items-center justify-center shadow-md flex-shrink-0`}>
@@ -408,21 +406,19 @@ export default function QuizResultPage() {
                           return (
                             <div
                               key={entry.userId}
-                              className={`flex items-center justify-between p-3 rounded-lg transition-all ${
-                                isCurrentUser
-                                  ? 'bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-300 shadow-md'
-                                  : isTop3
-                                    ? 'bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200'
-                                    : 'bg-slate-50 hover:bg-slate-100'
-                              }`}
+                              className={`flex items-center justify-between p-3 rounded-lg transition-all ${isCurrentUser
+                                ? 'bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-300 shadow-md'
+                                : isTop3
+                                  ? 'bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200'
+                                  : 'bg-slate-50 hover:bg-slate-100'
+                                }`}
                             >
                               <div className="flex items-center gap-3 flex-1 min-w-0">
-                                <div className={`w-10 h-10 rounded-full ${
-                                  entry.rank === 1 ? 'bg-gradient-to-br from-yellow-400 to-yellow-600' :
+                                <div className={`w-10 h-10 rounded-full ${entry.rank === 1 ? 'bg-gradient-to-br from-yellow-400 to-yellow-600' :
                                   entry.rank === 2 ? 'bg-gradient-to-br from-gray-300 to-gray-500' :
-                                  entry.rank === 3 ? 'bg-gradient-to-br from-amber-400 to-amber-600' :
-                                  'bg-slate-300'
-                                } flex items-center justify-center text-white font-bold text-sm shadow-md flex-shrink-0`}>
+                                    entry.rank === 3 ? 'bg-gradient-to-br from-amber-400 to-amber-600' :
+                                      'bg-slate-300'
+                                  } flex items-center justify-center text-white font-bold text-sm shadow-md flex-shrink-0`}>
                                   {entry.rank}
                                 </div>
                                 <div className="flex-1 min-w-0">
@@ -450,15 +446,15 @@ export default function QuizResultPage() {
                     </div>
                   </SheetContent>
                 </Sheet>
-                </>
-              )}
+              </>
+            )}
             </CardContent>
           </Card>
 
           {/* Toggle show/hide review - Enhanced */}
           <div className="flex justify-center mb-6 animate-in fade-in-50 duration-500 delay-300">
-            <Button 
-              onClick={() => setShowReview((v) => !v)} 
+            <Button
+              onClick={() => setShowReview((v) => !v)}
               variant={showReview ? 'outline' : 'default'}
               className="h-12 px-6 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
             >
@@ -489,34 +485,32 @@ export default function QuizResultPage() {
               {/* Questions list - Enhanced */}
               <div className="space-y-4">
                 {filtered.map((item, idx) => (
-                  <Card 
-                    key={idx} 
-                    className={`border-0 shadow-xl overflow-hidden animate-in fade-in-50 duration-300 ${
-                      item.isCorrect 
-                        ? 'bg-gradient-to-br from-green-50 to-emerald-50' 
-                        : 'bg-gradient-to-br from-red-50 to-pink-50'
-                    }`}
+                  <Card
+                    key={idx}
+                    className={`border-0 shadow-xl overflow-hidden animate-in fade-in-50 duration-300 ${item.isCorrect
+                      ? 'bg-gradient-to-br from-green-50 to-emerald-50'
+                      : 'bg-gradient-to-br from-red-50 to-pink-50'
+                      }`}
                     style={{ animationDelay: `${idx * 50}ms` }}
                   >
                     {/* Colored top border */}
                     <div className={`h-1.5 ${item.isCorrect ? 'bg-gradient-to-r from-green-500 to-emerald-600' : 'bg-gradient-to-r from-red-500 to-pink-600'}`} />
-                    
+
                     <CardHeader className="pb-3">
                       <div className="flex items-start gap-3">
                         {/* Icon badge */}
-                        <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-md ${
-                          item.isCorrect 
-                            ? 'bg-gradient-to-br from-green-500 to-emerald-600' 
-                            : 'bg-gradient-to-br from-red-500 to-pink-600'
-                        }`}>
-                          {item.isCorrect 
+                        <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-md ${item.isCorrect
+                          ? 'bg-gradient-to-br from-green-500 to-emerald-600'
+                          : 'bg-gradient-to-br from-red-500 to-pink-600'
+                          }`}>
+                          {item.isCorrect
                             ? <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                             : <XCircle className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                           }
                         </div>
-                        
+
                         {/* Question */}
-                        <CardTitle className="text-sm sm:text-base text-slate-800 flex-1">
+                        <CardTitle className="text-sm sm:text-base text-slate-800 flex-1 break-words overflow-hidden">
                           <span className="font-bold text-slate-600">Câu {item.index + 1}.</span> {item.question}
                         </CardTitle>
                       </div>
@@ -529,22 +523,21 @@ export default function QuizResultPage() {
                           const isSel = oi === item.selected
                           const isCor = oi === item.correct
                           return (
-                            <div 
-                              key={oi} 
-                              className={`p-3 rounded-lg border-2 transition-all ${
-                                isCor 
-                                  ? 'bg-white border-green-400 shadow-md' 
-                                  : isSel 
-                                  ? 'bg-white border-red-400 shadow-md' 
+                            <div
+                              key={oi}
+                              className={`p-3 rounded-lg border-2 transition-all ${isCor
+                                ? 'bg-white border-green-400 shadow-md'
+                                : isSel
+                                  ? 'bg-white border-red-400 shadow-md'
                                   : 'bg-white/50 border-slate-200 hover:border-slate-300'
-                              }`}
+                                }`}
                             >
                               <div className="flex items-center justify-between gap-2">
-                                <div className="flex-1">
+                                <div className="flex-1 min-w-0">
                                   <span className={`font-bold mr-2 ${isCor ? 'text-green-600' : isSel ? 'text-red-600' : 'text-slate-600'}`}>
                                     {label}.
                                   </span>
-                                  <span className="text-sm sm:text-base text-slate-800">{opt}</span>
+                                  <span className="text-sm sm:text-base text-slate-800 break-all overflow-hidden">{opt}</span>
                                 </div>
                                 {isCor && (
                                   <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 text-xs">
@@ -567,6 +560,11 @@ export default function QuizResultPage() {
               </div>
             </div>
           )}
+
+          {/* Discussion Section */}
+          <div className="mt-8 animate-in fade-in-50 duration-500 delay-500">
+            <StudentComments quizId={quizId} />
+          </div>
         </div>
       </div>
 

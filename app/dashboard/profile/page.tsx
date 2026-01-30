@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { 
-  User, Mail, Calendar, Award, Target, 
+import {
+  User, Mail, Calendar, Award, Target,
   BookOpen, Clock, Trophy, Star, Edit,
   Save, X, Camera, Shield, Bell, BarChart3, LogOut
 } from "lucide-react"
@@ -44,7 +44,7 @@ export default function ProfilePage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const activeTab = searchParams.get('tab') || 'info'
-  
+
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(false)
@@ -105,7 +105,7 @@ export default function ProfilePage() {
           darkMode: false
         }
       }
-      
+
       setProfile(mockProfile)
       setEditForm({
         name: mockProfile.name,
@@ -217,284 +217,284 @@ export default function ProfilePage() {
       <div className="pb-24">
         {/* Tabs Navigation */}
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-white border border-slate-200 p-1 rounded-lg shadow-sm h-11">
-            <TabsTrigger 
+          <TabsList className="flex w-full items-center bg-white border border-slate-200 p-1 rounded-xl shadow-sm h-12">
+            <TabsTrigger
               value="info"
-              className="rounded-md flex items-center justify-center gap-1.5 sm:gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all"
+              className="flex-1 h-full rounded-lg flex items-center justify-center gap-1.5 sm:gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-cyan-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/20 transition-all duration-300"
             >
               <User className="h-4 w-4 flex-shrink-0" />
-              <span className="hidden sm:inline text-sm font-medium">Thông tin</span>
-              <span className="sm:hidden text-sm font-medium">Hồ sơ</span>
+              <span className="hidden sm:inline text-sm font-bold">Thông tin cá nhân</span>
+              <span className="sm:hidden text-sm font-bold">Hồ sơ</span>
             </TabsTrigger>
-            <TabsTrigger 
+            <TabsTrigger
               value="stats"
-              className="rounded-md flex items-center justify-center gap-1.5 sm:gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all"
+              className="flex-1 h-full rounded-lg flex items-center justify-center gap-1.5 sm:gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-cyan-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/20 transition-all duration-300"
             >
               <BarChart3 className="h-4 w-4 flex-shrink-0" />
-              <span className="text-sm font-medium">Thống kê</span>
+              <span className="text-sm font-bold">Thống kê học tập</span>
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="info" className="mt-4 sm:mt-6 space-y-4 sm:space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Profile Overview */}
-          <div className="lg:col-span-1">
-            <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
-              <CardContent className="p-6">
-                <div className="text-center">
-                  <div className="relative inline-block mb-4">
-                    <Avatar className="h-32 w-32 mx-auto">
-                      <AvatarImage src={profile.avatar} />
-                      <AvatarFallback className="bg-gradient-to-br from-blue-500 to-cyan-500 text-white text-3xl font-bold">
-                        {profile.name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <Button
-                      size="sm"
-                      className="absolute bottom-0 right-0 rounded-full p-2"
-                      onClick={handleAvatarChange}
-                    >
-                      <Camera className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  
-                  <h2 className="text-2xl font-bold text-slate-800 mb-2 font-heading">
-                    {profile.name}
-                  </h2>
-                  <p className="text-slate-600 font-body mb-4">
-                    {profile.email}
-                  </p>
-                  
-                  <div className="text-sm text-slate-500 font-body mb-6">
-                    <div className="flex items-center justify-center gap-1 mb-1">
-                      <Calendar className="h-4 w-4" />
-                      <span>Tham gia {safeFormatDistanceToNow(profile.joinDate)}</span>
-                    </div>
-                  </div>
+              {/* Profile Overview */}
+              <div className="lg:col-span-1">
+                <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
+                  <CardContent className="p-6">
+                    <div className="text-center">
+                      <div className="relative inline-block mb-4">
+                        <Avatar className="h-32 w-32 mx-auto">
+                          <AvatarImage src={profile.avatar} />
+                          <AvatarFallback className="bg-gradient-to-br from-blue-500 to-cyan-500 text-white text-3xl font-bold">
+                            {profile.name.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <Button
+                          size="sm"
+                          className="absolute bottom-0 right-0 rounded-full p-2"
+                          onClick={handleAvatarChange}
+                        >
+                          <Camera className="h-4 w-4" />
+                        </Button>
+                      </div>
 
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center p-3 rounded-lg bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200">
-                      <div className="flex items-center gap-2">
-                        <Trophy className="h-4 w-4 text-orange-600" />
-                        <span className="text-sm font-medium text-slate-700 font-body">Xếp hạng</span>
-                      </div>
-                      <Badge className="bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold px-3 py-1">
-                        #{profile.rank}
-                      </Badge>
-                    </div>
-                    <div className="flex justify-between items-center p-3 rounded-lg bg-slate-50 border border-slate-200">
-                      <div className="flex items-center gap-2">
-                        <BookOpen className="h-4 w-4 text-blue-600" />
-                        <span className="text-sm font-medium text-slate-700 font-body">Tổng lần làm</span>
-                      </div>
-                      <span className="font-bold text-slate-800 font-heading text-lg">{profile.totalAttempts}</span>
-                    </div>
-                    <div className="flex justify-between items-center p-3 rounded-lg bg-slate-50 border border-slate-200">
-                      <div className="flex items-center gap-2">
-                        <Target className="h-4 w-4 text-green-600" />
-                        <span className="text-sm font-medium text-slate-700 font-body">Điểm TB</span>
-                      </div>
-                      <span className="font-bold text-green-600 font-heading text-lg">{profile.averageScore}%</span>
-                    </div>
-                    <div className="flex justify-between items-center p-3 rounded-lg bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-200">
-                      <div className="flex items-center gap-2">
-                        <Award className="h-4 w-4 text-purple-600" />
-                        <span className="text-sm font-medium text-slate-700 font-body">Cao nhất</span>
-                      </div>
-                      <span className="font-bold text-purple-600 font-heading text-lg">{profile.bestScore}%</span>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                      <h2 className="text-2xl font-bold text-slate-800 mb-2 font-heading">
+                        {profile.name}
+                      </h2>
+                      <p className="text-slate-600 font-body mb-4">
+                        {profile.email}
+                      </p>
 
-            {/* Achievements - Mobile optimized */}
-            <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl mt-6">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base sm:text-lg font-bold text-slate-800 font-heading flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center">
-                    <Trophy className="h-4 w-4 text-white" />
-                  </div>
-                  Thành tích
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2 sm:space-y-3">
-                  {profile.achievements.map((achievement, index) => (
-                    <div key={index} className="flex items-start sm:items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg bg-yellow-50 hover:bg-yellow-100 transition-colors">
-                      <div className="p-1.5 sm:p-2 rounded-lg bg-yellow-100 flex-shrink-0">
-                        <Trophy className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-yellow-600" />
+                      <div className="text-sm text-slate-500 font-body mb-6">
+                        <div className="flex items-center justify-center gap-1 mb-1">
+                          <Calendar className="h-4 w-4" />
+                          <span>Tham gia {safeFormatDistanceToNow(profile.joinDate)}</span>
+                        </div>
                       </div>
-                      <span className="text-xs sm:text-sm text-slate-700 font-body leading-relaxed">{achievement}</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
 
-          {/* Profile Details */}
-          <div className="lg:col-span-2">
-            <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
-              <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4">
-                <div className="flex-1">
-                  <CardTitle className="text-lg sm:text-xl font-bold text-slate-800 font-heading flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
-                      <User className="h-4 w-4 text-white" />
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center p-3 rounded-lg bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200">
+                          <div className="flex items-center gap-2">
+                            <Trophy className="h-4 w-4 text-orange-600" />
+                            <span className="text-sm font-medium text-slate-700 font-body">Xếp hạng</span>
+                          </div>
+                          <Badge className="bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold px-3 py-1">
+                            #{profile.rank}
+                          </Badge>
+                        </div>
+                        <div className="flex justify-between items-center p-3 rounded-lg bg-slate-50 border border-slate-200">
+                          <div className="flex items-center gap-2">
+                            <BookOpen className="h-4 w-4 text-blue-600" />
+                            <span className="text-sm font-medium text-slate-700 font-body">Tổng lần làm</span>
+                          </div>
+                          <span className="font-bold text-slate-800 font-heading text-lg">{profile.totalAttempts}</span>
+                        </div>
+                        <div className="flex justify-between items-center p-3 rounded-lg bg-slate-50 border border-slate-200">
+                          <div className="flex items-center gap-2">
+                            <Target className="h-4 w-4 text-green-600" />
+                            <span className="text-sm font-medium text-slate-700 font-body">Điểm TB</span>
+                          </div>
+                          <span className="font-bold text-green-600 font-heading text-lg">{profile.averageScore}%</span>
+                        </div>
+                        <div className="flex justify-between items-center p-3 rounded-lg bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-200">
+                          <div className="flex items-center gap-2">
+                            <Award className="h-4 w-4 text-purple-600" />
+                            <span className="text-sm font-medium text-slate-700 font-body">Cao nhất</span>
+                          </div>
+                          <span className="font-bold text-purple-600 font-heading text-lg">{profile.bestScore}%</span>
+                        </div>
+                      </div>
                     </div>
-                    Thông tin cá nhân
-                  </CardTitle>
-                  <CardDescription className="text-xs sm:text-sm text-slate-600 font-body mt-1">Cập nhật thông tin của bạn</CardDescription>
-                </div>
-                {!editing && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleEdit}
-                    className="btn-secondary h-9 sm:h-10 self-start sm:self-auto"
-                  >
-                    <Edit className="h-4 w-4 sm:mr-2" />
-                    <span className="hidden sm:inline">Chỉnh sửa</span>
-                  </Button>
-                )}
-              </CardHeader>
-              <CardContent>
-                {editing ? (
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="name" className="text-sm font-medium text-slate-700 font-body">
-                        Họ và tên
-                      </Label>
-                      <Input
-                        id="name"
-                        value={editForm.name}
-                        onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
-                        className="mt-1"
-                      />
+                  </CardContent>
+                </Card>
+
+                {/* Achievements - Mobile optimized */}
+                <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl mt-6">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base sm:text-lg font-bold text-slate-800 font-heading flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center">
+                        <Trophy className="h-4 w-4 text-white" />
+                      </div>
+                      Thành tích
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2 sm:space-y-3">
+                      {profile.achievements.map((achievement, index) => (
+                        <div key={index} className="flex items-start sm:items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg bg-yellow-50 hover:bg-yellow-100 transition-colors">
+                          <div className="p-1.5 sm:p-2 rounded-lg bg-yellow-100 flex-shrink-0">
+                            <Trophy className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-yellow-600" />
+                          </div>
+                          <span className="text-xs sm:text-sm text-slate-700 font-body leading-relaxed">{achievement}</span>
+                        </div>
+                      ))}
                     </div>
-                    <div>
-                      <Label htmlFor="email" className="text-sm font-medium text-slate-700 font-body">
-                        Email
-                      </Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={editForm.email}
-                        onChange={(e) => setEditForm(prev => ({ ...prev, email: e.target.value }))}
-                        className="mt-1"
-                      />
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Profile Details */}
+              <div className="lg:col-span-2">
+                <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl">
+                  <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4">
+                    <div className="flex-1">
+                      <CardTitle className="text-lg sm:text-xl font-bold text-slate-800 font-heading flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+                          <User className="h-4 w-4 text-white" />
+                        </div>
+                        Thông tin cá nhân
+                      </CardTitle>
+                      <CardDescription className="text-xs sm:text-sm text-slate-600 font-body mt-1">Cập nhật thông tin của bạn</CardDescription>
                     </div>
-                    <div className="flex gap-2 pt-4">
-                      <Button
-                        onClick={handleSave}
-                        className="btn-primary"
-                      >
-                        <Save className="h-4 w-4 mr-2" />
-                        Lưu thay đổi
-                      </Button>
+                    {!editing && (
                       <Button
                         variant="outline"
-                        onClick={handleCancel}
-                        className="btn-secondary"
+                        size="sm"
+                        onClick={handleEdit}
+                        className="btn-secondary h-9 sm:h-10 self-start sm:self-auto"
                       >
-                        <X className="h-4 w-4 mr-2" />
-                        Hủy
+                        <Edit className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Chỉnh sửa</span>
                       </Button>
+                    )}
+                  </CardHeader>
+                  <CardContent>
+                    {editing ? (
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="name" className="text-sm font-medium text-slate-700 font-body">
+                            Họ và tên
+                          </Label>
+                          <Input
+                            id="name"
+                            value={editForm.name}
+                            onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="email" className="text-sm font-medium text-slate-700 font-body">
+                            Email
+                          </Label>
+                          <Input
+                            id="email"
+                            type="email"
+                            value={editForm.email}
+                            onChange={(e) => setEditForm(prev => ({ ...prev, email: e.target.value }))}
+                            className="mt-1"
+                          />
+                        </div>
+                        <div className="flex gap-2 pt-4">
+                          <Button
+                            onClick={handleSave}
+                            className="btn-primary"
+                          >
+                            <Save className="h-4 w-4 mr-2" />
+                            Lưu thay đổi
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={handleCancel}
+                            className="btn-secondary"
+                          >
+                            <X className="h-4 w-4 mr-2" />
+                            Hủy
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div>
+                          <Label className="text-sm font-medium text-slate-700 font-body">Họ và tên</Label>
+                          <p className="text-slate-800 font-body mt-1">{profile.name}</p>
+                        </div>
+                        <div>
+                          <Label className="text-sm font-medium text-slate-700 font-body">Email</Label>
+                          <p className="text-slate-800 font-body mt-1">{profile.email}</p>
+                        </div>
+                        <div>
+                          <Label className="text-sm font-medium text-slate-700 font-body">Ngày tham gia</Label>
+                          <p className="text-slate-800 font-body mt-1">
+                            {safeFormatDistanceToNow(profile.joinDate)}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Preferences - Mobile optimized */}
+                <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl mt-6 mb-6">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-lg sm:text-xl font-bold text-slate-800 font-heading flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center">
+                        <Shield className="h-4 w-4 text-white" />
+                      </div>
+                      Cài đặt
+                    </CardTitle>
+                    <CardDescription className="text-xs sm:text-sm text-slate-600 font-body">Tùy chỉnh trải nghiệm của bạn</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pb-6">
+                    <div className="space-y-3 sm:space-y-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors">
+                        <div className="flex items-start sm:items-center gap-3 flex-1">
+                          <div className="p-2 sm:p-2.5 rounded-lg bg-blue-100 flex-shrink-0">
+                            <Bell className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-sm sm:text-base text-slate-800 font-heading">Thông báo</p>
+                            <p className="text-xs sm:text-sm text-slate-600 font-body mt-0.5">Nhận thông báo về hoạt động học tập</p>
+                          </div>
+                        </div>
+                        <Button
+                          variant={profile.preferences.notifications ? "default" : "outline"}
+                          size="sm"
+                          className={`${profile.preferences.notifications ? "btn-primary" : "btn-secondary"} h-9 sm:h-10 px-4 sm:px-6 flex-shrink-0 self-end sm:self-auto`}
+                        >
+                          {profile.preferences.notifications ? 'Bật' : 'Tắt'}
+                        </Button>
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors">
+                        <div className="flex items-start sm:items-center gap-3 flex-1">
+                          <div className="p-2 sm:p-2.5 rounded-lg bg-green-100 flex-shrink-0">
+                            <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-sm sm:text-base text-slate-800 font-heading">Email cập nhật</p>
+                            <p className="text-xs sm:text-sm text-slate-600 font-body mt-0.5">Nhận email về tiến độ học tập</p>
+                          </div>
+                        </div>
+                        <Button
+                          variant={profile.preferences.emailUpdates ? "default" : "outline"}
+                          size="sm"
+                          className={`${profile.preferences.emailUpdates ? "btn-primary" : "btn-secondary"} h-9 sm:h-10 px-4 sm:px-6 flex-shrink-0 self-end sm:self-auto`}
+                        >
+                          {profile.preferences.emailUpdates ? 'Bật' : 'Tắt'}
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div>
-                      <Label className="text-sm font-medium text-slate-700 font-body">Họ và tên</Label>
-                      <p className="text-slate-800 font-body mt-1">{profile.name}</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium text-slate-700 font-body">Email</Label>
-                      <p className="text-slate-800 font-body mt-1">{profile.email}</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium text-slate-700 font-body">Ngày tham gia</Label>
-                      <p className="text-slate-800 font-body mt-1">
-                        {safeFormatDistanceToNow(profile.joinDate)}
-                      </p>
-                    </div>
-                  </div>
-                )}
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
+            {/* Logout Button - Mobile friendly */}
+            <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl mt-6">
+              <CardContent className="p-4 sm:p-6">
+                <Button
+                  onClick={handleLogout}
+                  variant="outline"
+                  className="w-full h-12 sm:h-14 border-red-200 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 font-semibold rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
+                >
+                  <LogOut className="h-5 w-5 mr-2" />
+                  <span className="text-base">Đăng xuất tài khoản</span>
+                </Button>
+                <p className="text-xs text-center text-slate-500 mt-3 font-body">
+                  Bạn sẽ cần đăng nhập lại để tiếp tục sử dụng
+                </p>
               </CardContent>
             </Card>
-
-            {/* Preferences - Mobile optimized */}
-            <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl mt-6 mb-6">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg sm:text-xl font-bold text-slate-800 font-heading flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center">
-                    <Shield className="h-4 w-4 text-white" />
-                  </div>
-                  Cài đặt
-                </CardTitle>
-                <CardDescription className="text-xs sm:text-sm text-slate-600 font-body">Tùy chỉnh trải nghiệm của bạn</CardDescription>
-              </CardHeader>
-              <CardContent className="pb-6">
-                <div className="space-y-3 sm:space-y-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors">
-                    <div className="flex items-start sm:items-center gap-3 flex-1">
-                      <div className="p-2 sm:p-2.5 rounded-lg bg-blue-100 flex-shrink-0">
-                        <Bell className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-sm sm:text-base text-slate-800 font-heading">Thông báo</p>
-                        <p className="text-xs sm:text-sm text-slate-600 font-body mt-0.5">Nhận thông báo về hoạt động học tập</p>
-                      </div>
-                    </div>
-                    <Button
-                      variant={profile.preferences.notifications ? "default" : "outline"}
-                      size="sm"
-                      className={`${profile.preferences.notifications ? "btn-primary" : "btn-secondary"} h-9 sm:h-10 px-4 sm:px-6 flex-shrink-0 self-end sm:self-auto`}
-                    >
-                      {profile.preferences.notifications ? 'Bật' : 'Tắt'}
-                    </Button>
-                  </div>
-                  
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors">
-                    <div className="flex items-start sm:items-center gap-3 flex-1">
-                      <div className="p-2 sm:p-2.5 rounded-lg bg-green-100 flex-shrink-0">
-                        <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-sm sm:text-base text-slate-800 font-heading">Email cập nhật</p>
-                        <p className="text-xs sm:text-sm text-slate-600 font-body mt-0.5">Nhận email về tiến độ học tập</p>
-                      </div>
-                    </div>
-                    <Button
-                      variant={profile.preferences.emailUpdates ? "default" : "outline"}
-                      size="sm"
-                      className={`${profile.preferences.emailUpdates ? "btn-primary" : "btn-secondary"} h-9 sm:h-10 px-4 sm:px-6 flex-shrink-0 self-end sm:self-auto`}
-                    >
-                      {profile.preferences.emailUpdates ? 'Bật' : 'Tắt'}
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-
-        {/* Logout Button - Mobile friendly */}
-        <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl mt-6">
-          <CardContent className="p-4 sm:p-6">
-            <Button
-              onClick={handleLogout}
-              variant="outline"
-              className="w-full h-12 sm:h-14 border-red-200 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 font-semibold rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
-            >
-              <LogOut className="h-5 w-5 mr-2" />
-              <span className="text-base">Đăng xuất tài khoản</span>
-            </Button>
-            <p className="text-xs text-center text-slate-500 mt-3 font-body">
-              Bạn sẽ cần đăng nhập lại để tiếp tục sử dụng
-            </p>
-          </CardContent>
-        </Card>
           </TabsContent>
         </Tabs>
       </div>
