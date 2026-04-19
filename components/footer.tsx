@@ -94,15 +94,11 @@ export function Footer() {
               © {new Date().getFullYear()} {APP_CONFIG.name}. Tất cả quyền được bảo lưu.
             </div>
             <div className="flex items-center space-x-2 text-slate-600 text-sm">
-              <span className="inline-block p-1 rounded-md bg-blue-50 text-blue-600">
-                <span className="text-xs">💻</span>
-              </span>
-              <span>Tác giả:</span>
+              <span>💻</span>
+              <span>Phát triển bởi:</span>
               <span className="text-blue-600 font-bold hover:underline cursor-pointer">
-                {FOUNDER_CONFIG.name} ({FOUNDER_CONFIG.class})
+                {FOUNDER_CONFIG.name}
               </span>
-              <span className="text-slate-300">|</span>
-              <span className="text-slate-500">{FOUNDER_CONFIG.location}</span>
             </div>
           </div>
         </div>

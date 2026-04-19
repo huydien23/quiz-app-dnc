@@ -285,61 +285,47 @@ export function LandingPage() {
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div className="space-y-8">
-              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-lg bg-indigo-50 text-indigo-600 text-sm font-bold uppercase tracking-wider">
-                <Users className="h-4 w-4" />
-                <span>Người Sáng Lập</span>
-              </div>
               <h2 className="text-4xl sm:text-5xl font-bold text-slate-900 font-heading tracking-tight leading-tight">
-                Tâm huyết mang công nghệ <br /> kiến tạo tương lai
+                Về tác giả
               </h2>
-              <p className="text-xl text-slate-500 leading-relaxed font-medium">
+              <p className="text-slate-600 leading-relaxed">
                 Tôi là <strong className="text-slate-900">{FOUNDER_CONFIG.name}</strong>, {FOUNDER_CONFIG.bio}
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="flex items-center gap-4 p-4 rounded-2xl bg-white shadow-sm border border-slate-100 group hover:border-blue-200 transition-colors">
-                  <div className="p-3 rounded-xl bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                    <Heart className="h-6 w-6" />
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-xl bg-blue-50 text-blue-600">
+                    <Heart className="h-5 w-5" />
                   </div>
-                  <span className="font-bold text-slate-700">Tâm huyết với giáo dục</span>
+                  <span className="font-medium text-slate-700">Tâm huyết với giáo dục Việt Nam</span>
                 </div>
-                <div className="flex items-center gap-4 p-4 rounded-2xl bg-white shadow-sm border border-slate-100 group hover:border-blue-200 transition-colors">
-                  <div className="p-3 rounded-xl bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                    <Code className="h-6 w-6" />
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-xl bg-green-50 text-green-600">
+                    <Code className="h-5 w-5" />
                   </div>
-                  <span className="font-bold text-slate-700">Fullstack Developer</span>
+                  <span className="font-medium text-slate-700">Fullstack Developer - Next.js, TypeScript</span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-xl bg-purple-50 text-purple-600">
+                    <Lightbulb className="h-5 w-5" />
+                  </div>
+                  <span className="font-medium text-slate-700">Đang sinh sống và học tập tại {FOUNDER_CONFIG.location}</span>
                 </div>
               </div>
             </div>
 
             <div className="relative group">
               <div className="absolute -inset-4 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-[2.5rem] blur-2xl opacity-20 group-hover:opacity-30 transition-opacity duration-500"></div>
-              <div className="relative bg-white rounded-[2rem] p-10 shadow-2xl border border-slate-100">
-                <div className="space-y-8 text-center sm:text-left">
-                  <div className="flex flex-col sm:flex-row items-center gap-6">
-                    <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-xl rotate-3 group-hover:rotate-0 transition-transform duration-500">
-                      <Code className="h-12 w-12" />
-                    </div>
-                    <div>
-                      <h3 className="text-2xl font-bold text-slate-900 mb-1">{FOUNDER_CONFIG.name}</h3>
-                      <p className="text-blue-600 font-bold uppercase tracking-widest text-xs">{FOUNDER_CONFIG.class}</p>
-                    </div>
-                  </div>
-
-                  <div className="p-6 rounded-2xl bg-slate-50 border border-slate-100 space-y-4">
-                    <p className="text-slate-600 font-medium italic">
-                      "{APP_CONFIG.name} không chỉ là một công cụ thi cử, mà là người bạn đồng hành tin cậy trên hành trình chinh phục tri thức."
-                    </p>
-                    <div className="flex items-center gap-2 text-slate-500 font-bold text-sm">
-                      <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                      📍 {FOUNDER_CONFIG.location}, Việt Nam
-                    </div>
-                  </div>
-
-                  <div className="flex justify-center sm:justify-start gap-4">
-                    <div className="px-4 py-2 rounded-xl bg-blue-50 text-blue-700 font-bold text-sm">#Knowledge</div>
-                    <div className="px-4 py-2 rounded-xl bg-indigo-50 text-indigo-700 font-bold text-sm">#Future</div>
-                    <div className="px-4 py-2 rounded-xl bg-cyan-50 text-cyan-700 font-bold text-sm">#Innovation</div>
-                  </div>
+              <div className="relative bg-white rounded-[2rem] p-10 shadow-2xl border border-slate-100 flex flex-col items-center justify-center text-center">
+                <div className="w-20 h-20 bg-[#1da1f2] rounded-full flex items-center justify-center text-white shadow-lg mb-6">
+                  <Code className="w-10 h-10" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 mb-4">Dự án cá nhân</h3>
+                <p className="text-sm text-slate-600 leading-relaxed mb-6 max-w-sm">
+                  Được phát triển với công nghệ hiện đại: Next.js 14, TypeScript, Firebase và Tailwind CSS
+                </p>
+                <div className="space-y-1 text-sm font-medium text-slate-500">
+                  <p>🎓 Đại học Nam Cần Thơ</p>
+                  <p>📍 {FOUNDER_CONFIG.location}, Việt Nam</p>
                 </div>
               </div>
             </div>
@@ -355,7 +341,7 @@ export function LandingPage() {
               Kết Nối & Hỗ Trợ
             </h2>
             <p className="text-xl text-slate-500 max-w-2xl mx-auto font-medium">
-              Chúng tôi luôn sẵn sàng lắng nghe và giải đáp mọi thắc mắc của bạn
+              Tôi luôn sẵn sàng lắng nghe và giải đáp mọi thắc mắc của bạn
             </p>
           </div>
 
@@ -368,12 +354,12 @@ export function LandingPage() {
                 </div>
                 <div className="space-y-2">
                   <h3 className="font-bold text-xl">GitHub</h3>
-                  <p className="text-slate-400 font-mono text-xs tracking-tighter">github.com/{FOUNDER_CONFIG.socials.github}</p>
+                  {/* <p className="text-slate-400 font-mono text-xs tracking-tighter">github.com/{FOUNDER_CONFIG.socials.github}</p> */}
                 </div>
                 <Button variant="outline" className="w-full rounded-xl border-slate-200 hover:border-blue-600 hover:text-blue-600 font-bold" asChild>
-                  <a href={`https://github.com/${FOUNDER_CONFIG.socials.github}`} target="_blank" rel="noopener noreferrer">
+                  {/* <a href={`https://github.com/${FOUNDER_CONFIG.socials.github}`} target="_blank" rel="noopener noreferrer">
                     Ghé thăm
-                  </a>
+                  </a> */}
                 </Button>
               </CardContent>
             </Card>

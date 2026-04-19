@@ -56,8 +56,10 @@ export function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
+            <Link href="/" className="text-sm font-bold text-slate-600 hover:text-blue-600 transition-colors">Trang chủ</Link>
             <Link href="/#features" className="text-sm font-bold text-slate-600 hover:text-blue-600 transition-colors">Tính năng</Link>
-            <Link href="/#about" className="text-sm font-bold text-slate-600 hover:text-blue-600 transition-colors">Tác giả</Link>
+            <Link href="/#about" className="text-sm font-bold text-slate-600 hover:text-blue-600 transition-colors">Giới thiệu</Link>
+            <Link href="/#contact" className="text-sm font-bold text-slate-600 hover:text-blue-600 transition-colors">Liên hệ</Link>
             <Link href="/guide" className="text-sm font-bold text-slate-600 hover:text-blue-600 transition-colors">Hướng dẫn</Link>
           </div>
 
@@ -184,7 +186,8 @@ export function Navbar() {
             <div className="flex flex-col gap-2">
               <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="px-4 py-3 text-lg font-bold text-slate-900 hover:bg-blue-50 hover:text-blue-600 rounded-2xl transition-all">Trang chủ</Link>
               <Link href="/#features" onClick={() => setIsMobileMenuOpen(false)} className="px-4 py-3 text-lg font-bold text-slate-900 hover:bg-blue-50 hover:text-blue-600 rounded-2xl transition-all">Tính năng</Link>
-              <Link href="/#about" onClick={() => setIsMobileMenuOpen(false)} className="px-4 py-3 text-lg font-bold text-slate-900 hover:bg-blue-50 hover:text-blue-600 rounded-2xl transition-all">Về tác giả</Link>
+              <Link href="/#about" onClick={() => setIsMobileMenuOpen(false)} className="px-4 py-3 text-lg font-bold text-slate-900 hover:bg-blue-50 hover:text-blue-600 rounded-2xl transition-all">Giới thiệu</Link>
+              <Link href="/#contact" onClick={() => setIsMobileMenuOpen(false)} className="px-4 py-3 text-lg font-bold text-slate-900 hover:bg-blue-50 hover:text-blue-600 rounded-2xl transition-all">Liên hệ</Link>
               <Link href="/guide" onClick={() => setIsMobileMenuOpen(false)} className="px-4 py-3 text-lg font-bold text-slate-900 hover:bg-blue-50 hover:text-blue-600 rounded-2xl transition-all">Hướng dẫn</Link>
             </div>
 

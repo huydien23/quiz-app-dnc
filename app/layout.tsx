@@ -9,6 +9,7 @@ import { ErrorBoundary } from "@/components/error-boundary"
 import { SuppressHydrationWarning } from "@/components/suppress-hydration-warning"
 import { Suspense } from "react"
 import "./globals.css"
+import { APP_CONFIG } from "@/lib/constants"
 
 // Font configuration - Inter for modern, clean typography
 const inter = Inter({
@@ -19,8 +20,8 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: "Eduliora Center - Luyện thi trắc nghiệm",
-  description: "Hệ thống luyện thi trắc nghiệm trực tuyến hiện đại và thông minh",
+  title: `${APP_CONFIG.name} - Luyện thi trắc nghiệm`,
+  description: APP_CONFIG.description,
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon-16x16.png",
@@ -29,16 +30,16 @@ export const metadata: Metadata = {
   manifest: "/site.webmanifest",
   metadataBase: new URL("https://quiz-app-dnc.vercel.app"),
   openGraph: {
-    title: "Eduliora Center - Luyện thi trắc nghiệm",
-    description: "Hệ thống luyện thi trắc nghiệm trực tuyến hiện đại",
+    title: `${APP_CONFIG.name} - Luyện thi trắc nghiệm`,
+    description: APP_CONFIG.description,
     url: "https://quiz-app-dnc.vercel.app",
-    siteName: "Eduliora Center",
+    siteName: APP_CONFIG.name,
     images: [
       {
         url: "/placeholder-logo.png",
         width: 1200,
         height: 630,
-        alt: "Eduliora Center",
+        alt: APP_CONFIG.name,
       },
     ],
     locale: "vi_VN",
@@ -46,8 +47,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Eduliora Center - Luyện thi trắc nghiệm",
-    description: "Hệ thống luyện thi trắc nghiệm trực tuyến hiện đại",
+    title: `${APP_CONFIG.name} - Luyện thi trắc nghiệm`,
+    description: APP_CONFIG.description,
     images: ["/placeholder-logo.png"],
   },
 }
