@@ -1,6 +1,6 @@
-# Eduliora Center - Nâng Tầm Tri Thức
+# QuizMaster - Nền tảng luyện thi trắc nghiệm trực tuyến
 
-Một ứng dụng web hiện đại cho việc tạo và quản lý bài thi trắc nghiệm trực tuyến, được xây dựng với Next.js 14, TypeScript, và Firebase.
+Một ứng dụng web hiện đại cho việc tạo và quản lý bài thi trắc nghiệm trực tuyến, được xây dựng với Next.js 14, TypeScript, Firebase và Tailwind CSS.
 
 ## ✨ Tính năng chính
 
@@ -46,8 +46,8 @@ Một ứng dụng web hiện đại cho việc tạo và quản lý bài thi tr
 
 ### 1. Clone repository
 ```bash
-git clone <your-repo-url>
-cd quiz-app
+git clone https://github.com/huydien23/quiz-app-dnc.git
+cd quiz-app-dnc
 ```
 
 ### 2. Cài đặt dependencies
@@ -209,11 +209,12 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## 📞 Liên hệ
 
-Phát triển bởi: **Hồ Hoàng Lanh**
-- Class: **DH23TIN03**
-- Location: **Cà Mau, Việt Nam**
-- Dự án: **Eduliora Center**
+Phát triển bởi: **Nguyễn Huy Điền**
+- Vai trò: **Lập trình viên Fullstack**
+- Vị trí: **Cần Thơ, Việt Nam**
+- Trường: **Đại học Nam Cần Thơ**
+- Dự án: **QuizMaster**
 
 ---
 
-**Eduliora Center** - Nâng tầm trải nghiệm luyện thi trực tuyến! 🎓✨
+**QuizMaster** - Nền tảng luyện thi trắc nghiệm trực tuyến hiện đại! 🎓✨
