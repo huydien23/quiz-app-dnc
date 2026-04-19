@@ -6,13 +6,13 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { 
+import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line, PieChart, Pie, Cell, Area, AreaChart
 } from "recharts"
-import { 
+import {
   TrendingUp, Users, BookOpen, Award, Clock, Target,
-  Calendar, Filter, Download, RefreshCw
+  Calendar, Filter, Download, RefreshCw, FileSpreadsheet
 } from "lucide-react"
 import { AdminService } from "@/lib/admin-service"
 import type { Quiz, QuizAttempt, User } from "@/lib/types"
@@ -62,8 +62,8 @@ export function QuizAnalytics() {
 
   const loadAnalyticsData = async () => {
     try {
-      setLoading(true)
-      
+      if (!data) setLoading(true)
+
       const [quizzes, attempts, users] = await Promise.all([
         AdminService.getAllQuizzes(),
         AdminService.getAllAttempts(),
@@ -73,7 +73,7 @@ export function QuizAnalytics() {
       // Filter by time range
       const now = new Date()
       const cutoffDate = new Date()
-      
+
       switch (timeRange) {
         case '7d':
           cutoffDate.setDate(now.getDate() - 7)
@@ -89,15 +89,15 @@ export function QuizAnalytics() {
           break
       }
 
-      const filteredAttempts = attempts.filter(attempt => 
+      const filteredAttempts = attempts.filter(attempt =>
         new Date(attempt.completedAt) >= cutoffDate
       )
 
       // Calculate overview stats
       const totalQuizzes = quizzes.length
       const totalAttempts = filteredAttempts.length
-      const averageScore = filteredAttempts.length > 0 
-        ? filteredAttempts.reduce((sum, attempt) => sum + (attempt.score || 0), 0) / filteredAttempts.length 
+      const averageScore = filteredAttempts.length > 0
+        ? filteredAttempts.reduce((sum, attempt) => sum + (attempt.score || 0), 0) / filteredAttempts.length
         : 0
       const completionRate = 100 // Assume all attempts are completed
 
@@ -133,7 +133,7 @@ export function QuizAnalytics() {
 
       const scoreDistribution = scoreRanges.map(range => ({
         range: range.range,
-        count: filteredAttempts.filter(attempt => 
+        count: filteredAttempts.filter(attempt =>
           (attempt.score || 0) >= range.min && (attempt.score || 0) <= range.max
         ).length
       }))
@@ -144,8 +144,8 @@ export function QuizAnalytics() {
         const date = new Date()
         date.setDate(date.getDate() - i)
         const dateStr = date.toISOString().split('T')[0]
-        
-        const dayAttempts = filteredAttempts.filter(attempt => 
+
+        const dayAttempts = filteredAttempts.filter(attempt =>
           attempt.completedAt.startsWith(dateStr)
         ).length
 
@@ -188,7 +188,7 @@ export function QuizAnalytics() {
     } catch (err) {
       console.error('Error loading analytics:', err)
       error("Không thể tải dữ liệu phân tích")
-      
+
       // Load mock data for demo
       setData({
         overview: {
@@ -263,96 +263,112 @@ export function QuizAnalytics() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+      {/* Header (Synchronized with Dashboard) */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4 border-b border-slate-200 pb-6">
         <div>
-          <h1 className="text-3xl font-bold">Phân tích & Thống kê</h1>
-          <p className="text-muted-foreground">Báo cáo chi tiết về hoạt động hệ thống</p>
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-1.5 h-6 bg-indigo-600 rounded-full" />
+            <h2 className="text-2xl font-bold text-slate-900 tracking-tight uppercase">
+              Phân tích số liệu
+            </h2>
+          </div>
+          <p className="text-sm font-medium text-slate-500 ml-3.5">
+            Báo cáo chi tiết và thông tin phân tích hiệu suất hệ thống thời gian thực
+          </p>
         </div>
-        <div className="flex gap-2">
-          <div className="flex gap-1">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex p-1 bg-slate-100 rounded-lg">
             {(['7d', '30d', '90d', 'all'] as const).map((range) => (
               <Button
                 key={range}
-                variant={timeRange === range ? "default" : "outline"}
+                variant="ghost"
                 size="sm"
                 onClick={() => setTimeRange(range)}
+                className={`h-8 px-3 rounded-md text-[10px] uppercase font-bold tracking-wider transition-all ${timeRange === range ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-900'
+                  }`}
               >
-                {range === '7d' ? '7 ngày' : 
-                 range === '30d' ? '30 ngày' : 
-                 range === '90d' ? '90 ngày' : 'Tất cả'}
+                {range === '7d' ? '7 ngày' :
+                  range === '30d' ? '30 ngày' :
+                    range === '90d' ? '90 ngày' : 'Tất cả'}
               </Button>
             ))}
           </div>
-          <Button variant="outline" onClick={handleRefresh} disabled={refreshing}>
-            <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+          <Button
+            variant="outline"
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="h-10 border-slate-200 text-slate-600 hover:bg-slate-50 rounded-lg font-bold text-xs uppercase tracking-wider bg-white"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
             Làm mới
           </Button>
-          <Button variant="outline" onClick={handleExport}>
-            <Download className="h-4 w-4 mr-2" />
+          <Button
+            onClick={handleExport}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs uppercase tracking-wider h-10 px-6 shadow-indigo-100 shadow-lg border-none"
+          >
+            <FileSpreadsheet className="h-4 w-4 mr-2" />
             Xuất báo cáo
           </Button>
         </div>
       </div>
-
       {/* Overview Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Tổng bài thi</p>
-                <p className="text-2xl font-bold">{data?.overview.totalQuizzes}</p>
-              </div>
-              <BookOpen className="h-8 w-8 text-blue-600" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="border-slate-200/60 shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="p-5 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center border border-blue-100">
+              <BookOpen className="h-6 w-6 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Tổng bài thi</p>
+              <p className="text-2xl font-bold text-slate-900">{data?.overview.totalQuizzes}</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Lượt làm bài</p>
-                <p className="text-2xl font-bold">{data?.overview.totalAttempts}</p>
-              </div>
-              <Users className="h-8 w-8 text-green-600" />
+        <Card className="border-slate-200/60 shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="p-5 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center border border-green-100">
+              <Users className="h-6 w-6 text-green-600" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Lượt làm bài</p>
+              <p className="text-2xl font-bold text-slate-900">{data?.overview.totalAttempts}</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Điểm trung bình</p>
-                <p className="text-2xl font-bold">{data?.overview.averageScore}%</p>
-              </div>
-              <Award className="h-8 w-8 text-purple-600" />
+        <Card className="border-slate-200/60 shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="p-5 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center border border-purple-100">
+              <Award className="h-6 w-6 text-purple-600" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Điểm trung bình</p>
+              <p className="text-2xl font-bold text-slate-900">{data?.overview.averageScore}%</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Tỷ lệ hoàn thành</p>
-                <p className="text-2xl font-bold">{data?.overview.completionRate}%</p>
-              </div>
-              <Target className="h-8 w-8 text-orange-600" />
+        <Card className="border-slate-200/60 shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="p-5 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center border border-amber-100">
+              <Target className="h-6 w-6 text-amber-600" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Tỷ lệ hoàn thành</p>
+              <p className="text-2xl font-bold text-slate-900">{data?.overview.completionRate}%</p>
             </div>
           </CardContent>
         </Card>
-      </div>
+      </div >
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      < div className="grid grid-cols-1 lg:grid-cols-2 gap-6" >
         {/* Daily Activity */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Hoạt động theo ngày</CardTitle>
-            <CardDescription>Số lượt làm bài và người dùng hoạt động</CardDescription>
+        < Card className="border-slate-200/60 shadow-sm rounded-xl overflow-hidden hover:shadow-md transition-all duration-300" >
+          <CardHeader className="border-b border-slate-50 bg-slate-50/50">
+            <CardTitle className="text-slate-800 text-lg font-bold tracking-tight">Hoạt động theo ngày</CardTitle>
+            <CardDescription className="text-xs font-medium text-slate-500 uppercase tracking-wider">Số lượt làm bài và người dùng hoạt động</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -366,13 +382,13 @@ export function QuizAnalytics() {
               </AreaChart>
             </ResponsiveContainer>
           </CardContent>
-        </Card>
+        </Card >
 
         {/* Score Distribution */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Phân bố điểm số</CardTitle>
-            <CardDescription>Số lượng học sinh theo từng khoảng điểm</CardDescription>
+        < Card className="border-slate-200/60 shadow-sm rounded-xl overflow-hidden hover:shadow-md transition-all duration-300" >
+          <CardHeader className="border-b border-slate-50 bg-slate-50/50">
+            <CardTitle className="text-slate-800 text-lg font-bold tracking-tight">Phân bố điểm số</CardTitle>
+            <CardDescription className="text-xs font-medium text-slate-500 uppercase tracking-wider">Số lượng học sinh theo từng khoảng điểm</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -385,13 +401,13 @@ export function QuizAnalytics() {
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
-        </Card>
+        </Card >
 
         {/* Popular Quizzes */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Bài thi phổ biến</CardTitle>
-            <CardDescription>Top 5 bài thi có nhiều lượt làm nhất</CardDescription>
+        < Card className="border-slate-200/60 shadow-sm rounded-xl overflow-hidden hover:shadow-md transition-all duration-300" >
+          <CardHeader className="border-b border-slate-50 bg-slate-50/50">
+            <CardTitle className="text-slate-800 text-lg font-bold tracking-tight">Bài thi phổ biến</CardTitle>
+            <CardDescription className="text-xs font-medium text-slate-500 uppercase tracking-wider">Top 5 bài thi có nhiều lượt làm nhất</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -406,20 +422,20 @@ export function QuizAnalytics() {
                       <p className="text-sm text-muted-foreground">{quiz.attempts} lượt làm</p>
                     </div>
                   </div>
-                  <Badge variant="secondary">
+                  <Badge className="bg-slate-50 text-slate-600 border-slate-200 text-[10px] uppercase font-bold">
                     {quiz.averageScore.toFixed(1)}%
                   </Badge>
                 </div>
               ))}
             </div>
           </CardContent>
-        </Card>
+        </Card >
 
         {/* User Engagement */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Mức độ tham gia</CardTitle>
-            <CardDescription>Tỷ lệ người dùng hoạt động</CardDescription>
+        < Card className="border-slate-200/60 shadow-sm rounded-xl overflow-hidden hover:shadow-md transition-all duration-300" >
+          <CardHeader className="border-b border-slate-50 bg-slate-50/50">
+            <CardTitle className="text-slate-800 text-lg font-bold tracking-tight">Mức độ tham gia</CardTitle>
+            <CardDescription className="text-xs font-medium text-slate-500 uppercase tracking-wider">Tỷ lệ người dùng hoạt động</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -442,8 +458,8 @@ export function QuizAnalytics() {
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
-        </Card>
-      </div>
-    </div>
+        </Card >
+      </div >
+    </div >
   )
 }

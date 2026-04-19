@@ -5,14 +5,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ScrollToTop } from "@/components/scroll-to-top"
-import { 
-  BookOpen, Clock, Award, TrendingUp, Play, Eye, 
+import {
+  BookOpen, Clock, Award, TrendingUp, Play, Eye,
   Target, Calendar, Star, Trophy, CheckCircle,
-  BarChart3, Users, Zap, ArrowRight, Brain, 
+  BarChart3, Users, Rocket, ArrowRight, Brain,
   Shield, Smartphone, Globe, Heart, Code, Lightbulb,
-  Sparkles
+  Sparkles, Github, Facebook
 } from "lucide-react"
 import Link from "next/link"
+import { APP_CONFIG, FOUNDER_CONFIG } from "@/lib/constants"
 
 // Counter animation hook
 function useCounter(end: number, duration: number = 2000, delay: number = 0) {
@@ -35,7 +36,7 @@ function useCounter(end: number, duration: number = 2000, delay: number = 0) {
       if (!startTime) startTime = timestamp
       const progress = timestamp - startTime
       const percentage = Math.min(progress / duration, 1)
-      
+
       // Easing function for smooth animation
       const easeOutQuart = 1 - Math.pow(1 - percentage, 4)
       setCount(Math.floor(easeOutQuart * end))
@@ -66,15 +67,15 @@ export function LandingPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50 overflow-hidden">
       {/* Scroll to Top Button */}
       <ScrollToTop />
-      
+
       {/* Navbar Spacer */}
       <div className="h-20"></div>
-      
+
       {/* Hero Section */}
       <section className="relative px-4 sm:px-6 pt-12 sm:pt-16 pb-16 sm:pb-20">
         {/* Animated Background Gradient */}
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-cyan-500/10 to-purple-600/10 animate-gradient-x"></div>
-        
+
         {/* Floating Shapes */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {/* Large Circle - Top Right */}
@@ -83,7 +84,7 @@ export function LandingPage() {
           <div className="absolute -bottom-32 -left-32 w-80 h-80 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-3xl animate-float-delayed"></div>
           {/* Small Circle - Center */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-gradient-to-br from-cyan-400/10 to-blue-400/10 rounded-full blur-2xl animate-pulse-slow"></div>
-          
+
           {/* Floating Education Icons - Centered distribution */}
           <BookOpen className="absolute top-20 right-[15%] w-10 h-10 sm:w-12 sm:h-12 text-blue-400/40 animate-float" />
           <Trophy className="absolute top-28 left-[15%] w-9 h-9 sm:w-11 sm:h-11 text-yellow-400/40 animate-twinkle-delayed" />
@@ -100,25 +101,25 @@ export function LandingPage() {
                 Hệ thống luyện thi thông minh
               </Badge>
             </div>
-            
+
             {/* Main Heading with Gradient Animation */}
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-8 sm:mb-10 font-heading leading-tight">
               <span className="inline-block text-slate-800 hover:scale-105 transition-transform duration-300">
-                QuizMaster
+                {APP_CONFIG.name}
               </span>
               <span className="block mt-4 sm:mt-6 pt-2 pb-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-cyan-500 to-purple-600 animate-gradient-x bg-[length:200%_auto]">
-                Luyện thi trắc nghiệm
+                Nâng Tầm Tri Thức
               </span>
             </h1>
-            
+
             {/* Subtitle with fade-in animation */}
             <p className="text-lg sm:text-xl md:text-2xl text-slate-600 font-body max-w-3xl mx-auto mb-8 sm:mb-10 leading-relaxed px-4">
               Nền tảng luyện thi trắc nghiệm trực tuyến{" "}
-              <span className="font-semibold text-blue-600">hiện đại</span>, giúp học sinh Việt Nam 
+              <span className="font-semibold text-blue-600">hiện đại</span>, giúp học sinh Việt Nam
               chuẩn bị tốt nhất cho các kỳ thi quan trọng
             </p>
           </div>
-          
+
           {/* CTA Buttons with enhanced hover effects */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12 sm:mb-16 px-4">
             <Link href="/login" className="group">
@@ -280,57 +281,51 @@ export function LandingPage() {
       </section>
 
       {/* About Section */}
-      <section id="about" className="py-20 px-6 bg-white/50">
+      <section id="about" className="py-24 px-6 bg-slate-50/50 relative overflow-hidden">
         <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-4xl font-bold text-slate-800 mb-6 font-heading">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div className="space-y-8">
+              <h2 className="text-4xl sm:text-5xl font-bold text-slate-900 font-heading tracking-tight leading-tight">
                 Về tác giả
               </h2>
-              <p className="text-lg text-slate-600 font-body mb-6">
-                Tôi là <strong>Nguyễn Huy Điền</strong>, sinh viên năm cuối ngành Công nghệ thông tin 
-                tại Đại học Nam Cần Thơ. Chuyên về phát triển Web Fullstack với 
-                niềm đam mê tạo ra những sản phẩm công nghệ hữu ích cho cộng đồng.
+              <p className="text-slate-600 leading-relaxed">
+                Tôi là <strong className="text-slate-900">{FOUNDER_CONFIG.name}</strong>, {FOUNDER_CONFIG.bio}
               </p>
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-blue-100">
-                    <Heart className="h-5 w-5 text-blue-600" />
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-xl bg-blue-50 text-blue-600">
+                    <Heart className="h-5 w-5" />
                   </div>
-                  <span className="font-body">Tâm huyết với giáo dục Việt Nam</span>
+                  <span className="font-medium text-slate-700">Tâm huyết với giáo dục Việt Nam</span>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-green-100">
-                    <Code className="h-5 w-5 text-green-600" />
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-xl bg-green-50 text-green-600">
+                    <Code className="h-5 w-5" />
                   </div>
-                  <span className="font-body">Fullstack Developer - Next.js, TypeScript</span>
+                  <span className="font-medium text-slate-700">Fullstack Developer - Next.js, TypeScript</span>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-purple-100">
-                    <Lightbulb className="h-5 w-5 text-purple-600" />
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-xl bg-purple-50 text-purple-600">
+                    <Lightbulb className="h-5 w-5" />
                   </div>
-                  <span className="font-body">Đang sinh sống và học tập tại Cần Thơ</span>
+                  <span className="font-medium text-slate-700">Đang sinh sống và học tập tại {FOUNDER_CONFIG.location}</span>
                 </div>
               </div>
             </div>
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-cyan-500/10 rounded-2xl"></div>
-              <div className="relative bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-xl">
-                <div className="text-center">
-                  <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full mx-auto mb-6 flex items-center justify-center">
-                    <Code className="h-12 w-12 text-white" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-slate-800 mb-4 font-heading">
-                    Dự án cá nhân
-                  </h3>
-                  <p className="text-slate-600 font-body mb-4">
-                    Được phát triển với công nghệ hiện đại: Next.js 14, 
-                    TypeScript, Firebase và Tailwind CSS
-                  </p>
-                  <div className="text-sm text-slate-500">
-                    🎓 Đại học Nam Cần Thơ<br/>
-                    📍 Cần Thơ, Việt Nam
-                  </div>
+
+            <div className="relative group">
+              <div className="absolute -inset-4 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-[2.5rem] blur-2xl opacity-20 group-hover:opacity-30 transition-opacity duration-500"></div>
+              <div className="relative bg-white rounded-[2rem] p-10 shadow-2xl border border-slate-100 flex flex-col items-center justify-center text-center">
+                <div className="w-20 h-20 bg-[#1da1f2] rounded-full flex items-center justify-center text-white shadow-lg mb-6">
+                  <Code className="w-10 h-10" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 mb-4">Dự án cá nhân</h3>
+                <p className="text-sm text-slate-600 leading-relaxed mb-6 max-w-sm">
+                  Được phát triển với công nghệ hiện đại: Next.js 14, TypeScript, Firebase và Tailwind CSS
+                </p>
+                <div className="space-y-1 text-sm font-medium text-slate-500">
+                  <p>🎓 Đại học Nam Cần Thơ</p>
+                  <p>📍 {FOUNDER_CONFIG.location}, Việt Nam</p>
                 </div>
               </div>
             </div>
@@ -339,44 +334,48 @@ export function LandingPage() {
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="py-20 px-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-slate-800 mb-4 font-heading">
-              Liên hệ
+      <section id="contact" className="py-24 px-6 relative overflow-hidden">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-16 space-y-4">
+            <h2 className="text-4xl sm:text-5xl font-bold text-slate-900 font-heading tracking-tight">
+              Kết Nối & Hỗ Trợ
             </h2>
-            <p className="text-xl text-slate-600 font-body">
-              Kết nối với tôi qua các kênh sau
+            <p className="text-xl text-slate-500 max-w-2xl mx-auto font-medium">
+              Tôi luôn sẵn sàng lắng nghe và giải đáp mọi thắc mắc của bạn
             </p>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* GitHub */}
-            <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300">
-              <CardContent className="p-6 text-center">
-                <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-                  <Code className="h-8 w-8 text-gray-700" />
+            <Card className="border-0 bg-white shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 rounded-[2rem] group overflow-hidden">
+              <CardContent className="p-8 text-center space-y-6">
+                <div className="w-16 h-16 bg-slate-50 rounded-2xl mx-auto flex items-center justify-center text-slate-900 group-hover:bg-slate-900 group-hover:text-white transition-colors duration-300">
+                  <Github className="h-8 w-8" />
                 </div>
-                <h3 className="font-bold text-lg mb-2">GitHub</h3>
-                <p className="text-slate-600 mb-4 font-mono text-sm">huydien23</p>
-                <Button variant="outline" size="sm" asChild>
-                  <a href="https://github.com/huydien23" target="_blank" rel="noopener noreferrer">
-                    Xem Profile
-                  </a>
+                <div className="space-y-2">
+                  <h3 className="font-bold text-xl">GitHub</h3>
+                  {/* <p className="text-slate-400 font-mono text-xs tracking-tighter">github.com/{FOUNDER_CONFIG.socials.github}</p> */}
+                </div>
+                <Button variant="outline" className="w-full rounded-xl border-slate-200 hover:border-blue-600 hover:text-blue-600 font-bold" asChild>
+                  {/* <a href={`https://github.com/${FOUNDER_CONFIG.socials.github}`} target="_blank" rel="noopener noreferrer">
+                    Ghé thăm
+                  </a> */}
                 </Button>
               </CardContent>
             </Card>
 
             {/* Facebook */}
-            <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300">
-              <CardContent className="p-6 text-center">
-                <div className="w-16 h-16 bg-blue-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-                  <Users className="h-8 w-8 text-blue-600" />
+            <Card className="border-0 bg-white shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 rounded-[2rem] group overflow-hidden">
+              <CardContent className="p-8 text-center space-y-6">
+                <div className="w-16 h-16 bg-blue-50 rounded-2xl mx-auto flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+                  <Facebook className="h-8 w-8" />
                 </div>
-                <h3 className="font-bold text-lg mb-2">Facebook</h3>
-                <p className="text-slate-600 mb-4">Nguyễn Huy Điền</p>
-                <Button variant="outline" size="sm" asChild>
-                  <a href="https://www.facebook.com/huydien203/" target="_blank" rel="noopener noreferrer">
+                <div className="space-y-2">
+                  <h3 className="font-bold text-xl">Facebook</h3>
+                  <p className="text-slate-400 text-xs truncate uppercase tracking-widest">{FOUNDER_CONFIG.name}</p>
+                </div>
+                <Button variant="outline" className="w-full rounded-xl border-slate-200 hover:border-blue-600 hover:text-blue-600 font-bold" asChild>
+                  <a href={`https://www.facebook.com/${FOUNDER_CONFIG.socials.facebook}`} target="_blank" rel="noopener noreferrer">
                     Kết bạn
                   </a>
                 </Button>
@@ -384,34 +383,24 @@ export function LandingPage() {
             </Card>
 
             {/* Zalo */}
-            <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300">
-              <CardContent className="p-6 text-center">
-                <div className="w-16 h-16 bg-green-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-                  <Smartphone className="h-8 w-8 text-green-600" />
+            <Card className="border-0 bg-white shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 rounded-[2rem] group overflow-hidden">
+              <CardContent className="p-8 text-center space-y-6">
+                <div className="w-16 h-16 bg-green-50 rounded-2xl mx-auto flex items-center justify-center text-green-600 group-hover:bg-green-600 group-hover:text-white transition-colors duration-300">
+                  <Smartphone className="h-8 w-8" />
                 </div>
-                <h3 className="font-bold text-lg mb-2">Zalo</h3>
-                <p className="text-slate-600 mb-4 font-mono">0945700813</p>
-                <Button variant="outline" size="sm" asChild>
-                  <a href="tel:0945700813">
-                    Gọi điện
+                <div className="space-y-2">
+                  <h3 className="font-bold text-xl">Zalo / Hotline</h3>
+                  <p className="text-slate-400 font-mono text-xs">{FOUNDER_CONFIG.socials.zalo}</p>
+                </div>
+                <Button variant="outline" className="w-full rounded-xl border-slate-200 hover:border-blue-600 hover:text-blue-600 font-bold" asChild>
+                  <a href={`tel:${FOUNDER_CONFIG.socials.zalo}`}>
+                    Liên hệ ngay
                   </a>
                 </Button>
               </CardContent>
             </Card>
           </div>
 
-          <div className="text-center mt-12">
-            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-2xl p-8">
-              <h3 className="text-2xl font-bold text-slate-800 mb-4 font-heading">
-                Cảm ơn bạn đã quan tâm!
-              </h3>
-              <p className="text-slate-600 font-body max-w-2xl mx-auto">
-                QuizMaster là dự án Portfolio của tôi, được phát triển với mong muốn 
-                tạo ra công cụ hữu ích cho việc luyện thi trắc nghiệm. Mọi góp ý và 
-                phản hồi đều rất được hoan nghênh!
-              </p>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -419,14 +408,14 @@ export function LandingPage() {
       <section className="relative py-20 sm:py-24 lg:py-32 overflow-hidden">
         {/* Animated Background matching hero section - Full width */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-cyan-50 to-purple-50 animate-gradient-x"></div>
-        
+
         {/* Floating Shapes for consistency */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {/* Larger shapes for full width impact */}
           <div className="absolute -top-20 right-1/4 w-72 h-72 bg-gradient-to-br from-blue-400/20 to-cyan-400/20 rounded-full blur-3xl animate-float"></div>
           <div className="absolute -bottom-20 left-1/4 w-96 h-96 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-3xl animate-float-delayed"></div>
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-br from-cyan-400/10 to-blue-400/10 rounded-full blur-2xl animate-pulse-slow"></div>
-          
+
           {/* Floating Education Icons - Centered around content */}
           <Brain className="absolute top-24 left-[15%] w-10 h-10 sm:w-12 sm:h-12 text-blue-400/40 animate-pulse-slow" />
           <Trophy className="absolute top-32 right-[15%] w-10 h-10 sm:w-12 sm:h-12 text-yellow-400/40 animate-twinkle-delayed" />
@@ -452,11 +441,11 @@ export function LandingPage() {
                 hành trình học tập?
               </span>
             </h2>
-            
+
             <p className="text-lg sm:text-xl text-slate-600 mb-8 sm:mb-10 font-body max-w-2xl mx-auto leading-relaxed">
-              Tham gia cùng <span className="font-semibold text-blue-600">hàng nghìn học sinh</span> đã tin tưởng QuizMaster
+              Tham gia cùng <span className="font-semibold text-blue-600">hàng nghìn học sinh</span> đã tin tưởng {APP_CONFIG.name}
             </p>
-            
+
             {/* CTA Buttons matching hero section style */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8 sm:mb-10">
               <Link href="/login" className="group">
@@ -485,7 +474,7 @@ export function LandingPage() {
                 <span className="text-sm sm:text-base font-medium">Bảo mật tuyệt đối</span>
               </div>
               <div className="flex items-center gap-2 text-slate-600">
-                <Zap className="h-5 w-5 text-yellow-500" />
+                <Rocket className="h-5 w-5 text-yellow-500" />
                 <span className="text-sm sm:text-base font-medium">Cập nhật liên tục</span>
               </div>
             </div>

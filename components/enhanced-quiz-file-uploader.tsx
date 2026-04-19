@@ -91,10 +91,10 @@ export function EnhancedQuizFileUploader({ onQuestionsImported }: QuizFileUpload
         const hasValidOptions = q.options && q.options.length >= 2
         const hasMissingAnswer = q.correctAnswer === -1
         const hasValidQuestion = q.question && q.question.trim().length > 0
-        
+
         let warning = ''
         let hasWarning = false
-        
+
         if (!hasValidQuestion) {
           warning = 'Thiếu nội dung câu hỏi'
           hasWarning = true
@@ -105,7 +105,7 @@ export function EnhancedQuizFileUploader({ onQuestionsImported }: QuizFileUpload
           warning = 'Chưa có đáp án đúng'
           hasWarning = true
         }
-        
+
         return {
           ...q,
           hasWarning,
@@ -137,10 +137,10 @@ export function EnhancedQuizFileUploader({ onQuestionsImported }: QuizFileUpload
           }
 
           const data = JSON.parse(content)
-          
+
           // Check if data is array (like your quiz-python.json) or object with questions property
           let questionsArray: any[] = []
-          
+
           if (Array.isArray(data)) {
             // Direct array of questions
             questionsArray = data
@@ -160,11 +160,11 @@ export function EnhancedQuizFileUploader({ onQuestionsImported }: QuizFileUpload
             if (!q || typeof q !== 'object') {
               throw new Error(`Câu hỏi ${index + 1} không hợp lệ`)
             }
-            
+
             if (!q.question || typeof q.question !== 'string') {
               throw new Error(`Câu hỏi ${index + 1} thiếu 'question' hoặc không phải chuỗi`)
             }
-            
+
             if (!q.options || !Array.isArray(q.options)) {
               throw new Error(`Câu hỏi ${index + 1} thiếu 'options' hoặc không phải mảng`)
             }
@@ -172,7 +172,7 @@ export function EnhancedQuizFileUploader({ onQuestionsImported }: QuizFileUpload
             if (q.options.length < 2) {
               throw new Error(`Câu hỏi ${index + 1} cần ít nhất 2 lựa chọn`)
             }
-            
+
             // Handle both 'correct' and 'correctAnswer' fields - default to -1 (unknown)
             let correctAnswer = -1
             if (typeof q.correctAnswer === 'number' && q.correctAnswer >= 0) {
@@ -180,12 +180,12 @@ export function EnhancedQuizFileUploader({ onQuestionsImported }: QuizFileUpload
             } else if (typeof q.correct === 'number' && q.correct >= 0) {
               correctAnswer = q.correct
             }
-            
+
             // Validate correct answer index - keep -1 if invalid
             if (correctAnswer >= 0 && (correctAnswer < 0 || correctAnswer >= q.options.length)) {
               correctAnswer = -1 // Set to unknown if invalid index
             }
-            
+
             return {
               id: q.id ? String(q.id) : `${Date.now()}-${index}`,
               question: String(q.question).trim(),
@@ -220,13 +220,13 @@ export function EnhancedQuizFileUploader({ onQuestionsImported }: QuizFileUpload
         } catch (e) {
           throw new Error('Thư viện xử lý Word file chưa được cài đặt. Vui lòng liên hệ admin.')
         }
-        
+
         const arrayBuffer = await file.arrayBuffer()
         const result = await mammoth.extractRawText({ arrayBuffer })
         const text = result.value
-        
+
         const questions = parseTextToQuestions(text)
-        
+
         resolve({
           questions,
           title: "Quiz từ Word file",
@@ -249,10 +249,10 @@ export function EnhancedQuizFileUploader({ onQuestionsImported }: QuizFileUpload
         } catch (e) {
           throw new Error('Thư viện xử lý PDF chưa được cài đặt. Vui lòng liên hệ admin.')
         }
-        
+
         const arrayBuffer = await file.arrayBuffer()
         const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
-        
+
         let fullText = ""
         for (let i = 1; i <= pdf.numPages; i++) {
           const page = await pdf.getPage(i)
@@ -260,9 +260,9 @@ export function EnhancedQuizFileUploader({ onQuestionsImported }: QuizFileUpload
           const pageText = textContent.items.map((item: any) => item.str).join(' ')
           fullText += pageText + "\n"
         }
-        
+
         const questions = parseTextToQuestions(fullText)
-        
+
         resolve({
           questions,
           title: "Quiz từ PDF file",
@@ -285,15 +285,15 @@ export function EnhancedQuizFileUploader({ onQuestionsImported }: QuizFileUpload
         } catch (e) {
           throw new Error('Thư viện xử lý Excel chưa được cài đặt. Vui lòng liên hệ admin.')
         }
-        
+
         const arrayBuffer = await file.arrayBuffer()
         const workbook = XLSX.read(arrayBuffer, { type: 'array' })
         const sheetName = workbook.SheetNames[0]
         const worksheet = workbook.Sheets[sheetName]
         const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 })
-        
+
         const questions: Question[] = []
-        
+
         for (let i = 1; i < data.length; i++) { // Skip header row
           const row = data[i] as any[]
           if (row && row[0] && row[1] && row[2] && row[3] && row[4]) {
@@ -304,7 +304,7 @@ export function EnhancedQuizFileUploader({ onQuestionsImported }: QuizFileUpload
               String(row[3] || "").trim(),
               String(row[4] || "").trim(),
             ]
-            
+
             let correctAnswer = -1 // Default to unknown
             if (row[5] && String(row[5]).trim()) {
               const correctAnswerLetter = String(row[5]).trim().toUpperCase()
@@ -316,9 +316,9 @@ export function EnhancedQuizFileUploader({ onQuestionsImported }: QuizFileUpload
                 default: correctAnswer = -1 // Keep unknown if invalid
               }
             }
-            
+
             const explanation = String(row[6] || "").trim()
-            
+
             questions.push({
               id: Date.now().toString() + i,
               question,
@@ -328,7 +328,7 @@ export function EnhancedQuizFileUploader({ onQuestionsImported }: QuizFileUpload
             })
           }
         }
-        
+
         resolve({
           questions,
           title: "Quiz từ Excel file",
@@ -343,72 +343,153 @@ export function EnhancedQuizFileUploader({ onQuestionsImported }: QuizFileUpload
 
   const parseTextToQuestions = (text: string): Question[] => {
     const questions: Question[] = []
-    const questionBlocks = text.split(/(?=Question:|Câu hỏi:)/i).filter(block => block.trim())
-    
+
+    // Normalize line breaks
+    const normalizedText = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+
+    // Try multiple splitting strategies
+    let questionBlocks: string[] = []
+
+    // Strategy 1: Split by numbered questions (1. 2. 3. etc)
+    const numberedPattern = /(?=^\d+[.)\s]+)/gm
+    const numberedBlocks = normalizedText.split(numberedPattern).filter(block => block.trim())
+
+    // Strategy 2: Split by "Question:" or "Câu hỏi:" or "Câu"
+    const labeledPattern = /(?=(?:Question|Câu hỏi|Câu)\s*\d*\s*[:.)]?\s*)/gi
+    const labeledBlocks = normalizedText.split(labeledPattern).filter(block => block.trim())
+
+    // Use whichever strategy produces more valid blocks
+    questionBlocks = numberedBlocks.length >= labeledBlocks.length ? numberedBlocks : labeledBlocks
+
+    // If still no good splits, try splitting by double newlines
+    if (questionBlocks.length <= 1) {
+      questionBlocks = normalizedText.split(/\n\s*\n/).filter(block => block.trim())
+    }
+
     questionBlocks.forEach((block, index) => {
       try {
         const lines = block.split('\n').map(line => line.trim()).filter(line => line)
-        
-        if (lines.length < 6) return // Not enough lines for a complete question
-        
-        const questionLine = lines.find(line => 
-          line.toLowerCase().startsWith('question:') || 
-          line.toLowerCase().startsWith('câu hỏi:')
-        )
-        
-        if (!questionLine) return
-        
-        const question = questionLine.replace(/^(question:|câu hỏi:)/i, '').trim()
-        
-        const options: string[] = []
-        const optionRegex = /^[A-D]\)?\s*(.+)$/i
-        
-        lines.forEach(line => {
-          const optionMatch = line.match(optionRegex)
-          if (optionMatch && options.length < 4) {
-            options.push(optionMatch[1].trim())
-          }
-        })
-        
-        if (options.length !== 4) return
-        
-        let correctAnswer = -1 // Default to unknown
-        const answerLine = lines.find(line => 
-          line.toLowerCase().startsWith('answer:') || 
-          line.toLowerCase().startsWith('đáp án:')
-        )
-        
-        if (answerLine) {
-          const answerLetter = answerLine.replace(/^(answer:|đáp án:)/i, '').trim().toUpperCase()
-          switch (answerLetter) {
-            case "A": correctAnswer = 0; break
-            case "B": correctAnswer = 1; break
-            case "C": correctAnswer = 2; break
-            case "D": correctAnswer = 3; break
-            default: correctAnswer = -1 // Keep unknown if invalid
+
+        if (lines.length < 3) return // Need at least question + 2 options
+
+        // Find question text - first non-empty line that's not an option
+        let questionText = ''
+        let questionLineIndex = 0
+
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i]
+          // Skip if it's an option line (starts with A. B. C. D.)
+          if (/^[A-Da-d][.):\s]/i.test(line)) continue
+          // Skip if it's an answer line
+          if (/^(đáp án|answer|correct|trả lời)/i.test(line)) continue
+
+          // Remove leading number and question prefix
+          questionText = line
+            .replace(/^\d+[.):\s]+/, '') // Remove "1." "2)" "3:" etc
+            .replace(/^(question|câu hỏi|câu)\s*\d*\s*[:.)]?\s*/i, '') // Remove "Question:", "Câu hỏi:" etc
+            .trim()
+
+          if (questionText.length > 10) { // Valid question should be longer than 10 chars
+            questionLineIndex = i
+            break
           }
         }
-        
-        const explanationLine = lines.find(line => 
-          line.toLowerCase().startsWith('explanation:') || 
-          line.toLowerCase().startsWith('giải thích:')
-        )
-        
-        const explanation = explanationLine ? 
-          explanationLine.replace(/^(explanation:|giải thích:)/i, '').trim() : ""
-        
+
+        if (!questionText) return
+
+        // Find options - support multiple formats: A. A) A: a.
+        const options: string[] = []
+        const optionPatterns = [
+          /^[Aa][.):\s]\s*(.+)$/,
+          /^[Bb][.):\s]\s*(.+)$/,
+          /^[Cc][.):\s]\s*(.+)$/,
+          /^[Dd][.):\s]\s*(.+)$/,
+        ]
+
+        lines.forEach(line => {
+          for (let i = 0; i < optionPatterns.length; i++) {
+            const match = line.match(optionPatterns[i])
+            if (match && options.length === i) {
+              options.push(match[1].trim())
+              break
+            }
+          }
+        })
+
+        // If we didn't find 4 options with strict matching, try flexible matching
+        if (options.length < 4) {
+          const flexOptions: string[] = []
+          const flexPattern = /^[A-Da-d][.):\s]\s*(.+)$/
+
+          lines.forEach(line => {
+            const match = line.match(flexPattern)
+            if (match && flexOptions.length < 4) {
+              flexOptions.push(match[1].trim())
+            }
+          })
+
+          if (flexOptions.length >= 2) {
+            options.length = 0
+            options.push(...flexOptions)
+          }
+        }
+
+        if (options.length < 2) return // Need at least 2 options
+
+        // Find correct answer - support multiple formats
+        let correctAnswer = -1
+        let explanation = ''
+
+        const answerPatterns = [
+          /^đáp án\s*[:.]\s*([A-Da-d])/i,
+          /^answer\s*[:.]\s*([A-Da-d])/i,
+          /^correct\s*[:.]\s*([A-Da-d])/i,
+          /^trả lời\s*[:.]\s*([A-Da-d])/i,
+          /đáp án\s*[:.]\s*([A-Da-d])/i,
+        ]
+
+        for (const line of lines) {
+          for (const pattern of answerPatterns) {
+            const match = line.match(pattern)
+            if (match) {
+              const letter = match[1].toUpperCase()
+              correctAnswer = letter.charCodeAt(0) - 65 // A=0, B=1, C=2, D=3
+
+              // Try to extract explanation from the same line (after the answer)
+              // Format: "Đáp án: A. explanation text (more explanation)"
+              const explanationMatch = line.match(/^đáp án\s*[:.]\s*[A-Da-d][.):\s]*(.+?)(?:\((.+)\))?$/i)
+              if (explanationMatch) {
+                explanation = (explanationMatch[2] || explanationMatch[1] || '').trim()
+              }
+              break
+            }
+          }
+          if (correctAnswer !== -1) break
+        }
+
+        // Also look for separate explanation lines
+        if (!explanation) {
+          const explanationLine = lines.find(line =>
+            /^(explanation|giải thích|lý do)\s*[:.]/i.test(line)
+          )
+          if (explanationLine) {
+            explanation = explanationLine.replace(/^(explanation|giải thích|lý do)\s*[:.]\s*/i, '').trim()
+          }
+        }
+
         questions.push({
-          id: Date.now().toString() + index,
-          question,
-          options,
-          correctAnswer,
+          id: `${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`,
+          question: questionText,
+          options: options.slice(0, 4), // Max 4 options
+          correctAnswer: correctAnswer >= 0 && correctAnswer < options.length ? correctAnswer : -1,
           explanation,
         })
       } catch (error) {
+        console.error('Error parsing question block:', error)
         // Skip this question if parsing fails
       }
     })
-    
+
     return questions
   }
 
@@ -430,25 +511,25 @@ export function EnhancedQuizFileUploader({ onQuestionsImported }: QuizFileUpload
       ...updatedQuestions[index],
       [field]: value
     }
-    
+
     // Update warnings
     if (field === 'correctAnswer' && value !== -1) {
       updatedQuestions[index].hasWarning = false
       updatedQuestions[index].warningMessage = ''
     }
-    
+
     setEditingQuestions(updatedQuestions)
   }
 
   const handleConfirmImport = () => {
     if (editingQuestions.length === 0) return
-    
+
     onQuestionsImported(editingQuestions)
     setSuccess(`Đã import thành công ${editingQuestions.length} câu hỏi!`)
     setPreviewMode(false)
     setParsedData(null)
     setEditingQuestions([])
-    
+
     // Reset file input
     if (fileInputRef.current) {
       fileInputRef.current.value = ""
@@ -482,7 +563,7 @@ export function EnhancedQuizFileUploader({ onQuestionsImported }: QuizFileUpload
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Quay lại
               </Button>
-              <Button onClick={handleConfirmImport} className="bg-green-600 hover:bg-green-700">
+              <Button onClick={handleConfirmImport} className="bg-green-600 hover:bg-green-700 text-white">
                 <Save className="h-4 w-4 mr-2" />
                 Xác nhận import
               </Button>
@@ -598,154 +679,61 @@ export function EnhancedQuizFileUploader({ onQuestionsImported }: QuizFileUpload
   }
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Upload className="h-5 w-5" />
-          Import Quiz từ File
-        </CardTitle>
-        <CardDescription>
-          Upload file để tự động tạo câu hỏi. Hỗ trợ các định dạng: JSON, Word (.docx), PDF, Excel (.xlsx)
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* File info */}
-        {fileInfo && (
-          <div className="p-3 bg-slate-50 rounded-lg border">
-            <div className="flex items-center gap-2">
-              <File className="h-4 w-4 text-slate-600" />
-              <span className="text-sm font-medium">{fileInfo.name}</span>
-              <Badge variant="outline">{formatFileSize(fileInfo.size)}</Badge>
-            </div>
-          </div>
-        )}
-
-        {/* Supported formats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {supportedFormats.map((format) => (
-            <div key={format.type} className="flex items-center space-x-2 p-3 border rounded-lg">
-              <format.icon className="h-5 w-5 text-muted-foreground" />
-              <div className="flex-1">
-                <Badge variant="outline">{format.extension}</Badge>
-                <p className="text-xs text-muted-foreground mt-1">{format.description}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Upload button */}
-        <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-muted-foreground/25 rounded-lg hover:border-muted-foreground/50 transition-colors">
-          <Upload className="h-12 w-12 text-muted-foreground mb-4" />
-          <Button onClick={triggerFileUpload} disabled={loading} size="lg" className="mb-2">
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {loading ? "Đang xử lý..." : "Chọn File để Upload"}
-          </Button>
-          <p className="text-sm text-muted-foreground">
-            Kéo thả file hoặc click để chọn • Tối đa 10MB
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Hỗ trợ: .json, .docx, .pdf, .xlsx, .xls
-          </p>
-        </div>
-
-        {/* Hidden file input */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".json,.docx,.pdf,.xlsx,.xls"
-          onChange={handleFileUpload}
-          className="hidden"
-        />
-
-        {/* Status messages */}
-        {error && (
-          <Alert variant="destructive">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-
-        {success && (
-          <Alert>
-            <CheckCircle className="h-4 w-4" />
-            <AlertDescription>{success}</AlertDescription>
-          </Alert>
-        )}
-
-        {/* Format examples */}
-        <div className="mt-6 space-y-4">
-          <div>
-            <h4 className="text-sm font-medium mb-2">Ví dụ định dạng JSON:</h4>
-            <pre className="text-xs bg-muted p-3 rounded-md overflow-x-auto">
-{`// Format 1: Object với questions array
-{
-  "title": "Quiz Toán học",
-  "description": "Bài kiểm tra kiến thức toán học",
-  "timeLimit": 30,
-  "questions": [
-    {
-      "id": 1,
-      "question": "2 + 2 = ?",
-      "options": ["3", "4", "5", "6"],
-      "correctAnswer": 1,
-      "explanation": "2 + 2 = 4"
-    }
-  ]
-}
-
-// Format 2: Array trực tiếp (như file quiz-python.json)
-[
-  {
-    "id": 1,
-    "question": "Python là gì?",
-    "options": ["A. Ngôn ngữ lập trình", "B. Con rắn", "C. Framework", "D. Database"],
-    "correct": 0,
-    "explanation": "Python là ngôn ngữ lập trình bậc cao"
-  }
-]`}
-            </pre>
-          </div>
-
-          <div>
-            <h4 className="text-sm font-medium mb-2">Định dạng Excel (.xlsx):</h4>
-            <div className="text-xs bg-muted p-3 rounded-md">
-              <p className="mb-2">Cấu trúc bảng tính:</p>
-              <ul className="space-y-1">
-                <li>Cột A: Câu hỏi</li>
-                <li>Cột B: Lựa chọn A</li>
-                <li>Cột C: Lựa chọn B</li>
-                <li>Cột D: Lựa chọn C</li>
-                <li>Cột E: Lựa chọn D</li>
-                <li>Cột F: Đáp án đúng (A, B, C, hoặc D)</li>
-                <li>Cột G: Giải thích (tùy chọn)</li>
-              </ul>
-            </div>
-          </div>
-
-          <div>
-            <h4 className="text-sm font-medium mb-2">Định dạng Word/PDF:</h4>
-            <div className="text-xs bg-muted p-3 rounded-md">
-              <pre>
-{`Question: What is 2+2?
-A) 3
-B) 4
-C) 5  
-D) 6
-Answer: B
-Explanation: 2+2 equals 4
-
-Question: Capital of Vietnam?
-A) Hanoi
-B) Ho Chi Minh City
-C) Da Nang
-D) Hue
-Answer: A
-Explanation: Hanoi is the capital`}
-              </pre>
-            </div>
+    <div className="p-6">
+      {/* File info when selected */}
+      {fileInfo && (
+        <div className="p-3 bg-blue-50 rounded-lg border border-blue-200 mb-4">
+          <div className="flex items-center gap-2">
+            <File className="h-4 w-4 text-blue-600" />
+            <span className="text-sm font-medium text-blue-800">{fileInfo.name}</span>
+            <Badge variant="outline" className="text-xs border-blue-300 text-blue-600">{formatFileSize(fileInfo.size)}</Badge>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      )}
+
+      {/* Dropzone */}
+      <div
+        className="flex flex-col items-center justify-center p-8 cursor-pointer"
+        onClick={triggerFileUpload}
+      >
+        <div className="p-4 bg-indigo-100 rounded-full mb-4">
+          <Upload className="h-8 w-8 text-indigo-600" />
+        </div>
+        <Button disabled={loading} className="bg-indigo-600 hover:bg-indigo-700 text-white mb-3">
+          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {loading ? "Đang xử lý..." : "Chọn file để upload"}
+        </Button>
+        <p className="text-sm text-slate-500 text-center">
+          Kéo thả hoặc click để chọn file
+        </p>
+        <p className="text-xs text-slate-400 mt-1">
+          Hỗ trợ: JSON, Excel (.xlsx), Word (.docx), PDF • Tối đa 10MB
+        </p>
+      </div>
+
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".json,.docx,.pdf,.xlsx,.xls"
+        onChange={handleFileUpload}
+        className="hidden"
+      />
+
+      {/* Status messages */}
+      {error && (
+        <Alert variant="destructive" className="mt-4">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {success && !previewMode && (
+        <Alert className="mt-4 bg-emerald-50 border-emerald-200">
+          <CheckCircle className="h-4 w-4 text-emerald-600" />
+          <AlertDescription className="text-emerald-700">{success}</AlertDescription>
+        </Alert>
+      )}
+    </div>
   )
 }

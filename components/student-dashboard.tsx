@@ -7,14 +7,16 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { 
-  BookOpen, Clock, Award, TrendingUp, Play, Eye, 
+import {
+  BookOpen, Clock, Award, TrendingUp, Play, Eye,
   Target, Calendar, Star, Trophy, CheckCircle,
-  BarChart3, Users, Zap, ArrowRight, X
+  BarChart3, Users, Rocket, ArrowRight, X, Bookmark, Bell
 } from "lucide-react"
 import { QuizService } from "@/lib/quiz-service"
 import { AdminService } from "@/lib/admin-service"
 import { LeaderboardService } from "@/lib/leaderboard-service"
+import { StudyPlanService } from "@/lib/study-plan-service"
+import { NotificationService, AuditLogService } from "@/lib/services"
 import { useAuth } from "@/hooks/use-auth"
 import type { Quiz, QuizAttempt, LeaderboardEntry } from "@/lib/types"
 import Link from "next/link"
@@ -22,7 +24,14 @@ import { useToast } from "@/components/toast-provider"
 import { formatDistanceToNow } from "date-fns"
 import { vi } from "date-fns/locale"
 import { InlineQuiz } from "@/components/inline-quiz"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
+import {
+  StudentAchievements,
+  StudentBookmarks,
+  StudentNotifications,
+  StudentStudyPlan
+} from "@/components/student"
+import { AchievementService } from "@/lib/services"
 
 interface StudentStats {
   totalAttempts: number
@@ -43,7 +52,8 @@ interface RecentQuiz {
 export function StudentDashboard() {
   const { user } = useAuth()
   const { success, error } = useToast()
-  
+  const router = useRouter()
+
   const [stats, setStats] = useState<StudentStats>({
     totalAttempts: 0,
     averageScore: 0,
@@ -53,7 +63,7 @@ export function StudentDashboard() {
     totalStudents: 0,
     recentImprovement: 0
   })
-  
+
   const [availableQuizzes, setAvailableQuizzes] = useState<Quiz[]>([])
   const [recentQuizzes, setRecentQuizzes] = useState<RecentQuiz[]>([])
   const [userAttempts, setUserAttempts] = useState<QuizAttempt[]>([])
@@ -72,10 +82,10 @@ export function StudentDashboard() {
     }
   }, [user])
 
-  // Read initial tab from query (?tab=quizzes|dashboard|leaderboard)
+  // Read initial tab from query (?tab=quizzes|dashboard|leaderboard|achievements|bookmarks|notifications)
   useEffect(() => {
     const tab = searchParams.get('tab')
-    if (tab === 'dashboard' || tab === 'quizzes' || tab === 'leaderboard') {
+    if (tab === 'dashboard' || tab === 'quizzes' || tab === 'leaderboard' || tab === 'achievements' || tab === 'bookmarks' || tab === 'notifications' || tab === 'study-plan') {
       setActiveTab(tab)
     }
   }, [searchParams])
@@ -83,7 +93,7 @@ export function StudentDashboard() {
   const loadStudentData = async () => {
     try {
       setLoading(true)
-      
+
       const [allQuizzes, allAttempts, allUsers, leaderboardData, activityData] = await Promise.all([
         QuizService.getAllQuizzes(),
         AdminService.getAllAttempts(),
@@ -102,10 +112,10 @@ export function StudentDashboard() {
 
       // Calculate stats
       const totalAttempts = myAttempts.length
-      const averageScore = totalAttempts > 0 
-        ? myAttempts.reduce((sum, attempt) => sum + (attempt.score || 0), 0) / totalAttempts 
+      const averageScore = totalAttempts > 0
+        ? myAttempts.reduce((sum, attempt) => sum + (attempt.score || 0), 0) / totalAttempts
         : 0
-      const bestScore = totalAttempts > 0 
+      const bestScore = totalAttempts > 0
         ? Math.max(...myAttempts.map(attempt => attempt.score || 0))
         : 0
       const quizzesCompleted = Math.min(
@@ -136,10 +146,10 @@ export function StudentDashboard() {
       const totalStudents = new Set(allAttempts.map(attempt => attempt.userId)).size
 
       // Calculate recent improvement (last 3 vs previous 3 attempts)
-      const sortedAttempts = myAttempts.sort((a, b) => 
+      const sortedAttempts = myAttempts.sort((a, b) =>
         new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
       )
-      
+
       let recentImprovement = 0
       if (sortedAttempts.length >= 6) {
         const recent3 = sortedAttempts.slice(0, 3).reduce((sum, a) => sum + (a.score || 0), 0) / 3
@@ -157,6 +167,11 @@ export function StudentDashboard() {
         totalStudents,
         recentImprovement: Math.round(recentImprovement * 100) / 100
       })
+
+      // Check for ranking achievements
+      if (myRank && user) {
+        AchievementService.checkRankingAchievements(user.id, myRank)
+      }
 
       // Prepare recent quizzes with attempt status
       const recentQuizzesWithStatus: RecentQuiz[] = activeQuizzes.slice(0, 6).map(quiz => {
@@ -197,18 +212,83 @@ export function StudentDashboard() {
   const handleStartQuiz = (quiz: Quiz) => {
     setSelectedQuiz(quiz)
     setShowQuiz(true)
+    if (user) {
+      AuditLogService.logQuizStart(quiz.id, user.id, user.name)
+    }
   }
 
   const handleViewResult = (quizId: string) => {
-    // Navigate to result page
-    window.location.href = `/quiz/${quizId}/result`
+    // Navigate to result page using Next.js router
+    router.push(`/quiz/${quizId}/result`)
   }
 
-  const handleQuizComplete = (score: number, timeSpent: number) => {
-    // Handle quiz completion
-    setShowQuiz(false)
-    setSelectedQuiz(null)
-    // You can add logic here to save the quiz attempt
+  const handleQuizComplete = async (result: {
+    score: number
+    timeSpent: number
+    answers: number[]
+    correctAnswers: number
+    totalQuestions: number
+  }) => {
+    if (!user || !selectedQuiz) return
+
+    try {
+      // 1. Save the attempt
+      const attempt: Omit<QuizAttempt, "id"> = {
+        userId: user.id,
+        quizId: selectedQuiz.id,
+        answers: result.answers,
+        score: result.score,
+        correctAnswers: result.correctAnswers,
+        totalQuestions: result.totalQuestions,
+        completedAt: new Date().toISOString(),
+        timeSpent: result.timeSpent,
+      }
+
+      await QuizService.submitQuizAttempt(attempt)
+
+      // 2. Check and award achievements
+      const allAttempts = await QuizService.getUserAttempts(user.id)
+      const newAchievements = await AchievementService.checkAndAwardAfterQuiz(user.id, { ...attempt, id: 'temp' } as QuizAttempt, allAttempts)
+
+      // 3. Update study plan goals
+      await StudyPlanService.updateProgressAfterQuiz(user.id, {
+        quizId: selectedQuiz.id,
+        score: result.score,
+        timeSpent: result.timeSpent
+      }, allAttempts)
+
+      // 4. Send notification
+      await NotificationService.sendQuizResultNotification(
+        user.id,
+        selectedQuiz.title,
+        result.score,
+        selectedQuiz.id
+      )
+
+      // 5. Log audit
+      await AuditLogService.logQuizSubmit(
+        'inline_temp',
+        user.id,
+        user.name,
+        result.score
+      )
+
+      if (newAchievements.length > 0) {
+        success(`Chúc mừng! Bạn đã đạt thêm ${newAchievements.length} thành tựu mới!`)
+      } else {
+        success("Đã hoàn thành bài thi và lưu kết quả!")
+      }
+
+      // 3. Refresh dashboard data
+      loadStudentData()
+
+    } catch (err) {
+      console.error("Error saving quiz attempt:", err)
+      error("Có lỗi khi lưu kết quả bài thi")
+    } finally {
+      setShowQuiz(false)
+      setSelectedQuiz(null)
+    }
   }
 
   const handleCloseQuiz = () => {
@@ -216,42 +296,33 @@ export function StudentDashboard() {
     setSelectedQuiz(null)
   }
 
-  const StatCard = ({ title, value, subtitle, icon: Icon, color, trend }: {
-    title: string
-    value: string | number
-    subtitle?: string
-    icon: React.ElementType
-    color: string
-    trend?: number
-  }) => (
-    <Card className="relative overflow-hidden group hover:shadow-xl transition-all duration-300 border-0 bg-white/90 backdrop-blur-sm shadow-lg hover:-translate-y-1">
-      <CardContent className="p-3 sm:p-4">
-        <div className="flex items-center gap-3">
-          {/* Icon với gradient background */}
-          <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl ${color} flex items-center justify-center flex-shrink-0 shadow-md group-hover:scale-110 transition-transform duration-300`}>
+  const StatCard = ({ title, value, subtitle, icon: Icon, color, trend }: { title: string, value: string | number, subtitle?: string, icon: any, color: string, trend?: number }) => (
+    <Card className="group relative overflow-hidden border-0 bg-white/80 backdrop-blur-md shadow-lg hover:shadow-xl transition-all duration-300">
+      <CardContent className="p-4 sm:p-6">
+        <div className="flex items-center justify-between mb-2">
+          <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl ${color} flex items-center justify-center flex-shrink-0 shadow-md transform group-hover:rotate-6 transition-transform duration-300`}>
             <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
           </div>
-          
-          {/* Content */}
-          <div className="flex-1 min-w-0">
-            <p className="text-xs sm:text-sm font-medium text-slate-600 font-body mb-0.5">{title}</p>
-            <div className="flex items-baseline gap-2">
-              <p className="text-xl sm:text-2xl font-bold text-slate-800 font-heading">{value}</p>
-              {subtitle && (
-                <p className="text-xs text-slate-500 font-body truncate">{subtitle}</p>
-              )}
+          {trend !== undefined && (
+            <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold ${trend >= 0 ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
+              <TrendingUp className={`h-3 w-3 ${trend < 0 ? 'rotate-180' : ''}`} />
+              {trend > 0 ? '+' : ''}{trend.toFixed(1)}%
             </div>
-            {trend !== undefined && (
-              <div className={`flex items-center text-xs mt-1 ${trend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                <TrendingUp className={`h-3 w-3 mr-1 ${trend < 0 ? 'rotate-180' : ''}`} />
-                <span className="font-medium">{trend > 0 ? '+' : ''}{trend.toFixed(1)}</span>
-              </div>
+          )}
+        </div>
+
+        <div>
+          <p className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">{title}</p>
+          <div className="flex items-baseline gap-2">
+            <h3 className="text-xl sm:text-2xl font-black text-slate-800 font-heading">{value}</h3>
+            {subtitle && (
+              <span className="text-[10px] text-slate-400 font-medium truncate italic">{subtitle}</span>
             )}
           </div>
         </div>
       </CardContent>
-      {/* Colored bottom border */}
-      <div className={`absolute bottom-0 left-0 right-0 h-1 ${color.replace('bg-gradient-to-br', 'bg-gradient-to-r')} opacity-80`} />
+      {/* Visual Accent */}
+      <div className={`absolute top-0 right-0 w-24 h-24 -mr-12 -mt-12 rounded-full opacity-[0.03] ${color.split(' ')[0]}`} />
     </Card>
   )
 
@@ -269,7 +340,7 @@ export function StudentDashboard() {
               </div>
             </div>
           </div>
-          
+
           {/* Loading Stats */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[...Array(4)].map((_, i) => (
@@ -322,51 +393,37 @@ export function StudentDashboard() {
         />
       </div>
 
-      {/* Tabs Navigation */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6 animate-in fade-in-50 duration-500 delay-100">
-        <TabsList className="grid w-full grid-cols-3 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70 border rounded-lg h-12 sm:h-auto p-1">
-          <TabsTrigger value="dashboard" className="py-2 sm:py-3 text-xs sm:text-sm">
-            <BookOpen className="h-4 w-4 mr-1.5 sm:mr-2" />
-            <span className="hidden sm:inline">Dashboard</span>
-          </TabsTrigger>
-          <TabsTrigger value="quizzes" className="py-2 sm:py-3 text-xs sm:text-sm">
-            <Play className="h-4 w-4 mr-1.5 sm:mr-2" />
-            <span className="hidden sm:inline">Bài thi</span>
-          </TabsTrigger>
-          <TabsTrigger value="leaderboard" className="py-2 sm:py-3 text-xs sm:text-sm">
-            <Trophy className="h-4 w-4 mr-1.5 sm:mr-2" />
-            <span className="hidden sm:inline">Xếp hạng</span>
-          </TabsTrigger>
-        </TabsList>
-        
+        {/* Tabs Content - Controlled by Sidebar via query params */}
+
 
         {/* Dashboard Tab */}
         <TabsContent value="dashboard" className="space-y-4 sm:space-y-6 mb-6">
           {/* Mobile: Vertical Stack, Desktop: Original Grid */}
           <div className="space-y-4 sm:space-y-6 lg:grid lg:grid-cols-3 lg:gap-8 lg:space-y-0">
-            
+
             {/* Quick Actions - Priority #1 on Mobile */}
             <div className="lg:order-2 lg:col-span-1 animate-in fade-in-50 duration-500 delay-100">
               <Card className="border-0 bg-gradient-to-br from-cyan-500 to-blue-600 text-white shadow-xl">
                 <CardHeader className="pb-3">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center flex-shrink-0">
-                      <Zap className="h-5 w-5 text-white" />
+                      <Rocket className="h-5 w-5 text-white" />
                     </div>
                     <CardTitle className="text-lg font-bold text-white font-heading">Thao tác nhanh</CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-2 pb-4">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="w-full justify-start h-11 bg-white/10 hover:bg-white/20 border-white/30 text-white hover:text-white backdrop-blur-sm transition-all"
                     onClick={() => setActiveTab("quizzes")}
                   >
                     <BookOpen className="h-4 w-4 mr-3" />
                     <span className="text-sm font-medium">Xem tất cả bài thi</span>
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="w-full justify-start h-11 bg-white/10 hover:bg-white/20 border-white/30 text-white hover:text-white backdrop-blur-sm transition-all"
                     onClick={() => setActiveTab("leaderboard")}
                   >
@@ -402,17 +459,16 @@ export function StudentDashboard() {
                     {userAttempts.slice(0, 3).map((attempt, index) => {
                       const quiz = availableQuizzes.find(q => q.id === attempt.quizId)
                       return (
-                        <div 
-                          key={attempt.id} 
+                        <div
+                          key={attempt.id}
                           className="flex items-center justify-between gap-3 p-2.5 sm:p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors animate-in fade-in-50 duration-300"
                           style={{ animationDelay: `${index * 50}ms` }}
                         >
                           <div className="flex-1 min-w-0 flex items-center gap-2.5">
-                            <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex-shrink-0 flex items-center justify-center ${
-                              (attempt.score || 0) >= 80 ? 'bg-gradient-to-br from-green-500 to-emerald-600' :
+                            <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex-shrink-0 flex items-center justify-center ${(attempt.score || 0) >= 80 ? 'bg-gradient-to-br from-green-500 to-emerald-600' :
                               (attempt.score || 0) >= 60 ? 'bg-gradient-to-br from-yellow-500 to-orange-600' :
-                              'bg-gradient-to-br from-red-500 to-pink-600'
-                            }`}>
+                                'bg-gradient-to-br from-red-500 to-pink-600'
+                              }`}>
                               <span className="text-white text-xs sm:text-sm font-bold">{attempt.score}%</span>
                             </div>
                             <div className="flex-1 min-w-0">
@@ -431,7 +487,7 @@ export function StudentDashboard() {
                         </div>
                       )
                     })}
-                    
+
                     {userAttempts.length === 0 && (
                       <div className="text-center py-6 sm:py-8">
                         <div className="p-3 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 w-fit mx-auto mb-2">
@@ -440,10 +496,10 @@ export function StudentDashboard() {
                         <p className="text-xs sm:text-sm text-slate-600 font-body">Chưa có kết quả nào</p>
                       </div>
                     )}
-                    
+
                     {userAttempts.length > 3 && (
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         size="sm"
                         className="w-full text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                         onClick={() => setActiveTab("quizzes")}
@@ -474,12 +530,12 @@ export function StudentDashboard() {
                         <span className="text-slate-600">Bài thi đã hoàn thành</span>
                         <span className="font-semibold text-slate-800">{stats.quizzesCompleted}/{availableQuizzes.length}</span>
                       </div>
-                      <Progress 
-                        value={availableQuizzes.length > 0 ? Math.min((stats.quizzesCompleted / availableQuizzes.length) * 100, 100) : 0} 
-                        className="h-2.5" 
+                      <Progress
+                        value={availableQuizzes.length > 0 ? Math.min((stats.quizzesCompleted / availableQuizzes.length) * 100, 100) : 0}
+                        className="h-2.5"
                       />
                     </div>
-                    
+
                     <div>
                       <div className="flex justify-between text-xs sm:text-sm mb-2 font-body">
                         <span className="text-slate-600">Điểm trung bình</span>
@@ -523,8 +579,8 @@ export function StudentDashboard() {
                 <CardContent className="pb-4">
                   <div className="space-y-2 sm:space-y-3">
                     {recentActivity.slice(0, 3).map((activity, index) => (
-                      <div 
-                        key={index} 
+                      <div
+                        key={index}
                         className="flex items-center gap-2.5 p-2.5 sm:p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors animate-in fade-in-50 duration-300"
                         style={{ animationDelay: `${index * 50}ms` }}
                       >
@@ -547,7 +603,7 @@ export function StudentDashboard() {
                         </div>
                       </div>
                     ))}
-                    
+
                     {recentActivity.length === 0 && (
                       <div className="text-center py-6 sm:py-8">
                         <div className="p-3 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 w-fit mx-auto mb-2">
@@ -556,10 +612,10 @@ export function StudentDashboard() {
                         <p className="text-xs sm:text-sm text-slate-600 font-body">Chưa có hoạt động nào</p>
                       </div>
                     )}
-                    
+
                     {recentActivity.length > 3 && (
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         size="sm"
                         className="w-full text-xs text-purple-600 hover:text-purple-700 hover:bg-purple-50"
                       >
@@ -593,7 +649,7 @@ export function StudentDashboard() {
                 {availableQuizzes.map((quiz) => {
                   const attempt = userAttempts.find(a => a.quizId === quiz.id)
                   const status = attempt ? 'completed' : 'available'
-                  
+
                   return (
                     <Card key={quiz.id} className="relative group hover:shadow-xl transition-all duration-300 border-0 bg-white/90 backdrop-blur-sm card-shadow hover:-translate-y-1">
                       <CardContent className="p-6">
@@ -606,7 +662,7 @@ export function StudentDashboard() {
                               <CheckCircle className="h-6 w-6 text-green-600 flex-shrink-0 ml-2" />
                             )}
                           </div>
-                          
+
                           <div className="flex items-center gap-6 text-sm text-slate-600 font-body">
                             <div className="flex items-center gap-2">
                               <div className="p-1.5 rounded-lg bg-blue-100">
@@ -614,7 +670,7 @@ export function StudentDashboard() {
                               </div>
                               <span className="font-medium">{quiz.questions?.length || 0} câu</span>
                             </div>
-                          <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2">
                               <div className="p-1.5 rounded-lg bg-cyan-100">
                                 <Clock className="h-4 w-4 text-cyan-600" />
                               </div>
@@ -642,17 +698,17 @@ export function StudentDashboard() {
                           <div className="flex gap-3">
                             {status === 'completed' ? (
                               <>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
+                                <Button
+                                  variant="outline"
+                                  size="sm"
                                   className="flex-1 btn-secondary"
                                   onClick={() => handleViewResult(quiz.id)}
                                 >
                                   <Eye className="h-4 w-4 mr-2" />
                                   Xem kết quả
                                 </Button>
-                                <Button 
-                                  size="sm" 
+                                <Button
+                                  size="sm"
                                   className="flex-1 btn-primary"
                                   onClick={() => handleStartQuiz(quiz)}
                                 >
@@ -661,8 +717,8 @@ export function StudentDashboard() {
                                 </Button>
                               </>
                             ) : (
-                              <Button 
-                                size="sm" 
+                              <Button
+                                size="sm"
                                 className="w-full btn-primary"
                                 onClick={() => handleStartQuiz(quiz)}
                               >
@@ -677,7 +733,7 @@ export function StudentDashboard() {
                   )
                 })}
               </div>
-              
+
               {availableQuizzes.length === 0 && (
                 <div className="text-center py-12">
                   <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-100 to-cyan-100 w-fit mx-auto mb-4">
@@ -713,23 +769,21 @@ export function StudentDashboard() {
                   </div>
                 ) : (
                   leaderboard.map((entry, index) => (
-                    <div 
-                      key={entry.userId} 
-                      className={`p-3 rounded-lg transition-colors ${
-                        entry.rank <= 3 
-                          ? 'bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200' 
-                          : 'bg-slate-50/50 hover:bg-slate-100/50'
-                      }`}
+                    <div
+                      key={entry.userId}
+                      className={`p-3 rounded-lg transition-colors ${entry.rank <= 3
+                        ? 'bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200'
+                        : 'bg-slate-50/50 hover:bg-slate-100/50'
+                        }`}
                     >
                       <div className="space-y-3">
                         {/* User Info Row */}
                         <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-full flex-shrink-0 ${
-                            entry.rank === 1 ? 'bg-gradient-to-r from-yellow-400 to-yellow-600' :
+                          <div className={`w-8 h-8 rounded-full flex-shrink-0 ${entry.rank === 1 ? 'bg-gradient-to-r from-yellow-400 to-yellow-600' :
                             entry.rank === 2 ? 'bg-gradient-to-r from-gray-300 to-gray-500' :
-                            entry.rank === 3 ? 'bg-gradient-to-r from-amber-400 to-amber-600' :
-                            'bg-slate-200'
-                          } flex items-center justify-center text-white text-sm font-bold`}>
+                              entry.rank === 3 ? 'bg-gradient-to-r from-amber-400 to-amber-600' :
+                                'bg-slate-200'
+                            } flex items-center justify-center text-white text-sm font-bold`}>
                             {entry.rank}
                           </div>
                           <div className="flex-1 min-w-0">
@@ -737,7 +791,7 @@ export function StudentDashboard() {
                             <p className="text-xs text-slate-500 truncate">{entry.userEmail}</p>
                           </div>
                         </div>
-                        
+
                         {/* Stats Row */}
                         <div className="flex justify-between text-center px-2">
                           <div className="flex-1">
@@ -761,31 +815,53 @@ export function StudentDashboard() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* Achievements Tab */}
+        <TabsContent value="achievements" className="mt-6">
+          <StudentAchievements />
+        </TabsContent>
+
+        {/* Bookmarks Tab */}
+        <TabsContent value="bookmarks" className="mt-6">
+          <StudentBookmarks />
+        </TabsContent>
+
+        {/* Notifications Tab */}
+        <TabsContent value="notifications" className="mt-6">
+          <StudentNotifications />
+        </TabsContent>
+
+        {/* Study Plan Tab */}
+        <TabsContent value="study-plan" className="mt-6">
+          <StudentStudyPlan />
+        </TabsContent>
       </Tabs>
 
       {/* Inline Quiz */}
-{showQuiz && selectedQuiz && (
-        <div 
-          className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-40"
-        >
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold">{selectedQuiz.title}</h2>
-                <Button onClick={handleCloseQuiz} variant="ghost">
-                  <X className="h-5 w-5" />
-                </Button>
+      {
+        showQuiz && selectedQuiz && (
+          <div
+            className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-40"
+          >
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-2xl font-bold">{selectedQuiz.title}</h2>
+                  <Button onClick={handleCloseQuiz} variant="ghost">
+                    <X className="h-5 w-5" />
+                  </Button>
+                </div>
+                <InlineQuiz
+                  quiz={selectedQuiz}
+                  onClose={handleCloseQuiz}
+                  onComplete={handleQuizComplete}
+                />
               </div>
-              <InlineQuiz
-                quiz={selectedQuiz}
-                onClose={handleCloseQuiz}
-                onComplete={handleQuizComplete}
-              />
             </div>
           </div>
-        </div>
-      )}
-      
-    </div>
+        )
+      }
+
+    </div >
   )
 }

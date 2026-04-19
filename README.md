@@ -1,4 +1,4 @@
-# QuizMaster - Hệ thống luyện thi trắc nghiệm
+# Eduliora Center - Nâng Tầm Tri Thức
 
 Một ứng dụng web hiện đại cho việc tạo và quản lý bài thi trắc nghiệm trực tuyến, được xây dựng với Next.js 14, TypeScript, và Firebase.
 
@@ -207,12 +207,13 @@ Explanation: Python là ngôn ngữ lập trình bậc cao
 
 Distributed under the MIT License. See `LICENSE` for more information.
 
-## 📞 Hỗ trợ
+## 📞 Liên hệ
 
-Nếu gặp vấn đề hoặc có đề xuất, hãy:
-- Tạo Issue trên GitHub
-- Hoặc liên hệ trực tiếp
+Phát triển bởi: **Hồ Hoàng Lanh**
+- Class: **DH23TIN03**
+- Location: **Cà Mau, Việt Nam**
+- Dự án: **Eduliora Center**
 
 ---
 
-**QuizMaster** - Nâng cao trải nghiệm luyện thi trắc nghiệm! 🎓✨
+**Eduliora Center** - Nâng tầm trải nghiệm luyện thi trực tuyến! 🎓✨

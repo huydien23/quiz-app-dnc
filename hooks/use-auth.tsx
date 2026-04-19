@@ -70,17 +70,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const result = await signInWithPopup(auth, googleProvider)
     const firebaseUser = result.user
     
-    // Check if user exists in database
+    // Nếu người dùng đăng nhập lần đầu, tạo bản ghi trong database
     const userRef = ref(database, `users/${firebaseUser.uid}`)
     const snapshot = await get(userRef)
     
     if (!snapshot.exists()) {
-      // Create new user record in database with default role = 1 (user)
+      // Tạo bản ghi người dùng mới trong cơ sở dữ liệu với vai trò mặc định = 1 (người dùng)
       const newUser: User = {
         id: firebaseUser.uid,
         email: firebaseUser.email || "",
         name: firebaseUser.displayName || "Google User",
-        role: 1, // Default role for Google sign-in users
+        role: 1, 
         createdAt: new Date().toISOString(),
       }
       

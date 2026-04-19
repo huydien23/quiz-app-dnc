@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ProtectedRoute } from "@/components/protected-route"
 import { Save, Settings, Shield, Bell, Palette, Database } from "lucide-react"
+import { APP_CONFIG } from "@/lib/constants"
 
 export default function AdminSettingsPage() {
   const [loading, setLoading] = useState(false)
@@ -18,9 +19,16 @@ export default function AdminSettingsPage() {
   const [success, setSuccess] = useState("")
 
   // Settings states
-  const [systemSettings, setSystemSettings] = useState({
-    siteName: "QuizMaster",
-    siteDescription: "Hệ thống quản lý bài thi trực tuyến",
+  const [systemSettings, setSystemSettings] = useState<{
+    siteName: string;
+    siteDescription: string;
+    maintenanceMode: boolean;
+    allowRegistration: boolean;
+    maxQuizTime: number;
+    maxQuestionsPerQuiz: number;
+  }>({
+    siteName: APP_CONFIG.name,
+    siteDescription: APP_CONFIG.description,
     maintenanceMode: false,
     allowRegistration: true,
     maxQuizTime: 120,
@@ -44,10 +52,10 @@ export default function AdminSettingsPage() {
     try {
       setLoading(true)
       setError("")
-      
+
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000))
-      
+
       setSuccess("Đã lưu cài đặt thành công!")
     } catch (err) {
       setError("Không thể lưu cài đặt. Vui lòng thử lại.")
@@ -59,16 +67,25 @@ export default function AdminSettingsPage() {
   return (
     <ProtectedRoute requireAdmin>
       <div className="space-y-6 p-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
+        {/* Header (Synchronized with Dashboard) */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4 border-b border-slate-200 pb-6">
           <div>
-            <h1 className="text-3xl font-bold text-slate-800 font-heading">Cài đặt hệ thống</h1>
-            <p className="text-slate-600 font-body">Quản lý cấu hình và tùy chỉnh hệ thống</p>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-1.5 h-6 bg-indigo-600 rounded-full" />
+              <h2 className="text-2xl font-bold text-slate-900 tracking-tight uppercase">
+                Cấu hình hệ thống
+              </h2>
+            </div>
+            <p className="text-sm font-medium text-slate-500 ml-3.5">
+              Quản lý cấu hình vận hành và tùy chỉnh thông số hệ thống chuyên nghiệp
+            </p>
           </div>
-          <Button onClick={handleSave} disabled={loading} className="btn-primary">
-            <Save className="h-4 w-4 mr-2" />
-            {loading ? "Đang lưu..." : "Lưu cài đặt"}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button onClick={handleSave} disabled={loading} className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs uppercase tracking-wider h-10 px-6 shadow-indigo-100 shadow-lg border-none">
+              <Save className="h-4 w-4 mr-2" />
+              {loading ? "Đang lưu..." : "Lưu cài đặt"}
+            </Button>
+          </div>
         </div>
 
         {error && (
@@ -123,7 +140,7 @@ export default function AdminSettingsPage() {
                     />
                   </div>
                 </div>
-                
+
                 <div>
                   <Label htmlFor="siteDescription">Mô tả trang web</Label>
                   <Textarea
@@ -259,7 +276,7 @@ export default function AdminSettingsPage() {
                       />
                     </div>
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="secondaryColor">Màu phụ</Label>
                     <div className="flex items-center gap-2 mt-1">

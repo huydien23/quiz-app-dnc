@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
 import { BookOpen, Bell, User } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { APP_CONFIG } from "@/lib/constants"
 
 function getTitle(pathname: string) {
   if (pathname === "/dashboard") return "Dashboard"
@@ -15,7 +16,7 @@ function getTitle(pathname: string) {
   if (pathname.startsWith("/dashboard/profile")) return "Hồ sơ"
   if (pathname.startsWith("/dashboard/settings")) return "Cài đặt"
   if (pathname.startsWith("/leaderboard")) return "Bảng xếp hạng"
-  return "QuizMaster"
+  return APP_CONFIG.name
 }
 
 export function DashboardHeader() {

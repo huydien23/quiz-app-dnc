@@ -1,9 +1,21 @@
 // Application constants
 export const APP_CONFIG = {
   name: "QuizMaster",
-  description: "Hệ thống luyện thi trắc nghiệm trực tuyến",
+  description: "Nền tảng luyện thi trắc nghiệm trực tuyến",
   version: "1.0.0",
-  author: "QuizMaster Team"
+  author: "Nguyễn Huy Điền"
+} as const
+
+export const FOUNDER_CONFIG = {
+  name: "Nguyễn Huy Điền",
+  class: "Lập trình viên Fullstack",
+  location: "Cần Thơ",
+  bio: "Lập trình viên Fullstack với niềm đam mê tạo ra những sản phẩm công nghệ hữu ích cho cộng đồng.",
+  socials: {
+    github: "huydien23",
+    facebook: "huydien203",
+    zalo: "0945700813"
+  }
 } as const
 
 // File upload constants

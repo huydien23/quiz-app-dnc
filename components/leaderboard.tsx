@@ -5,15 +5,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { 
-  Trophy, Medal, Award, Crown, Star, 
-  TrendingUp, Clock, Target, Users, 
-  RefreshCw, Calendar, Timer, BarChart3, Activity, BookOpen
+import {
+  Trophy, Medal, Award, Crown, Star,
+  TrendingUp, Clock, Target, Users,
+  RefreshCw, Calendar, Timer, BarChart3, Activity, BookOpen, History
 } from "lucide-react"
 import { LeaderboardService } from "@/lib/leaderboard-service"
 import type { LeaderboardEntry } from "@/lib/types"
 import { formatDistanceToNow } from "date-fns"
 import { vi } from "date-fns/locale"
+import { RankingHistoryChart } from "@/components/ranking-history-chart"
 
 interface LeaderboardProps {
   userId?: string
@@ -33,7 +34,7 @@ export function Leaderboard({ userId }: LeaderboardProps) {
   const loadLeaderboardData = async () => {
     try {
       setLoading(true)
-      
+
       const [leaderboardData, activityData, userStatsData] = await Promise.all([
         LeaderboardService.getLeaderboard(50),
         LeaderboardService.getRecentActivity(20),
@@ -175,14 +176,18 @@ export function Leaderboard({ userId }: LeaderboardProps) {
       )}
 
       <Tabs defaultValue="leaderboard" className="space-y-4 sm:space-y-6">
-        <TabsList className="grid w-full grid-cols-2 bg-white border border-slate-200 p-1 rounded-lg shadow-sm h-11">
+        <TabsList className="grid w-full grid-cols-3 bg-white border border-slate-200 p-1 rounded-lg shadow-sm h-11">
           <TabsTrigger value="leaderboard" className="rounded-md flex items-center justify-center gap-1.5 sm:gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-500 data-[state=active]:to-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all">
             <Trophy className="h-4 w-4 flex-shrink-0" />
-            <span className="text-sm font-medium">Xếp hạng</span>
+            <span className="text-xs sm:text-sm font-medium">Xếp hạng</span>
+          </TabsTrigger>
+          <TabsTrigger value="history" className="rounded-md flex items-center justify-center gap-1.5 sm:gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all">
+            <History className="h-4 w-4 flex-shrink-0" />
+            <span className="text-xs sm:text-sm font-medium">Lịch sử</span>
           </TabsTrigger>
           <TabsTrigger value="activity" className="rounded-md flex items-center justify-center gap-1.5 sm:gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all">
             <Activity className="h-4 w-4 flex-shrink-0" />
-            <span className="text-sm font-medium">Hoạt động</span>
+            <span className="text-xs sm:text-sm font-medium">Hoạt động</span>
           </TabsTrigger>
         </TabsList>
 
@@ -270,8 +275,8 @@ export function Leaderboard({ userId }: LeaderboardProps) {
                   </div>
                 ) : (
                   leaderboard.slice(3).map((entry, index) => (
-                    <div 
-                      key={entry.userId} 
+                    <div
+                      key={entry.userId}
                       className="flex items-center justify-between p-3 rounded-lg bg-slate-50/50 hover:bg-slate-100/50 transition-colors"
                     >
                       <div className="flex items-center gap-2.5 flex-1 min-w-0">
@@ -283,7 +288,7 @@ export function Leaderboard({ userId }: LeaderboardProps) {
                           <p className="text-xs text-slate-600 truncate">{entry.averageScore}% • {entry.totalQuizzes} bài thi</p>
                         </div>
                       </div>
-                      
+
                       <Badge variant="outline" className="text-xs font-semibold flex-shrink-0">
                         {entry.bestScore}%
                       </Badge>
@@ -293,6 +298,10 @@ export function Leaderboard({ userId }: LeaderboardProps) {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="history" className="space-y-4 sm:space-y-6">
+          <RankingHistoryChart userId={userId} />
         </TabsContent>
 
         <TabsContent value="activity" className="space-y-4 sm:space-y-6">
@@ -337,7 +346,7 @@ export function Leaderboard({ userId }: LeaderboardProps) {
                           </p>
                         </div>
                       </div>
-                      <Badge 
+                      <Badge
                         variant={activity.score >= 80 ? "default" : activity.score >= 60 ? "secondary" : "destructive"}
                         className="text-xs px-2 py-1 font-bold flex-shrink-0"
                       >

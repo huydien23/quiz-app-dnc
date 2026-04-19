@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog'
+import { Slot } from '@radix-ui/react-slot'
 
 import { cn } from '@/lib/utils'
 import { buttonVariants } from '@/components/ui/button'
@@ -35,7 +36,7 @@ function AlertDialogOverlay({
   return (
     <AlertDialogPrimitive.Overlay
       data-slot="alert-dialog-overlay"
-className={cn(
+      className={cn(
         'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-[60] bg-black/60',
         className,
       )}
@@ -54,7 +55,7 @@ function AlertDialogContent({
       <AlertDialogPrimitive.Content
         data-slot="alert-dialog-content"
         className={cn(
-'bg-white data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-1/2 left-1/2 z-[61] grid w-full max-w-[min(92vw,40rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl border border-slate-200 p-6 shadow-2xl duration-200 sm:max-w-xl max-h-[85vh] overflow-auto',
+          'bg-white data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-1/2 left-1/2 z-[61] grid w-full max-w-[min(92vw,40rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl border border-slate-200 p-6 shadow-2xl duration-200 sm:max-w-xl max-h-[85vh] overflow-auto',
           className,
         )}
         {...props}
@@ -107,14 +108,22 @@ function AlertDialogTitle({
 
 function AlertDialogDescription({
   className,
+  asChild = false,
   ...props
-}: React.ComponentProps<typeof AlertDialogPrimitive.Description>) {
+}: React.ComponentProps<typeof AlertDialogPrimitive.Description> & {
+  asChild?: boolean
+}) {
+  // Use div instead of p to avoid nested element hydration errors
+  // (p tags cannot contain div, block elements, or other p tags)
+  const Comp = asChild ? Slot : 'div'
   return (
-    <AlertDialogPrimitive.Description
-      data-slot="alert-dialog-description"
-      className={cn('text-muted-foreground text-sm', className)}
-      {...props}
-    />
+    <AlertDialogPrimitive.Description asChild>
+      <Comp
+        data-slot="alert-dialog-description"
+        className={cn('text-muted-foreground text-sm', className)}
+        {...props}
+      />
+    </AlertDialogPrimitive.Description>
   )
 }
 
